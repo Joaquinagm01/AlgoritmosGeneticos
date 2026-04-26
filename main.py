@@ -2,6 +2,7 @@ import random
 import statistics
 import time
 from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,6 +22,41 @@ TORNEO_K = 3
 ELITE_SIZE = 2
 SEED = 42
 
+PRIORIDADES = ["Baja", "Media", "Alta", "Critica"]
+PROB_PRIORIDADES = [0.35, 0.30, 0.23, 0.12]
+SLA_MINUTOS = {
+    "Critica": 120,
+    "Alta": 240,
+    "Media": 480,
+    "Baja": 720,
+}
+METODOS = ["ruleta", "torneo", "elitismo"]
+
+PESO_DESBALANCE = 2.0
+PESO_SOBRECARGA = 1.5
+PESO_ESPERA_CRITICA = 1.2
+PESO_BACKLOG = 30.0
+
+METRICAS_GRAFICOS = [
+    ("fitness_max", "maximos_por_generacion.png", "Fitness Máximo por Generación"),
+    ("fitness_prom", "promedios_por_generacion.png", "Fitness Promedio por Generación"),
+    ("fitness_min", "minimos_por_generacion.png", "Fitness Mínimo por Generación"),
+    ("desv_std", "desviacion_estandar_por_generacion.png", "Desviación Estándar por Generación"),
+]
+
+ARCHIVOS_EXPORTADOS = [
+    "metricas_generacionales_soc.csv",
+    "resumen_resultados_soc.csv",
+    "maximos_por_generacion.png",
+    "promedios_por_generacion.png",
+    "minimos_por_generacion.png",
+    "desviacion_estandar_por_generacion.png",
+    "comparacion_metodos.png",
+]
+
+Chromosome = List[int]
+Population = List[Chromosome]
+
 
 @dataclass
 class Alerta:
@@ -33,12 +69,9 @@ class Alerta:
 
 def generar_alertas(n_alertas=N_ALERTAS):
     """Genera alertas aleatorias con prioridad, tiempo estimado y severidad."""
-    prioridades = ["Baja", "Media", "Alta", "Critica"]
-    probabilidades = [0.35, 0.30, 0.23, 0.12]
-
-    alertas = []
+    alertas: List[Alerta] = []
     for _ in range(n_alertas):
-        prioridad = random.choices(prioridades, weights=probabilidades, k=1)[0]
+        prioridad = random.choices(PRIORIDADES, weights=PROB_PRIORIDADES, k=1)[0]
         if prioridad == "Baja":
             tiempo = random.randint(15, 60)
             severidad = random.randint(1, 3)
@@ -62,33 +95,24 @@ def generar_poblacion(tam_poblacion=TAM_POBLACION, n_alertas=N_ALERTAS, n_analis
     return [[random.randint(0, n_analistas - 1) for _ in range(n_alertas)] for _ in range(tam_poblacion)]
 
 
-def _evaluar_cromosoma(cromosoma, alertas, n_analistas=N_ANALISTAS):
+def _evaluar_cromosoma(cromosoma: Chromosome, alertas: List[Alerta], n_analistas=N_ANALISTAS) -> Dict[str, float | int | List[int]]:
     """Evalúa una solución y devuelve métricas de scheduling para SOC."""
     colas = [[] for _ in range(n_analistas)]
     for idx_alerta, idx_analista in enumerate(cromosoma):
         colas[idx_analista].append(idx_alerta)
 
-    cargas = []
-    tiempos_finalizacion = []
-    tiempos_criticos = []
+    cargas: List[int] = []
+    tiempos_criticos: List[int] = []
     backlog = 0
-
-    sla = {
-        "Critica": 120,
-        "Alta": 240,
-        "Media": 480,
-        "Baja": 720,
-    }
 
     for cola in colas:
         acumulado = 0
         for idx_alerta in cola:
             alerta = alertas[idx_alerta]
             acumulado += alerta.tiempo_estimado
-            tiempos_finalizacion.append(acumulado)
             if alerta.prioridad == "Critica":
                 tiempos_criticos.append(acumulado)
-            if acumulado > sla[alerta.prioridad]:
+            if acumulado > SLA_MINUTOS[alerta.prioridad]:
                 backlog += 1
         cargas.append(acumulado)
 
@@ -99,10 +123,10 @@ def _evaluar_cromosoma(cromosoma, alertas, n_analistas=N_ANALISTAS):
     espera_critica = statistics.fmean(tiempos_criticos) if tiempos_criticos else 0
 
     penalizacion = (
-        2.0 * desbalance
-        + 1.5 * sobrecarga
-        + 1.2 * espera_critica
-        + 30.0 * backlog
+        PESO_DESBALANCE * desbalance
+        + PESO_SOBRECARGA * sobrecarga
+        + PESO_ESPERA_CRITICA * espera_critica
+        + PESO_BACKLOG * backlog
     )
 
     objetivo = tiempo_total + penalizacion
@@ -189,16 +213,8 @@ def _seleccionar_padre(metodo, poblacion, fitnesses):
     raise ValueError(f"Método de selección no soportado: {metodo}")
 
 
-def evolucionar(alertas, metodo="ruleta"):
-    """Evoluciona una población usando el método de selección indicado."""
-    poblacion = generar_poblacion()
-    historial = []
-
-    mejor_global = None
-    mejor_eval = None
-
-    inicio_total = time.time()
-
+def _imprimir_encabezado_metodo(metodo):
+    """Imprime cabecera de métricas por método de selección."""
     print("=" * 110)
     print(f"METODO: {metodo.upper()}")
     print("=" * 110)
@@ -206,6 +222,39 @@ def evolucionar(alertas, metodo="ruleta"):
         f"{'Gen':>3} | {'Fitness Máx':>12} | {'Fitness Mín':>12} | {'Fitness Prom':>12} | {'Desv. Std':>12} | {'Tiempo Gen (s)':>13}"
     )
     print("-" * 110)
+
+
+def _imprimir_fila_generacion(gen, stats):
+    """Imprime una fila tabulada de métricas por generación."""
+    print(
+        f"{gen:>3} | {stats['fitness_max']:>12.8f} | {stats['fitness_min']:>12.8f} | "
+        f"{stats['fitness_prom']:>12.8f} | {stats['desv_std']:>12.8f} | {stats['tiempo_gen_seg']:>13.6f}"
+    )
+
+
+def _imprimir_resultado_metodo(resultado_final):
+    """Imprime el resumen final para un método de selección."""
+    print("-" * 110)
+    print("RESULTADO FINAL DEL METODO")
+    print(f"Mejor fitness global         : {resultado_final['mejor_fitness']:.10f}")
+    print(f"Tiempo total estimado (min)  : {resultado_final['tiempo_total_estimado']}")
+    print(f"Backlog estimado             : {resultado_final['backlog']}")
+    print(f"Desbalance de carga          : {resultado_final['desbalance']:.4f}")
+    print(f"Tiempo ejecución método (s)  : {resultado_final['tiempo_ejecucion_total_seg']:.4f}")
+    print("=" * 110)
+
+
+def evolucionar(alertas, metodo="ruleta"):
+    """Evoluciona una población usando el método de selección indicado."""
+    poblacion = generar_poblacion()
+    historial: List[Dict[str, float | int | str]] = []
+
+    mejor_global = None
+    mejor_eval = None
+
+    inicio_total = time.time()
+
+    _imprimir_encabezado_metodo(metodo)
 
     for gen in range(1, N_GENERACIONES + 1):
         inicio_gen = time.time()
@@ -240,10 +289,7 @@ def evolucionar(alertas, metodo="ruleta"):
         stats["metodo"] = metodo
         historial.append(stats)
 
-        print(
-            f"{gen:>3} | {stats['fitness_max']:>12.8f} | {stats['fitness_min']:>12.8f} | "
-            f"{stats['fitness_prom']:>12.8f} | {stats['desv_std']:>12.8f} | {stats['tiempo_gen_seg']:>13.6f}"
-        )
+        _imprimir_fila_generacion(gen, stats)
 
     tiempo_total = time.time() - inicio_total
 
@@ -260,28 +306,14 @@ def evolucionar(alertas, metodo="ruleta"):
         "tiempo_ejecucion_total_seg": tiempo_total,
     }
 
-    print("-" * 110)
-    print("RESULTADO FINAL DEL METODO")
-    print(f"Mejor fitness global         : {resultado_final['mejor_fitness']:.10f}")
-    print(f"Tiempo total estimado (min)  : {resultado_final['tiempo_total_estimado']}")
-    print(f"Backlog estimado             : {resultado_final['backlog']}")
-    print(f"Desbalance de carga          : {resultado_final['desbalance']:.4f}")
-    print(f"Tiempo ejecución método (s)  : {resultado_final['tiempo_ejecucion_total_seg']:.4f}")
-    print("=" * 110)
+    _imprimir_resultado_metodo(resultado_final)
 
     return pd.DataFrame(historial), resultado_final
 
 
 def _graficar_metricas(df_metricas):
     """Genera gráficos obligatorios de métricas y comparación de métodos."""
-    metricas = [
-        ("fitness_max", "maximos_por_generacion.png", "Fitness Máximo por Generación"),
-        ("fitness_prom", "promedios_por_generacion.png", "Fitness Promedio por Generación"),
-        ("fitness_min", "minimos_por_generacion.png", "Fitness Mínimo por Generación"),
-        ("desv_std", "desviacion_estandar_por_generacion.png", "Desviación Estándar por Generación"),
-    ]
-
-    for metrica, archivo, titulo in metricas:
+    for metrica, archivo, titulo in METRICAS_GRAFICOS:
         plt.figure(figsize=(10, 6))
         for metodo, grupo in df_metricas.groupby("metodo"):
             plt.plot(grupo["generacion"], grupo[metrica], marker="o", label=metodo.capitalize())
@@ -307,26 +339,9 @@ def _graficar_metricas(df_metricas):
     plt.close()
 
 
-def main():
-    """Orquesta la simulación completa y exporta resultados para informe académico."""
-    random.seed(SEED)
-    np.random.seed(SEED)
-
-    alertas = generar_alertas()
-    metodos = ["ruleta", "torneo", "elitismo"]
-
-    tablas = []
-    resultados = []
-
-    for metodo in metodos:
-        df_metodo, resultado = evolucionar(alertas, metodo=metodo)
-        tablas.append(df_metodo)
-        resultados.append(resultado)
-
-    df_metricas = pd.concat(tablas, ignore_index=True)
-    df_metricas.to_csv("metricas_generacionales_soc.csv", index=False)
-
-    df_resumen = pd.DataFrame(
+def _construir_resumen_resultados(resultados):
+    """Construye un DataFrame resumen con métricas finales por método."""
+    return pd.DataFrame(
         [
             {
                 "metodo": r["metodo"],
@@ -339,12 +354,10 @@ def main():
             for r in resultados
         ]
     )
-    df_resumen.to_csv("resumen_resultados_soc.csv", index=False)
 
-    _graficar_metricas(df_metricas)
 
-    mejor_global = max(resultados, key=lambda r: r["mejor_fitness"])
-
+def _imprimir_resumen_global(df_resumen, mejor_global):
+    """Imprime resumen consolidado y mejor solución global."""
     print("\n" + "=" * 110)
     print("RESUMEN TABULADO POR MÉTODO")
     print("=" * 110)
@@ -361,13 +374,35 @@ def main():
     print(f"Distribución de alertas     : {mejor_global['distribucion_alertas']}")
     print(f"Mejor cromosoma (primeros 60 genes): {mejor_global['mejor_cromosoma'][:60]}")
     print("\nArchivos exportados:")
-    print("- metricas_generacionales_soc.csv")
-    print("- resumen_resultados_soc.csv")
-    print("- maximos_por_generacion.png")
-    print("- promedios_por_generacion.png")
-    print("- minimos_por_generacion.png")
-    print("- desviacion_estandar_por_generacion.png")
-    print("- comparacion_metodos.png")
+    for archivo in ARCHIVOS_EXPORTADOS:
+        print(f"- {archivo}")
+
+
+def main():
+    """Orquesta la simulación completa y exporta resultados para informe académico."""
+    random.seed(SEED)
+    np.random.seed(SEED)
+
+    alertas = generar_alertas()
+    tablas: List[pd.DataFrame] = []
+    resultados: List[Dict[str, object]] = []
+
+    for metodo in METODOS:
+        df_metodo, resultado = evolucionar(alertas, metodo=metodo)
+        tablas.append(df_metodo)
+        resultados.append(resultado)
+
+    df_metricas = pd.concat(tablas, ignore_index=True)
+    df_metricas.to_csv("metricas_generacionales_soc.csv", index=False)
+
+    df_resumen = _construir_resumen_resultados(resultados)
+    df_resumen.to_csv("resumen_resultados_soc.csv", index=False)
+
+    _graficar_metricas(df_metricas)
+
+    mejor_global = max(resultados, key=lambda r: r["mejor_fitness"])
+
+    _imprimir_resumen_global(df_resumen, mejor_global)
 
 
 if __name__ == "__main__":
