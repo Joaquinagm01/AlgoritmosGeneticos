@@ -206,6 +206,33 @@
           </tbody>
         </table>
       </div>
+      <h3>Resumen de minimos, promedios y maximos por configuracion</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Iteraciones</th>
+              <th>Metodo</th>
+              <th>Mejor Fitness Promedio</th>
+              <th>Mejor Fitness Max</th>
+              <th>Mejor Fitness Min</th>
+              <th>Tiempo Ejecucion Promedio (s)</th>
+              <th>Generacion Mejor Fitness Prom.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>20</td><td>Ruleta</td><td>0.0000480279</td><td>0.0000487415</td><td>0.0000475298</td><td>0.008364</td><td>6.0</td></tr>
+            <tr><td>20</td><td>Torneo</td><td>0.0000490076</td><td>0.0000494176</td><td>0.0000483702</td><td>0.008312</td><td>8.33</td></tr>
+            <tr><td>20</td><td>Elitismo</td><td>0.0000481635</td><td>0.0000485186</td><td>0.0000475298</td><td>0.008224</td><td>11.0</td></tr>
+            <tr><td>100</td><td>Ruleta</td><td>0.0000487915</td><td>0.0000495549</td><td>0.0000479330</td><td>0.041669</td><td>6.67</td></tr>
+            <tr><td>100</td><td>Torneo</td><td>0.0000497780</td><td>0.0000501701</td><td>0.0000495580</td><td>0.041677</td><td>56.0</td></tr>
+            <tr><td>100</td><td>Elitismo</td><td>0.0000493015</td><td>0.0000494749</td><td>0.0000491816</td><td>0.040140</td><td>82.0</td></tr>
+            <tr><td>200</td><td>Ruleta</td><td>0.0000484450</td><td>0.0000488781</td><td>0.0000481924</td><td>0.081570</td><td>57.0</td></tr>
+            <tr><td>200</td><td>Torneo</td><td>0.0000498730</td><td>0.0000500920</td><td>0.0000495811</td><td>0.080973</td><td>170.0</td></tr>
+            <tr><td>200</td><td>Elitismo</td><td>0.0000501598</td><td>0.0000503518</td><td>0.0000498892</td><td>0.080595</td><td>180.67</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section class="card">
@@ -232,6 +259,18 @@
       <figure>
         <img src="../outputs/figures/comparacion_metodos.png" alt="Comparacion entre ruleta torneo y elitismo" />
         <figcaption>Figura 5. Comparacion global entre estrategias de seleccion.</figcaption>
+      </figure>
+      <figure>
+        <img src="../outputs/figures/comparativa_20_iteraciones.png" alt="Comparacion de 20 iteraciones" />
+        <figcaption>Figura 6. Fitness promedio por generacion en 20 iteraciones.</figcaption>
+      </figure>
+      <figure>
+        <img src="../outputs/figures/comparativa_100_iteraciones.png" alt="Comparacion de 100 iteraciones" />
+        <figcaption>Figura 7. Fitness promedio por generacion en 100 iteraciones.</figcaption>
+      </figure>
+      <figure>
+        <img src="../outputs/figures/comparativa_200_iteraciones.png" alt="Comparacion de 200 iteraciones" />
+        <figcaption>Figura 8. Fitness promedio por generacion en 200 iteraciones.</figcaption>
       </figure>
     </section>
 
@@ -274,13 +313,19 @@
       <ul>
         <li>outputs/metricas_generacionales_soc.csv</li>
         <li>outputs/resumen_resultados_soc.csv</li>
+        <li>outputs/metricas_variantes_generaciones.csv</li>
         <li>outputs/experimentos_adicionales.csv</li>
+        <li>outputs/resumen_variantes_generaciones.csv</li>
         <li>outputs/tabla_estabilidad_tiempos.csv</li>
+        <li>outputs/tabla_mins_prom_maxs_por_configuracion.csv</li>
         <li>outputs/figures/maximos_por_generacion.png</li>
         <li>outputs/figures/promedios_por_generacion.png</li>
         <li>outputs/figures/minimos_por_generacion.png</li>
         <li>outputs/figures/desviacion_estandar_por_generacion.png</li>
         <li>outputs/figures/comparacion_metodos.png</li>
+        <li>outputs/figures/comparativa_20_iteraciones.png</li>
+        <li>outputs/figures/comparativa_100_iteraciones.png</li>
+        <li>outputs/figures/comparativa_200_iteraciones.png</li>
       </ul>
     </section>
   </main>

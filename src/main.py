@@ -54,12 +54,22 @@ METRICAS_GRAFICOS = [
 ARCHIVOS_EXPORTADOS = [
     METRICS_CSV,
     SUMMARY_CSV,
+    OUTPUTS_DIR / "resumen_variantes_generaciones.csv",
+    OUTPUTS_DIR / "experimentos_repetidos.csv",
+    OUTPUTS_DIR / "tabla_mins_prom_maxs_por_configuracion.csv",
+    OUTPUTS_DIR / "metricas_variantes_generaciones.csv",
     FIGURES_DIR / "maximos_por_generacion.png",
     FIGURES_DIR / "promedios_por_generacion.png",
     FIGURES_DIR / "minimos_por_generacion.png",
     FIGURES_DIR / "desviacion_estandar_por_generacion.png",
     FIGURES_DIR / "comparacion_metodos.png",
+    FIGURES_DIR / "comparativa_20_iteraciones.png",
+    FIGURES_DIR / "comparativa_100_iteraciones.png",
+    FIGURES_DIR / "comparativa_200_iteraciones.png",
 ]
+
+VARIANTES_GENERACIONES = [20, 100, 200]
+REPETICIONES_POR_CONFIG = 3
 
 Chromosome = List[int]
 Population = List[Chromosome]
@@ -318,6 +328,67 @@ def evolucionar(alertas, metodo="ruleta"):
     return pd.DataFrame(historial), resultado_final
 
 
+def evolucionar_parametrizado(alertas, metodo="ruleta", n_generaciones=N_GENERACIONES, tam_poblacion=TAM_POBLACION):
+    """Evoluciona una población con generaciones y población configurables."""
+    poblacion = generar_poblacion(tam_poblacion=tam_poblacion)
+    historial: List[Dict[str, float | int | str]] = []
+
+    mejor_global = None
+    mejor_eval = None
+
+    inicio_total = time.time()
+
+    for gen in range(1, n_generaciones + 1):
+        inicio_gen = time.time()
+        evaluaciones = [_evaluar_cromosoma(ind, alertas) for ind in poblacion]
+        fitnesses = [ev["fitness"] for ev in evaluaciones]
+
+        idx_mejor = int(np.argmax(fitnesses))
+        if mejor_eval is None or fitnesses[idx_mejor] > mejor_eval["fitness"]:
+            mejor_global = poblacion[idx_mejor][:]
+            mejor_eval = evaluaciones[idx_mejor]
+
+        nueva_poblacion = []
+        if metodo == "elitismo":
+            nueva_poblacion.extend(seleccion_elitismo(poblacion, fitnesses, elite_size=ELITE_SIZE))
+
+        while len(nueva_poblacion) < tam_poblacion:
+            padre1 = _seleccionar_padre(metodo, poblacion, fitnesses)
+            padre2 = _seleccionar_padre(metodo, poblacion, fitnesses)
+            hijo1, hijo2 = crossover(padre1, padre2)
+            hijo1 = mutacion(hijo1)
+            hijo2 = mutacion(hijo2)
+            nueva_poblacion.append(hijo1)
+            if len(nueva_poblacion) < tam_poblacion:
+                nueva_poblacion.append(hijo2)
+
+        poblacion = nueva_poblacion[:tam_poblacion]
+        tiempo_gen = time.time() - inicio_gen
+        stats = calcular_estadisticas(fitnesses, tiempo_gen)
+        stats["generacion"] = gen
+        stats["metodo"] = metodo
+        stats["n_generaciones"] = n_generaciones
+        stats["tam_poblacion"] = tam_poblacion
+        historial.append(stats)
+
+    tiempo_total = time.time() - inicio_total
+    asignaciones = np.bincount(mejor_global, minlength=N_ANALISTAS)
+    resultado_final = {
+        "metodo": metodo,
+        "n_generaciones": n_generaciones,
+        "tam_poblacion": tam_poblacion,
+        "mejor_cromosoma": mejor_global,
+        "mejor_fitness": mejor_eval["fitness"],
+        "tiempo_total_estimado": mejor_eval["tiempo_total"],
+        "carga_por_analista": mejor_eval["cargas"],
+        "distribucion_alertas": asignaciones.tolist(),
+        "backlog": mejor_eval["backlog"],
+        "desbalance": mejor_eval["desbalance"],
+        "tiempo_ejecucion_total_seg": tiempo_total,
+    }
+    return pd.DataFrame(historial), resultado_final
+
+
 def _graficar_metricas(df_metricas):
     """Genera gráficos obligatorios de métricas y comparación de métodos."""
     for metrica, archivo, titulo in METRICAS_GRAFICOS:
@@ -346,6 +417,22 @@ def _graficar_metricas(df_metricas):
     plt.close()
 
 
+def _graficar_por_variantes(df_variantes):
+    """Genera una gráfica por cada conjunto de iteraciones solicitado."""
+    for n_generaciones, grupo_variantes in df_variantes.groupby("n_generaciones"):
+        plt.figure(figsize=(10, 6))
+        for metodo, grupo in grupo_variantes.groupby("metodo"):
+            plt.plot(grupo["generacion"], grupo["fitness_prom"], marker="o", label=metodo.capitalize())
+        plt.title(f"Fitness promedio por generación - {n_generaciones} iteraciones")
+        plt.xlabel("Generación")
+        plt.ylabel("Fitness Promedio")
+        plt.grid(True, linestyle="--", alpha=0.45)
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(FIGURES_DIR / f"comparativa_{n_generaciones}_iteraciones.png", dpi=200)
+        plt.close()
+
+
 def _construir_resumen_resultados(resultados):
     """Construye un DataFrame resumen con métricas finales por método."""
     return pd.DataFrame(
@@ -361,6 +448,59 @@ def _construir_resumen_resultados(resultados):
             for r in resultados
         ]
     )
+
+
+def ejecutar_bateria_experimentos(alertas):
+    """Ejecuta la batería de 20, 100 y 200 generaciones por cada método."""
+    filas_metricas = []
+    filas_resumen = []
+    filas_repetidos = []
+
+    for n_generaciones in VARIANTES_GENERACIONES:
+        for metodo in METODOS:
+            for repeticion in range(1, REPETICIONES_POR_CONFIG + 1):
+                random.seed(SEED + n_generaciones + repeticion)
+                np.random.seed(SEED + n_generaciones + repeticion)
+                df_historial, resultado = evolucionar_parametrizado(
+                    alertas,
+                    metodo=metodo,
+                    n_generaciones=n_generaciones,
+                    tam_poblacion=TAM_POBLACION,
+                )
+
+                df_historial["repeticion"] = repeticion
+                filas_metricas.append(df_historial)
+
+                filas_repetidos.append(
+                    {
+                        "n_generaciones": n_generaciones,
+                        "metodo": metodo,
+                        "repeticion": repeticion,
+                        "mejor_fitness": resultado["mejor_fitness"],
+                        "generacion_mejor_fitness": int(df_historial.loc[df_historial["fitness_max"].idxmax(), "generacion"]),
+                        "tiempo_ejecucion_seg": resultado["tiempo_ejecucion_total_seg"],
+                    }
+                )
+
+                filas_resumen.append(
+                    {
+                        "n_generaciones": n_generaciones,
+                        "metodo": metodo,
+                        "mejor_fitness": resultado["mejor_fitness"],
+                        "generacion_mejor_fitness": int(df_historial.loc[df_historial["fitness_max"].idxmax(), "generacion"]),
+                        "estabilidad_desv_prom": float(df_historial["fitness_prom"].std()),
+                        "tiempo_ejecucion_seg": resultado["tiempo_ejecucion_total_seg"],
+                        "tiempo_total_estimado": resultado["tiempo_total_estimado"],
+                        "backlog": resultado["backlog"],
+                        "desbalance": resultado["desbalance"],
+                    }
+                )
+
+    df_metricas_variantes = pd.concat(filas_metricas, ignore_index=True)
+    df_repetidos = pd.DataFrame(filas_repetidos)
+    df_resumen_variantes = pd.DataFrame(filas_resumen)
+
+    return df_metricas_variantes, df_repetidos, df_resumen_variantes
 
 
 def _imprimir_resumen_global(df_resumen, mejor_global):
@@ -383,6 +523,25 @@ def _imprimir_resumen_global(df_resumen, mejor_global):
     print("\nArchivos exportados:")
     for archivo in ARCHIVOS_EXPORTADOS:
         print(f"- {archivo.relative_to(BASE_DIR)}")
+
+
+def _imprimir_resumen_variantes(df_resumen_variantes, df_repetidos):
+    """Imprime tablas de resumen para 20, 100 y 200 iteraciones."""
+    print("\n" + "=" * 110)
+    print("RESUMEN POR VARIANTE Y METODO")
+    print("=" * 110)
+    print(df_resumen_variantes.sort_values(["n_generaciones", "metodo"]).to_string(index=False))
+
+    print("\n" + "=" * 110)
+    print("TIEMPO PROMEDIO DE EJECUCION POR CONFIGURACION")
+    print("=" * 110)
+    tiempo_prom = (
+        df_repetidos.groupby(["n_generaciones", "metodo"])["tiempo_ejecucion_seg"]
+        .mean()
+        .reset_index()
+        .sort_values(["n_generaciones", "metodo"])
+    )
+    print(tiempo_prom.to_string(index=False))
 
 
 def main():
@@ -410,9 +569,24 @@ def main():
 
     _graficar_metricas(df_metricas)
 
+    df_metricas_variantes, df_repetidos, df_resumen_variantes = ejecutar_bateria_experimentos(alertas)
+    df_metricas_variantes.to_csv(OUTPUTS_DIR / "metricas_variantes_generaciones.csv", index=False)
+    df_repetidos.to_csv(OUTPUTS_DIR / "experimentos_repetidos.csv", index=False)
+    df_resumen_variantes.to_csv(OUTPUTS_DIR / "resumen_variantes_generaciones.csv", index=False)
+    df_resumen_variantes.groupby(["n_generaciones", "metodo"]).agg(
+        mejor_fitness_promedio=("mejor_fitness", "mean"),
+        mejor_fitness_max=("mejor_fitness", "max"),
+        mejor_fitness_min=("mejor_fitness", "min"),
+        tiempo_ejecucion_promedio_seg=("tiempo_ejecucion_seg", "mean"),
+        generacion_mejor_fitness_promedio=("generacion_mejor_fitness", "mean"),
+    ).reset_index().to_csv(OUTPUTS_DIR / "tabla_mins_prom_maxs_por_configuracion.csv", index=False)
+
+    _graficar_por_variantes(df_metricas_variantes)
+
     mejor_global = max(resultados, key=lambda r: r["mejor_fitness"])
 
     _imprimir_resumen_global(df_resumen, mejor_global)
+    _imprimir_resumen_variantes(df_resumen_variantes, df_repetidos)
 
 
 if __name__ == "__main__":
