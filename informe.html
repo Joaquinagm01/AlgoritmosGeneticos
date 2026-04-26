@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe - AG para Scheduling SOC</title>
+  <link rel="stylesheet" href="informe.css" />
+</head>
+<body>
+  <section class="caratula">
+    <div class="caratula-logo-wrap">
+      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="Logo institucional UTN Rosario" />
+    </div>
+    <p class="caratula-kicker">Universidad Tecnologica Nacional - Facultad Regional Rosario</p>
+    <h1 class="caratula-titulo">Trabajo Practico<br />Algoritmos Geneticos Aplicados a Scheduling SOC</h1>
+    <p class="caratula-subtitulo">Optimizacion de Asignacion de Alertas en un Security Operations Center</p>
+    <div class="caratula-datos">
+      <p><strong>Materia:</strong> Inteligencia Artificial</p>
+      <p><strong>Carrera:</strong> Ingenieria</p>
+      <p><strong>Alumno/a:</strong> ....................................................</p>
+      <p><strong>Legajo:</strong> ....................................................</p>
+      <p><strong>Comision:</strong> ....................................................</p>
+      <p><strong>Docente:</strong> ....................................................</p>
+      <p><strong>Fecha:</strong> 26/04/2026</p>
+    </div>
+  </section>
+
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="badge">Trabajo Practico Universitario</p>
+      <h1>Algoritmo Genetico Canonico para<br />Scheduling de Alertas SOC</h1>
+      <p class="subtitle">Optimizacion de asignacion de 500 alertas de ciberseguridad a 10 analistas</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>1. Objetivo</h2>
+      <p>
+        Implementar un Algoritmo Genetico Canonico en Python aplicado a un escenario realista de Security Operations Center (SOC),
+        para optimizar la asignacion de alertas a analistas y mejorar la operacion diaria de ciberseguridad.
+      </p>
+      <p class="formula">Fitness = 1 / (1 + (TiempoTotal + Penalizacion))</p>
+      <p>
+        La funcion de fitness penaliza sobrecarga, espera de alertas criticas, desbalance de carga y backlog operacional.
+      </p>
+    </section>
+
+    <section class="grid-2">
+      <article class="card">
+        <h2>2. Contexto del Problema</h2>
+        <ul>
+          <li>Un SOC recibe cientos de alertas por dia.</li>
+          <li>Se modelan 500 alertas con prioridad, severidad y tiempo estimado de resolucion.</li>
+          <li>Se dispone de 10 analistas para responder incidentes.</li>
+          <li>El objetivo es reducir tiempos, priorizar criticidad y balancear carga.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>3. Parametros del AG</h2>
+        <ul>
+          <li>Probabilidad de Crossover: 0.75</li>
+          <li>Probabilidad de Mutacion: 0.05</li>
+          <li>Poblacion inicial: 10 individuos</li>
+          <li>Numero de generaciones: 20</li>
+          <li>Metodos de seleccion: Ruleta, Torneo y Elitismo</li>
+          <li>Metodo de crossover: 1 punto</li>
+          <li>Metodo de mutacion: Invertida (inversion de segmento)</li>
+          <li>Semilla fija para reproducibilidad: 42</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>4. Representacion Genetica y Modulo de Codigo</h2>
+      <p>
+        Cada cromosoma representa una solucion completa de scheduling. Tiene 500 genes y cada gen contiene el indice del analista
+        asignado a una alerta (valores entre 0 y 9).
+      </p>
+      <p>
+        Ejemplo de estructura de cromosoma: [6, 1, 7, 0, 7, 1, 5, 8, ...]
+      </p>
+      <ul>
+        <li>Indice del gen = alerta.</li>
+        <li>Valor del gen = analista asignado.</li>
+      </ul>
+      <p>
+        Funciones implementadas: generar_alertas(), generar_poblacion(), calcular_fitness(), seleccion_ruleta(),
+        seleccion_torneo(), seleccion_elitismo(), crossover(), mutacion(), evolucionar(), calcular_estadisticas().
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>5. Funcion Fitness y Penalizaciones</h2>
+      <p>
+        El modelo minimiza una funcion objetivo operacional y la transforma en fitness para maximizar durante la evolucion.
+      </p>
+      <ol>
+        <li>TiempoTotal: maximo tiempo acumulado entre analistas.</li>
+        <li>Desbalance: desviacion estandar de carga.</li>
+        <li>Sobrecarga: exceso de carga respecto del 120% de la carga promedio.</li>
+        <li>EsperaCritica: espera media de alertas criticas.</li>
+        <li>Backlog: cantidad de tareas que exceden umbrales tipo SLA por prioridad.</li>
+      </ol>
+      <p>
+        Penalizacion = 2.0*Desbalance + 1.5*Sobrecarga + 1.2*EsperaCritica + 30.0*Backlog
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>6. Resultados Finales por Metodo</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metodo</th>
+              <th>Mejor Fitness</th>
+              <th>Tiempo Total Estimado (min)</th>
+              <th>Backlog</th>
+              <th>Desbalance</th>
+              <th>Tiempo Ejecucion (s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Ruleta</td><td>0.0000486717</td><td>4191</td><td>435</td><td>320.7082</td><td>0.0102</td></tr>
+            <tr><td>Torneo</td><td>0.0000490218</td><td>4211</td><td>434</td><td>275.8959</td><td>0.0113</td></tr>
+            <tr><td>Elitismo</td><td>0.0000494012</td><td>4196</td><td>433</td><td>236.7745</td><td>0.0101</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Segun la corrida analizada, Elitismo obtuvo el mejor fitness global y el menor desbalance, con backlog ligeramente inferior.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>7. Mejor Solucion Global Encontrada</h2>
+      <div class="result-grid">
+        <div>
+          <h3>Metodo ganador</h3>
+          <p>Elitismo</p>
+        </div>
+        <div>
+          <h3>Mejor fitness global</h3>
+          <p>0.0000494012</p>
+        </div>
+        <div>
+          <h3>Tiempo total estimado</h3>
+          <p>4196 minutos</p>
+        </div>
+        <div>
+          <h3>Backlog final</h3>
+          <p>433 alertas fuera de umbral</p>
+        </div>
+      </div>
+      <h3>Carga por analista (minutos)</h3>
+      <p class="mono">[4196, 3348, 3621, 3761, 3875, 3632, 3872, 4095, 4009, 3789]</p>
+      <h3>Distribucion final de alertas por analista</h3>
+      <p class="mono">[51, 40, 49, 55, 47, 46, 57, 55, 50, 50]</p>
+      <h3>Mejor cromosoma (primeros 60 genes)</h3>
+      <p class="mono">[6, 1, 7, 0, 7, 1, 5, 8, 7, 9, 6, 4, 7, 4, 0, 8, 0, 3, 1, 4, 9, 1, 8, 8, 4, 2, 1, 6, 3, 0, 9, 0, 0, 1, 5, 9, 4, 4, 6, 3, 3, 3, 9, 9, 9, 4, 8, 5, 3, 2, 0, 8, 9, 5, 3, 2, 6, 3, 8, 9]</p>
+    </section>
+
+    <section class="card">
+      <h2>8. Graficos de Evolucion y Comparacion</h2>
+      <p>
+        Se incluyen los cinco graficos obligatorios del trabajo practico: maximo, promedio, minimo, desviacion estandar y comparacion de metodos.
+      </p>
+      <figure>
+        <img src="maximos_por_generacion.png" alt="Fitness maximo por generacion" />
+        <figcaption>Figura 1. Fitness maximo por generacion (Ruleta, Torneo, Elitismo).</figcaption>
+      </figure>
+      <figure>
+        <img src="promedios_por_generacion.png" alt="Fitness promedio por generacion" />
+        <figcaption>Figura 2. Fitness promedio por generacion.</figcaption>
+      </figure>
+      <figure>
+        <img src="minimos_por_generacion.png" alt="Fitness minimo por generacion" />
+        <figcaption>Figura 3. Fitness minimo por generacion.</figcaption>
+      </figure>
+      <figure>
+        <img src="desviacion_estandar_por_generacion.png" alt="Desviacion estandar por generacion" />
+        <figcaption>Figura 4. Desviacion estandar por generacion.</figcaption>
+      </figure>
+      <figure>
+        <img src="comparacion_metodos.png" alt="Comparacion entre ruleta torneo y elitismo" />
+        <figcaption>Figura 5. Comparacion global entre estrategias de seleccion.</figcaption>
+      </figure>
+    </section>
+
+    <section class="card">
+      <h2>9. Analisis Academico</h2>
+      <ul>
+        <li>Ruleta mantiene diversidad, pero converge de forma menos estable.</li>
+        <li>Torneo acelera convergencia y mejora el fitness de manera consistente.</li>
+        <li>Elitismo preserva soluciones fuertes y reduce el desbalance global de carga.</li>
+        <li>La desviacion estandar de fitness permite observar convergencia poblacional.</li>
+        <li>El backlog sigue siendo alto, lo que sugiere un escenario SOC exigente y realista.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>10. Conclusiones</h2>
+      <p>
+        La implementacion cumple los requisitos del trabajo practico en terminos de modelado de alertas SOC, representacion genetica,
+        operadores evolutivos y comparacion de estrategias de seleccion. El enfoque permite automatizar decisiones de scheduling con criterio
+        multiobjetivo y ofrece evidencia cuantitativa mediante tablas y graficos para analisis academico.
+      </p>
+      <p>
+        Como extension futura, se recomienda incorporar habilidades diferenciadas por analista, ventanas horarias y tipos de alerta por dominio
+        (red, endpoint, identidad) para mejorar el realismo operativo.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>11. Archivos Generados</h2>
+      <ul>
+        <li>metricas_generacionales_soc.csv</li>
+        <li>resumen_resultados_soc.csv</li>
+        <li>maximos_por_generacion.png</li>
+        <li>promedios_por_generacion.png</li>
+        <li>minimos_por_generacion.png</li>
+        <li>desviacion_estandar_por_generacion.png</li>
+        <li>comparacion_metodos.png</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Informe academico generado para TP de Algoritmos Geneticos aplicados a Scheduling en Ciberseguridad SOC.</p>
+  </footer>
+</body>
+</html>
