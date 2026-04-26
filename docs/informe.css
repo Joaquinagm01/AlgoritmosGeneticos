@@ -23,6 +23,10 @@ body {
   line-height: 1.6;
 }
 
+main {
+  counter-reset: figcaption tablecaption;
+}
+
 .caratula {
   width: min(1000px, calc(100% - 2rem));
   margin: 1.2rem auto 1rem;
@@ -80,6 +84,32 @@ body {
 
 .caratula-datos p {
   margin: 0.26rem 0;
+}
+
+.indice {
+  counter-reset: section;
+}
+
+.indice h2 {
+  margin-bottom: 0.8rem;
+}
+
+.indice ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.indice li {
+  margin: 0.3rem 0;
+}
+
+.indice a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.indice a:hover {
+  text-decoration: underline;
 }
 
 .hero {
@@ -193,6 +223,19 @@ h1 {
   overflow-x: auto;
 }
 
+.table-block {
+  margin: 0.8rem 0 1rem;
+  counter-increment: tablecaption;
+}
+
+.table-block::before {
+  content: "Tabla " counter(tablecaption) ". " attr(data-title);
+  display: block;
+  font-weight: 700;
+  color: #2f2b24;
+  margin-bottom: 0.45rem;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -224,6 +267,7 @@ tbody tr:nth-child(even) {
 
 figure {
   margin: 0;
+  counter-increment: figcaption;
 }
 
 img {
@@ -239,6 +283,12 @@ figcaption {
   text-align: center;
   color: var(--muted);
   margin-top: 0.6rem;
+}
+
+figcaption::before {
+  content: "Figura " counter(figcaption) ". ";
+  font-weight: 700;
+  color: #2f2b24;
 }
 
 .footer {
@@ -279,8 +329,14 @@ figcaption {
 }
 
 @media print {
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
+
   body {
     background: #ffffff;
+    color: #000;
   }
 
   .caratula {
@@ -293,6 +349,10 @@ figcaption {
     page-break-after: always;
   }
 
+  .indice {
+    page-break-after: always;
+  }
+
   .hero {
     min-height: auto;
     padding: 1rem;
@@ -301,5 +361,17 @@ figcaption {
   .card {
     box-shadow: none;
     break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .table-block,
+  figure {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .container {
+    width: 100%;
+    margin: 0;
   }
 }

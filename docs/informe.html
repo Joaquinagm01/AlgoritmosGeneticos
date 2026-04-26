@@ -12,15 +12,18 @@
       <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="Logo institucional UTN Rosario" />
     </div>
     <p class="caratula-kicker">Universidad Tecnologica Nacional - Facultad Regional Rosario</p>
-    <h1 class="caratula-titulo">Trabajo Practico<br />Algoritmos Geneticos Aplicados a Scheduling SOC</h1>
+    <h1 class="caratula-titulo">Trabajo Practico N° 1<br />Algoritmos Geneticos Aplicados a Scheduling SOC</h1>
     <p class="caratula-subtitulo">Optimizacion de Asignacion de Alertas en un Security Operations Center</p>
     <div class="caratula-datos">
       <p><strong>Materia:</strong> Inteligencia Artificial</p>
+      <p><strong>Trabajo:</strong> Enunciado 1er Trabajo Practico</p>
       <p><strong>Carrera:</strong> Ingenieria</p>
+      <p><strong>Facultad:</strong> UTN Facultad Regional Rosario</p>
+      <p><strong>Tema:</strong> Algoritmos Geneticos y Scheduling</p>
+      <p><strong>Docente:</strong> ....................................................</p>
       <p><strong>Alumno/a:</strong> ....................................................</p>
       <p><strong>Legajo:</strong> ....................................................</p>
       <p><strong>Comision:</strong> ....................................................</p>
-      <p><strong>Docente:</strong> ....................................................</p>
       <p><strong>Fecha:</strong> 26/04/2026</p>
     </div>
   </section>
@@ -34,8 +37,24 @@
     </div>
   </header>
 
+  <nav class="indice card" aria-label="Indice">
+    <h2>Indice</h2>
+    <ol>
+      <li><a href="#introduccion">Introduccion teorica (AG canonico, elitismo)</a></li>
+      <li><a href="#problema">Descripcion del problema y funcion objetivo</a></li>
+      <li><a href="#parametros">Parametros fijos y variables</a></li>
+      <li><a href="#opcion-a">Codificacion y Resultados para Opcion A (ruleta)</a></li>
+      <li><a href="#opcion-b">Codificacion y Resultados para Opcion B (torneo)</a></li>
+      <li><a href="#opcion-c">Codificacion y Resultados para Opcion C (elitismo)</a></li>
+      <li><a href="#experimentos">Experimentos adicionales (cambio de parametros)</a></li>
+      <li><a href="#graficas">Graficas comparativas (maximos, minimos, promedios)</a></li>
+      <li><a href="#estabilidad">Tabla resumen de estabilidad y tiempos</a></li>
+      <li><a href="#conclusiones">Conclusiones y recomendacion final</a></li>
+    </ol>
+  </nav>
+
   <main class="container">
-    <section class="card">
+    <section class="card" id="introduccion">
       <h2>1. Introduccion teorica (AG canonico, elitismo)</h2>
       <p>
         El Algoritmo Genetico (AG) canonico es una metaheuristica inspirada en evolucion biologica. Trabaja con una poblacion
@@ -48,7 +67,7 @@
       <p class="formula">Fitness = 1 / (1 + (TiempoTotal + Penalizacion))</p>
     </section>
 
-    <section class="card">
+    <section class="card" id="problema">
       <h2>2. Descripcion del problema y funcion objetivo</h2>
       <p>
         Un SOC recibe 500 alertas de ciberseguridad y dispone de 10 analistas. Cada alerta se caracteriza por prioridad (Baja, Media,
@@ -69,8 +88,9 @@
       </p>
     </section>
 
-    <section class="card">
+    <section class="card" id="parametros">
       <h2>3. Parametros fijos y variables (tabla)</h2>
+      <div class="table-block" data-title="Parametros fijos y variables del algoritmo">
       <div class="table-wrap">
         <table>
           <thead>
@@ -94,13 +114,15 @@
           </tbody>
         </table>
       </div>
+      </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="opcion-a">
       <h2>4. Codificacion y Resultados para Opcion A (ruleta)</h2>
       <p>
         Codificacion: cromosoma de 500 genes. Cada gen indica el analista asignado a una alerta (valores 0..9).
       </p>
+      <div class="table-block" data-title="Resultados de la Opcion A con seleccion por ruleta">
       <div class="table-wrap">
         <table>
           <thead>
@@ -118,13 +140,15 @@
           </tbody>
         </table>
       </div>
+      </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="opcion-b">
       <h2>5. Codificacion y Resultados para Opcion B (torneo)</h2>
       <p>
         Codificacion: mismo esquema de asignacion alerta-analista. Torneo usa submuestras y selecciona el mejor individuo local.
       </p>
+      <div class="table-block" data-title="Resultados de la Opcion B con seleccion por torneo">
       <div class="table-wrap">
         <table>
           <thead>
@@ -142,13 +166,15 @@
           </tbody>
         </table>
       </div>
+      </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="opcion-c">
       <h2>6. Codificacion y Resultados para Opcion C (elitismo)</h2>
       <p>
         Codificacion: igual representacion de cromosoma. En elitismo, los mejores individuos pasan a la siguiente generacion sin modificacion.
       </p>
+      <div class="table-block" data-title="Resultados de la Opcion C con elitismo">
       <div class="table-wrap">
         <table>
           <thead>
@@ -166,6 +192,7 @@
           </tbody>
         </table>
       </div>
+      </div>
       <h3>Mejor solucion global (base)</h3>
       <ul>
         <li>Metodo ganador: Elitismo</li>
@@ -174,11 +201,12 @@
       </ul>
     </section>
 
-    <section class="card">
+    <section class="card" id="experimentos">
       <h2>7. Experimentos adicionales (cambio de parametros)</h2>
       <p>
         Se realizaron dos experimentos extra sobre la base original: aumento de mutacion a 0.10 y aumento de poblacion a 20.
       </p>
+      <div class="table-block" data-title="Comparacion de experimentos adicionales y cambios de parametros">
       <div class="table-wrap">
         <table>
           <thead>
@@ -206,7 +234,9 @@
           </tbody>
         </table>
       </div>
+      </div>
       <h3>Resumen de minimos, promedios y maximos por configuracion</h3>
+      <div class="table-block" data-title="Resumen de minimos, promedios y maximos por configuracion">
       <div class="table-wrap">
         <table>
           <thead>
@@ -233,9 +263,10 @@
           </tbody>
         </table>
       </div>
+      </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="graficas">
       <h2>8. Graficas comparativas (maximos, minimos, promedios)</h2>
       <p>
         Las siguientes curvas permiten comparar desempeno y convergencia entre ruleta, torneo y elitismo.
@@ -274,8 +305,9 @@
       </figure>
     </section>
 
-    <section class="card">
+    <section class="card" id="estabilidad">
       <h2>9. Tabla resumen de estabilidad y tiempos</h2>
+      <div class="table-block" data-title="Resumen de estabilidad y tiempos por metodo">
       <div class="table-wrap">
         <table>
           <thead>
@@ -294,9 +326,10 @@
           </tbody>
         </table>
       </div>
+      </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="conclusiones">
       <h2>10. Conclusiones y recomendacion final</h2>
       <p>
         El AG canonico aplicado a scheduling SOC cumplio los objetivos de modelado y evaluacion comparativa. En la configuracion base,
@@ -307,28 +340,6 @@
         de poblacion y pesos de penalizacion para reducir backlog en contextos de alta demanda.
       </p>
     </section>
-
-    <section class="card">
-      <h2>11. Archivos Generados</h2>
-      <ul>
-        <li>outputs/metricas_generacionales_soc.csv</li>
-        <li>outputs/resumen_resultados_soc.csv</li>
-        <li>outputs/metricas_variantes_generaciones.csv</li>
-        <li>outputs/experimentos_adicionales.csv</li>
-        <li>outputs/resumen_variantes_generaciones.csv</li>
-        <li>outputs/tabla_estabilidad_tiempos.csv</li>
-        <li>outputs/tabla_mins_prom_maxs_por_configuracion.csv</li>
-        <li>outputs/figures/maximos_por_generacion.png</li>
-        <li>outputs/figures/promedios_por_generacion.png</li>
-        <li>outputs/figures/minimos_por_generacion.png</li>
-        <li>outputs/figures/desviacion_estandar_por_generacion.png</li>
-        <li>outputs/figures/comparacion_metodos.png</li>
-        <li>outputs/figures/comparativa_20_iteraciones.png</li>
-        <li>outputs/figures/comparativa_100_iteraciones.png</li>
-        <li>outputs/figures/comparativa_200_iteraciones.png</li>
-      </ul>
-    </section>
-  </main>
 
   <footer class="footer">
     <p>Informe academico generado para TP de Algoritmos Geneticos aplicados a Scheduling en Ciberseguridad SOC.</p>
