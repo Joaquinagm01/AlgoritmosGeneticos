@@ -1,48 +1,68 @@
+"""
+Trabajo Práctico N° 1 - Algoritmo Genético Canónico
+Materia: Inteligencia Artificial
+
+Objetivo: Maximizar f(x) = (x / coef)^2 en el dominio [0, 2^30 - 1]
+donde coef = 2^30 - 1
+
+Codificación: Binaria de 30 bits
+"""
+
 import random
 import statistics
 import time
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
 # =========================
-# Parámetros obligatorios
+# Parámetros del Algoritmo
 # =========================
-N_ANALISTAS = 10
-N_ALERTAS = 500
 TAM_POBLACION = 10
 N_GENERACIONES = 20
 P_CROSSOVER = 0.75
 P_MUTACION = 0.05
+N_BITS = 30
+COEF = (2 ** N_BITS) - 1  # 2^30 - 1 = 1,073,741,823
 TORNEO_K = 3
 ELITE_SIZE = 2
 SEED = 42
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-OUTPUTS_DIR = BASE_DIR / "outputs"
-FIGURES_DIR = OUTPUTS_DIR / "figures"
-METRICS_CSV = OUTPUTS_DIR / "metricas_generacionales_soc.csv"
-SUMMARY_CSV = OUTPUTS_DIR / "resumen_resultados_soc.csv"
+# Variantes de corridas
+VARIANTES_GENERACIONES = [20, 100, 200]
+REPETICIONES_POR_CONFIG = 3
 
-PRIORIDADES = ["Baja", "Media", "Alta", "Critica"]
-PROB_PRIORIDADES = [0.35, 0.30, 0.23, 0.12]
-SLA_MINUTOS = {
-    "Critica": 120,
-    "Alta": 240,
-    "Media": 480,
-    "Baja": 720,
-}
 METODOS = ["ruleta", "torneo", "elitismo"]
 
-PESO_DESBALANCE = 2.0
-PESO_SOBRECARGA = 1.5
-PESO_ESPERA_CRITICA = 1.2
-PESO_BACKLOG = 30.0
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUTS_DIR = BASE_DIR / "outputs"
+FIGURES_DIR = OUTPUTS_DIR / "figures"
+
+# Archivos de salida
+METRICS_CSV = OUTPUTS_DIR / "metricas_generacionales.csv"
+SUMMARY_CSV = OUTPUTS_DIR / "resumen_resultados.csv"
+
+ARCHIVOS_EXPORTADOS = [
+    METRICS_CSV,
+    SUMMARY_CSV,
+    OUTPUTS_DIR / "resumen_variantes_generaciones.csv",
+    OUTPUTS_DIR / "experimentos_repetidos.csv",
+    OUTPUTS_DIR / "tabla_mins_prom_maxs_por_configuracion.csv",
+    OUTPUTS_DIR / "metricas_variantes_generaciones.csv",
+    OUTPUTS_DIR / "tabla_estabilidad_tiempos.csv",
+    OUTPUTS_DIR / "experimentos_adicionales.csv",
+    FIGURES_DIR / "maximos_por_generacion.png",
+    FIGURES_DIR / "promedios_por_generacion.png",
+    FIGURES_DIR / "minimos_por_generacion.png",
+    FIGURES_DIR / "desviacion_estandar_por_generacion.png",
+    FIGURES_DIR / "comparacion_metodos.png",
+    FIGURES_DIR / "comparativa_20_iteraciones.png",
+    FIGURES_DIR / "comparativa_100_iteraciones.png",
+    FIGURES_DIR / "comparativa_200_iteraciones.png",
+]
 
 METRICAS_GRAFICOS = [
     ("fitness_max", FIGURES_DIR / "maximos_por_generacion.png", "Fitness Máximo por Generación"),
@@ -51,138 +71,63 @@ METRICAS_GRAFICOS = [
     ("desv_std", FIGURES_DIR / "desviacion_estandar_por_generacion.png", "Desviación Estándar por Generación"),
 ]
 
-ARCHIVOS_EXPORTADOS = [
-    METRICS_CSV,
-    SUMMARY_CSV,
-    FIGURES_DIR / "maximos_por_generacion.png",
-    FIGURES_DIR / "promedios_por_generacion.png",
-    FIGURES_DIR / "minimos_por_generacion.png",
-    FIGURES_DIR / "desviacion_estandar_por_generacion.png",
-    FIGURES_DIR / "comparacion_metodos.png",
-]
-
 Chromosome = List[int]
 Population = List[Chromosome]
 
 
-@dataclass
-class Alerta:
-    """Representa una alerta SOC con atributos de scheduling."""
-
-    prioridad: str
-    tiempo_estimado: int
-    severidad: int
+def funcion_objetivo(x: int) -> float:
+    """f(x) = (x / coef)^2"""
+    return (x / COEF) ** 2
 
 
-def generar_alertas(n_alertas=N_ALERTAS):
-    """Genera alertas aleatorias con prioridad, tiempo estimado y severidad."""
-    alertas: List[Alerta] = []
-    for _ in range(n_alertas):
-        prioridad = random.choices(PRIORIDADES, weights=PROB_PRIORIDADES, k=1)[0]
-        if prioridad == "Baja":
-            tiempo = random.randint(15, 60)
-            severidad = random.randint(1, 3)
-        elif prioridad == "Media":
-            tiempo = random.randint(30, 90)
-            severidad = random.randint(4, 6)
-        elif prioridad == "Alta":
-            tiempo = random.randint(60, 180)
-            severidad = random.randint(7, 8)
-        else:
-            tiempo = random.randint(90, 240)
-            severidad = random.randint(9, 10)
-
-        alertas.append(Alerta(prioridad=prioridad, tiempo_estimado=tiempo, severidad=severidad))
-
-    return alertas
+def binario_a_entero(cromosoma: Chromosome) -> int:
+    """Convierte un cromosoma binario a entero."""
+    valor = 0
+    for bit in cromosoma:
+        valor = (valor << 1) | bit
+    return valor
 
 
-def generar_poblacion(tam_poblacion=TAM_POBLACION, n_alertas=N_ALERTAS, n_analistas=N_ANALISTAS):
-    """Crea una población inicial de cromosomas de asignación alerta-analista."""
-    return [[random.randint(0, n_analistas - 1) for _ in range(n_alertas)] for _ in range(tam_poblacion)]
+def generar_poblacion(tam_poblacion: int = TAM_POBLACION, n_bits: int = N_BITS) -> Population:
+    """Genera población inicial aleatoria de cromosomas binarios."""
+    return [[random.randint(0, 1) for _ in range(n_bits)] for _ in range(tam_poblacion)]
 
 
-def _evaluar_cromosoma(cromosoma: Chromosome, alertas: List[Alerta], n_analistas=N_ANALISTAS) -> Dict[str, float | int | List[int]]:
-    """Evalúa una solución y devuelve métricas de scheduling para SOC."""
-    colas = [[] for _ in range(n_analistas)]
-    for idx_alerta, idx_analista in enumerate(cromosoma):
-        colas[idx_analista].append(idx_alerta)
-
-    cargas: List[int] = []
-    tiempos_criticos: List[int] = []
-    backlog = 0
-
-    for cola in colas:
-        acumulado = 0
-        for idx_alerta in cola:
-            alerta = alertas[idx_alerta]
-            acumulado += alerta.tiempo_estimado
-            if alerta.prioridad == "Critica":
-                tiempos_criticos.append(acumulado)
-            if acumulado > SLA_MINUTOS[alerta.prioridad]:
-                backlog += 1
-        cargas.append(acumulado)
-
-    tiempo_total = max(cargas) if cargas else 0
-    carga_promedio = statistics.fmean(cargas) if cargas else 0
-    desbalance = statistics.pstdev(cargas) if len(cargas) > 1 else 0
-    sobrecarga = sum(max(0.0, carga - (1.20 * carga_promedio)) for carga in cargas)
-    espera_critica = statistics.fmean(tiempos_criticos) if tiempos_criticos else 0
-
-    penalizacion = (
-        PESO_DESBALANCE * desbalance
-        + PESO_SOBRECARGA * sobrecarga
-        + PESO_ESPERA_CRITICA * espera_critica
-        + PESO_BACKLOG * backlog
-    )
-
-    objetivo = tiempo_total + penalizacion
-    fitness = 1.0 / (1.0 + objetivo)
-
-    return {
-        "fitness": fitness,
-        "tiempo_total": tiempo_total,
-        "cargas": cargas,
-        "backlog": backlog,
-        "desbalance": desbalance,
-    }
+def calcular_fitness_poblacion(poblacion: Population) -> List[float]:
+    """Calcula el fitness de cada individuo en la población."""
+    return [funcion_objetivo(binario_a_entero(ind)) for ind in poblacion]
 
 
-def calcular_fitness(cromosoma, alertas):
-    """Calcula fitness de un cromosoma según tiempo total y penalizaciones SOC."""
-    return _evaluar_cromosoma(cromosoma, alertas)["fitness"]
-
-
-def seleccion_ruleta(poblacion, fitnesses):
-    """Selecciona un individuo con probabilidad proporcional a su fitness."""
+def seleccion_ruleta(poblacion: Population, fitnesses: List[float]) -> Chromosome:
+    """Selección proporcional (ruleta)."""
     total = sum(fitnesses)
     if total <= 0:
-        return random.choice(poblacion)
+        return random.choice(poblacion)[:]
 
     r = random.uniform(0, total)
     acumulado = 0.0
     for individuo, fit in zip(poblacion, fitnesses):
         acumulado += fit
         if acumulado >= r:
-            return individuo
-    return poblacion[-1]
+            return individuo[:]
+    return poblacion[-1][:]
 
 
-def seleccion_torneo(poblacion, fitnesses, k=TORNEO_K):
-    """Selecciona un individuo mediante torneo de tamaño k."""
+def seleccion_torneo(poblacion: Population, fitnesses: List[float], k: int = TORNEO_K) -> Chromosome:
+    """Selección por torneo de tamaño k."""
     indices = random.sample(range(len(poblacion)), k=min(k, len(poblacion)))
     mejor_idx = max(indices, key=lambda i: fitnesses[i])
-    return poblacion[mejor_idx]
+    return poblacion[mejor_idx][:]
 
 
-def seleccion_elitismo(poblacion, fitnesses, elite_size=ELITE_SIZE):
-    """Retorna los mejores individuos para preservarlos en la siguiente generación."""
+def seleccion_elitismo(poblacion: Population, fitnesses: List[float], elite_size: int = ELITE_SIZE) -> List[Chromosome]:
+    """Retorna los mejores individuos (élite) para preservarlos."""
     orden = sorted(range(len(poblacion)), key=lambda i: fitnesses[i], reverse=True)
     return [poblacion[i][:] for i in orden[:elite_size]]
 
 
-def crossover(padre1, padre2, p_crossover=P_CROSSOVER):
-    """Aplica crossover de 1 punto para cromosomas de asignación."""
+def crossover(padre1: Chromosome, padre2: Chromosome, p_crossover: float = P_CROSSOVER) -> Tuple[Chromosome, Chromosome]:
+    """Crossover de 1 punto."""
     if random.random() < p_crossover:
         punto = random.randint(1, len(padre1) - 1)
         hijo1 = padre1[:punto] + padre2[punto:]
@@ -191,148 +136,260 @@ def crossover(padre1, padre2, p_crossover=P_CROSSOVER):
     return padre1[:], padre2[:]
 
 
-def mutacion(cromosoma, p_mutacion=P_MUTACION):
-    """Aplica mutación invertida invirtiendo un segmento aleatorio del cromosoma."""
+def mutacion(cromosoma: Chromosome, p_mutacion: float = P_MUTACION) -> Chromosome:
+    """Mutación invertida: invierte un segmento aleatorio [i, j]."""
     hijo = cromosoma[:]
     if random.random() < p_mutacion:
         i, j = sorted(random.sample(range(len(hijo)), 2))
-        hijo[i : j + 1] = list(reversed(hijo[i : j + 1]))
+        hijo[i:j + 1] = list(reversed(hijo[i:j + 1]))
     return hijo
 
 
-def calcular_estadisticas(fitnesses, tiempo_gen):
-    """Resume métricas de fitness de una generación."""
+def calcular_estadisticas(fitnesses: List[float], tiempo_gen: float) -> Dict:
+    """Calcula estadísticas de una generación."""
     return {
         "fitness_max": max(fitnesses),
         "fitness_min": min(fitnesses),
         "fitness_prom": statistics.fmean(fitnesses),
-        "desv_std": statistics.pstdev(fitnesses),
+        "desv_std": statistics.pstdev(fitnesses) if len(fitnesses) > 1 else 0.0,
         "tiempo_gen_seg": tiempo_gen,
     }
 
 
-def _seleccionar_padre(metodo, poblacion, fitnesses):
+def _seleccionar_padre(metodo: str, poblacion: Population, fitnesses: List[float]) -> Chromosome:
     """Selecciona un padre según el método configurado."""
-    if metodo == "ruleta" or metodo == "elitismo":
+    if metodo in ("ruleta", "elitismo"):
         return seleccion_ruleta(poblacion, fitnesses)
     if metodo == "torneo":
         return seleccion_torneo(poblacion, fitnesses)
-    raise ValueError(f"Método de selección no soportado: {metodo}")
+    raise ValueError(f"Método no soportado: {metodo}")
 
 
-def _imprimir_encabezado_metodo(metodo):
-    """Imprime cabecera de métricas por método de selección."""
-    print("=" * 110)
+def _imprimir_encabezado_metodo(metodo: str):
+    """Imprime encabezado de tabla por método."""
+    print("=" * 120)
     print(f"METODO: {metodo.upper()}")
-    print("=" * 110)
+    print("=" * 120)
     print(
-        f"{'Gen':>3} | {'Fitness Máx':>12} | {'Fitness Mín':>12} | {'Fitness Prom':>12} | {'Desv. Std':>12} | {'Tiempo Gen (s)':>13}"
+        f"{'Gen':>4} | {'Fitness Máx':>14} | {'Fitness Mín':>14} | {'Fitness Prom':>14} | "
+        f"{'Desv. Std':>14} | {'Tiempo Gen (s)':>14} | {'Mejor x':>12}"
     )
-    print("-" * 110)
+    print("-" * 120)
 
 
-def _imprimir_fila_generacion(gen, stats):
-    """Imprime una fila tabulada de métricas por generación."""
+def _imprimir_fila_generacion(gen: int, stats: Dict, mejor_x: int):
+    """Imprime fila de métricas por generación."""
     print(
-        f"{gen:>3} | {stats['fitness_max']:>12.8f} | {stats['fitness_min']:>12.8f} | "
-        f"{stats['fitness_prom']:>12.8f} | {stats['desv_std']:>12.8f} | {stats['tiempo_gen_seg']:>13.6f}"
+        f"{gen:>4} | {stats['fitness_max']:>14.10f} | {stats['fitness_min']:>14.10f} | "
+        f"{stats['fitness_prom']:>14.10f} | {stats['desv_std']:>14.10f} | "
+        f"{stats['tiempo_gen_seg']:>14.8f} | {mejor_x:>12}"
     )
 
 
-def _imprimir_resultado_metodo(resultado_final):
-    """Imprime el resumen final para un método de selección."""
-    print("-" * 110)
+def _imprimir_resultado_metodo(resultado: Dict):
+    """Imprime resumen final del método."""
+    print("-" * 120)
     print("RESULTADO FINAL DEL METODO")
-    print(f"Mejor fitness global         : {resultado_final['mejor_fitness']:.10f}")
-    print(f"Tiempo total estimado (min)  : {resultado_final['tiempo_total_estimado']}")
-    print(f"Backlog estimado             : {resultado_final['backlog']}")
-    print(f"Desbalance de carga          : {resultado_final['desbalance']:.4f}")
-    print(f"Tiempo ejecución método (s)  : {resultado_final['tiempo_ejecucion_total_seg']:.4f}")
-    print("=" * 110)
+    print(f"Mejor fitness global         : {resultado['mejor_fitness']:.12f}")
+    print(f"Mejor valor de x             : {resultado['mejor_x']}")
+    print(f"Cromosoma del mejor          : {''.join(map(str, resultado['mejor_cromosoma']))}")
+    print(f"Valor máximo de la población : {resultado['fitness_max_poblacion']:.12f}")
+    print(f"Valor mínimo de la población : {resultado['fitness_min_poblacion']:.12f}")
+    print(f"Valor promedio de la población: {resultado['fitness_prom_poblacion']:.12f}")
+    print(f"Desv. std última generación  : {resultado['desv_std_final']:.12f}")
+    print(f"Tiempo ejecución método (s)  : {resultado['tiempo_ejecucion_total_seg']:.6f}")
+    print("=" * 120)
 
 
-def evolucionar(alertas, metodo="ruleta"):
+def evolucionar(metodo: str = "ruleta", n_generaciones: int = N_GENERACIONES,
+                tam_poblacion: int = TAM_POBLACION, p_crossover: float = P_CROSSOVER,
+                p_mutacion: float = P_MUTACION, verbose: bool = True) -> Tuple[pd.DataFrame, Dict]:
     """Evoluciona una población usando el método de selección indicado."""
-    poblacion = generar_poblacion()
-    historial: List[Dict[str, float | int | str]] = []
+    poblacion = generar_poblacion(tam_poblacion)
+    historial: List[Dict] = []
 
-    mejor_global = None
-    mejor_eval = None
+    mejor_global_cromosoma = None
+    mejor_global_fitness = -1.0
+    mejor_global_x = -1
 
     inicio_total = time.time()
 
-    _imprimir_encabezado_metodo(metodo)
+    if verbose:
+        _imprimir_encabezado_metodo(metodo)
 
-    for gen in range(1, N_GENERACIONES + 1):
+    for gen in range(1, n_generaciones + 1):
         inicio_gen = time.time()
 
-        evaluaciones = [_evaluar_cromosoma(ind, alertas) for ind in poblacion]
-        fitnesses = [ev["fitness"] for ev in evaluaciones]
+        fitnesses = calcular_fitness_poblacion(poblacion)
 
+        # Actualizar mejor global
         idx_mejor = int(np.argmax(fitnesses))
-        if mejor_eval is None or fitnesses[idx_mejor] > mejor_eval["fitness"]:
-            mejor_global = poblacion[idx_mejor][:]
-            mejor_eval = evaluaciones[idx_mejor]
+        if fitnesses[idx_mejor] > mejor_global_fitness:
+            mejor_global_fitness = fitnesses[idx_mejor]
+            mejor_global_cromosoma = poblacion[idx_mejor][:]
+            mejor_global_x = binario_a_entero(mejor_global_cromosoma)
 
+        # Crear nueva población
         nueva_poblacion = []
         if metodo == "elitismo":
             nueva_poblacion.extend(seleccion_elitismo(poblacion, fitnesses, elite_size=ELITE_SIZE))
 
-        while len(nueva_poblacion) < TAM_POBLACION:
+        while len(nueva_poblacion) < tam_poblacion:
             padre1 = _seleccionar_padre(metodo, poblacion, fitnesses)
             padre2 = _seleccionar_padre(metodo, poblacion, fitnesses)
-            hijo1, hijo2 = crossover(padre1, padre2)
-            hijo1 = mutacion(hijo1)
-            hijo2 = mutacion(hijo2)
-
+            hijo1, hijo2 = crossover(padre1, padre2, p_crossover)
+            hijo1 = mutacion(hijo1, p_mutacion)
+            hijo2 = mutacion(hijo2, p_mutacion)
             nueva_poblacion.append(hijo1)
-            if len(nueva_poblacion) < TAM_POBLACION:
+            if len(nueva_poblacion) < tam_poblacion:
                 nueva_poblacion.append(hijo2)
 
-        poblacion = nueva_poblacion[:TAM_POBLACION]
+        poblacion = nueva_poblacion[:tam_poblacion]
         tiempo_gen = time.time() - inicio_gen
         stats = calcular_estadisticas(fitnesses, tiempo_gen)
         stats["generacion"] = gen
         stats["metodo"] = metodo
+        stats["n_generaciones"] = n_generaciones
+        stats["tam_poblacion"] = tam_poblacion
+        stats["mejor_x"] = mejor_global_x
         historial.append(stats)
 
-        _imprimir_fila_generacion(gen, stats)
+        if verbose:
+            _imprimir_fila_generacion(gen, stats, mejor_global_x)
 
     tiempo_total = time.time() - inicio_total
 
-    asignaciones = np.bincount(mejor_global, minlength=N_ANALISTAS)
-    resultado_final = {
+    # Estadísticas de la última generación
+    fitnesses_final = calcular_fitness_poblacion(poblacion)
+
+    resultado = {
         "metodo": metodo,
-        "mejor_cromosoma": mejor_global,
-        "mejor_fitness": mejor_eval["fitness"],
-        "tiempo_total_estimado": mejor_eval["tiempo_total"],
-        "carga_por_analista": mejor_eval["cargas"],
-        "distribucion_alertas": asignaciones.tolist(),
-        "backlog": mejor_eval["backlog"],
-        "desbalance": mejor_eval["desbalance"],
+        "n_generaciones": n_generaciones,
+        "tam_poblacion": tam_poblacion,
+        "p_crossover": p_crossover,
+        "p_mutacion": p_mutacion,
+        "mejor_cromosoma": mejor_global_cromosoma,
+        "mejor_fitness": mejor_global_fitness,
+        "mejor_x": mejor_global_x,
+        "fitness_max_poblacion": max(fitnesses_final),
+        "fitness_min_poblacion": min(fitnesses_final),
+        "fitness_prom_poblacion": statistics.fmean(fitnesses_final),
+        "desv_std_final": statistics.pstdev(fitnesses_final) if len(fitnesses_final) > 1 else 0.0,
         "tiempo_ejecucion_total_seg": tiempo_total,
     }
 
-    _imprimir_resultado_metodo(resultado_final)
+    if verbose:
+        _imprimir_resultado_metodo(resultado)
 
-    return pd.DataFrame(historial), resultado_final
+    return pd.DataFrame(historial), resultado
 
 
-def _graficar_metricas(df_metricas):
-    """Genera gráficos obligatorios de métricas y comparación de métodos."""
+def ejecutar_bateria_experimentos() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Ejecuta batería de 20, 100 y 200 generaciones por cada método."""
+    filas_metricas = []
+    filas_resumen = []
+    filas_repetidos = []
+
+    for n_generaciones in VARIANTES_GENERACIONES:
+        for metodo in METODOS:
+            for repeticion in range(1, REPETICIONES_POR_CONFIG + 1):
+                random.seed(SEED + n_generaciones + repeticion)
+                np.random.seed(SEED + n_generaciones + repeticion)
+
+                df_historial, resultado = evolucionar(
+                    metodo=metodo,
+                    n_generaciones=n_generaciones,
+                    tam_poblacion=TAM_POBLACION,
+                    verbose=False,
+                )
+
+                df_historial["repeticion"] = repeticion
+                filas_metricas.append(df_historial)
+
+                # Encontrar generación donde se alcanzó el mejor fitness
+                gen_mejor = int(df_historial.loc[df_historial["fitness_max"].idxmax(), "generacion"])
+
+                filas_repetidos.append({
+                    "n_generaciones": n_generaciones,
+                    "metodo": metodo,
+                    "repeticion": repeticion,
+                    "mejor_fitness": resultado["mejor_fitness"],
+                    "generacion_mejor_fitness": gen_mejor,
+                    "mejor_x": resultado["mejor_x"],
+                    "tiempo_ejecucion_seg": resultado["tiempo_ejecucion_total_seg"],
+                })
+
+                filas_resumen.append({
+                    "n_generaciones": n_generaciones,
+                    "metodo": metodo,
+                    "repeticion": repeticion,
+                    "mejor_fitness": resultado["mejor_fitness"],
+                    "generacion_mejor_fitness": gen_mejor,
+                    "mejor_x": resultado["mejor_x"],
+                    "estabilidad_desv_prom": float(df_historial["fitness_prom"].std()),
+                    "tiempo_ejecucion_seg": resultado["tiempo_ejecucion_total_seg"],
+                })
+
+    df_metricas_variantes = pd.concat(filas_metricas, ignore_index=True)
+    df_repetidos = pd.DataFrame(filas_repetidos)
+    df_resumen_variantes = pd.DataFrame(filas_resumen)
+
+    return df_metricas_variantes, df_repetidos, df_resumen_variantes
+
+
+def ejecutar_experimentos_adicionales() -> pd.DataFrame:
+    """Ejecuta experimentos con parámetros modificados."""
+    configs = [
+        {"metodo": "ruleta", "tam_poblacion": 20, "p_mutacion": 0.05, "label": "Ruleta, Pobl=20"},
+        {"metodo": "ruleta", "tam_poblacion": 10, "p_mutacion": 0.10, "label": "Ruleta, Pmut=0.10"},
+        {"metodo": "torneo", "tam_poblacion": 20, "p_mutacion": 0.05, "label": "Torneo, Pobl=20"},
+        {"metodo": "torneo", "tam_poblacion": 10, "p_mutacion": 0.10, "label": "Torneo, Pmut=0.10"},
+        {"metodo": "elitismo", "tam_poblacion": 20, "p_mutacion": 0.05, "label": "Elitismo, Pobl=20"},
+        {"metodo": "elitismo", "tam_poblacion": 10, "p_mutacion": 0.10, "label": "Elitismo, Pmut=0.10"},
+        {"metodo": "ruleta", "tam_poblacion": 10, "p_mutacion": 0.01, "label": "Ruleta, Pmut=0.01"},
+        {"metodo": "elitismo", "tam_poblacion": 10, "p_mutacion": 0.01, "label": "Elitismo, Pmut=0.01"},
+    ]
+
+    filas = []
+    for cfg in configs:
+        random.seed(SEED + hash(cfg["label"]) % 10000)
+        np.random.seed(SEED + hash(cfg["label"]) % 10000)
+        _, resultado = evolucionar(
+            metodo=cfg["metodo"],
+            n_generaciones=100,
+            tam_poblacion=cfg["tam_poblacion"],
+            p_mutacion=cfg["p_mutacion"],
+            verbose=False,
+        )
+        filas.append({
+            "configuracion": cfg["label"],
+            "metodo": cfg["metodo"],
+            "tam_poblacion": cfg["tam_poblacion"],
+            "p_mutacion": cfg["p_mutacion"],
+            "mejor_fitness": resultado["mejor_fitness"],
+            "mejor_x": resultado["mejor_x"],
+            "tiempo_ejecucion_seg": resultado["tiempo_ejecucion_total_seg"],
+        })
+
+    return pd.DataFrame(filas)
+
+
+def _graficar_metricas(df_metricas: pd.DataFrame):
+    """Genera gráficos de métricas por generación."""
     for metrica, archivo, titulo in METRICAS_GRAFICOS:
         plt.figure(figsize=(10, 6))
         for metodo, grupo in df_metricas.groupby("metodo"):
             plt.plot(grupo["generacion"], grupo[metrica], marker="o", label=metodo.capitalize())
         plt.title(titulo)
         plt.xlabel("Generación")
-        plt.ylabel(metrica)
+        plt.ylabel(metrica.replace("_", " ").title())
         plt.grid(True, linestyle="--", alpha=0.45)
         plt.legend()
         plt.tight_layout()
         plt.savefig(archivo, dpi=200)
         plt.close()
 
+    # Gráfico comparativo de métodos (fitness promedio)
     plt.figure(figsize=(10, 6))
     for metodo, grupo in df_metricas.groupby("metodo"):
         plt.plot(grupo["generacion"], grupo["fitness_prom"], marker="o", linewidth=2, label=metodo.capitalize())
@@ -346,74 +403,203 @@ def _graficar_metricas(df_metricas):
     plt.close()
 
 
-def _construir_resumen_resultados(resultados):
-    """Construye un DataFrame resumen con métricas finales por método."""
-    return pd.DataFrame(
-        [
-            {
-                "metodo": r["metodo"],
-                "mejor_fitness": r["mejor_fitness"],
-                "tiempo_total_estimado": r["tiempo_total_estimado"],
-                "backlog": r["backlog"],
-                "desbalance": r["desbalance"],
-                "tiempo_ejecucion_total_seg": r["tiempo_ejecucion_total_seg"],
-            }
-            for r in resultados
-        ]
-    )
+def _graficar_por_variantes(df_variantes: pd.DataFrame):
+    """Genera una gráfica por cada conjunto de iteraciones (20, 100, 200)."""
+    for n_generaciones, grupo_variantes in df_variantes.groupby("n_generaciones"):
+        plt.figure(figsize=(10, 6))
+        for metodo, grupo in grupo_variantes.groupby("metodo"):
+            # Promediamos por generación entre repeticiones
+            promedio_por_gen = grupo.groupby("generacion")["fitness_prom"].mean().reset_index()
+            plt.plot(promedio_por_gen["generacion"], promedio_por_gen["fitness_prom"],
+                     marker="o", label=metodo.capitalize())
+        plt.title(f"Fitness promedio por generación - {n_generaciones} iteraciones")
+        plt.xlabel("Generación")
+        plt.ylabel("Fitness Promedio")
+        plt.grid(True, linestyle="--", alpha=0.45)
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(FIGURES_DIR / f"comparativa_{n_generaciones}_iteraciones.png", dpi=200)
+        plt.close()
 
 
-def _imprimir_resumen_global(df_resumen, mejor_global):
-    """Imprime resumen consolidado y mejor solución global."""
-    print("\n" + "=" * 110)
-    print("RESUMEN TABULADO POR MÉTODO")
-    print("=" * 110)
+def _imprimir_resumen_global(df_resumen: pd.DataFrame, mejor_global: Dict):
+    """Imprime resumen consolidado."""
+    print("\n" + "=" * 120)
+    print("RESUMEN TABULADO POR MÉTODO (20 generaciones)")
+    print("=" * 120)
     print(df_resumen.to_string(index=False))
 
-    print("\n" + "=" * 110)
+    print("\n" + "=" * 120)
     print("MEJOR SOLUCIÓN GLOBAL")
-    print("=" * 110)
+    print("=" * 120)
     print(f"Método ganador              : {mejor_global['metodo']}")
-    print(f"Mejor fitness global        : {mejor_global['mejor_fitness']:.10f}")
-    print(f"Tiempo total estimado (min) : {mejor_global['tiempo_total_estimado']}")
-    print(f"Backlog                     : {mejor_global['backlog']}")
-    print(f"Carga por analista (min)    : {mejor_global['carga_por_analista']}")
-    print(f"Distribución de alertas     : {mejor_global['distribucion_alertas']}")
-    print(f"Mejor cromosoma (primeros 60 genes): {mejor_global['mejor_cromosoma'][:60]}")
-    print("\nArchivos exportados:")
-    for archivo in ARCHIVOS_EXPORTADOS:
-        print(f"- {archivo.relative_to(BASE_DIR)}")
+    print(f"Mejor fitness global        : {mejor_global['mejor_fitness']:.12f}")
+    print(f"Mejor valor de x            : {mejor_global['mejor_x']}")
+    print(f"Cromosoma (30 bits)         : {''.join(map(str, mejor_global['mejor_cromosoma']))}")
+    print(f"Valor máximo población final: {mejor_global['fitness_max_poblacion']:.12f}")
+    print(f"Valor mínimo población final: {mejor_global['fitness_min_poblacion']:.12f}")
+    print(f"Valor promedio población final: {mejor_global['fitness_prom_poblacion']:.12f}")
+    print(f"Desv. std población final   : {mejor_global['desv_std_final']:.12f}")
+
+
+def _imprimir_resumen_variantes(df_resumen_variantes: pd.DataFrame, df_repetidos: pd.DataFrame):
+    """Imprime tablas de resumen para variantes."""
+    print("\n" + "=" * 120)
+    print("RESUMEN POR VARIANTE Y METODO (20, 100, 200 generaciones)")
+    print("=" * 120)
+
+    # Tabla de mins, proms, maxs por configuración
+    tabla_agg = df_resumen_variantes.groupby(["n_generaciones", "metodo"]).agg(
+        mejor_fitness_promedio=("mejor_fitness", "mean"),
+        mejor_fitness_max=("mejor_fitness", "max"),
+        mejor_fitness_min=("mejor_fitness", "min"),
+        tiempo_ejecucion_promedio_seg=("tiempo_ejecucion_seg", "mean"),
+        generacion_mejor_fitness_promedio=("generacion_mejor_fitness", "mean"),
+    ).reset_index()
+    print(tabla_agg.to_string(index=False))
+
+    print("\n" + "=" * 120)
+    print("TIEMPO PROMEDIO DE EJECUCION POR CONFIGURACION")
+    print("=" * 120)
+    tiempo_prom = (
+        df_repetidos.groupby(["n_generaciones", "metodo"])["tiempo_ejecucion_seg"]
+        .mean()
+        .reset_index()
+        .sort_values(["n_generaciones", "metodo"])
+    )
+    print(tiempo_prom.to_string(index=False))
+
+    print("\n" + "=" * 120)
+    print("TABLA DE ESTABILIDAD Y TIEMPOS")
+    print("=" * 120)
+    estabilidad = (
+        df_repetidos.groupby(["n_generaciones", "metodo"])
+        .agg(
+            mejor_fitness_mean=("mejor_fitness", "mean"),
+            mejor_fitness_std=("mejor_fitness", "std"),
+            mejor_x_mean=("mejor_x", "mean"),
+            tiempo_mean=("tiempo_ejecucion_seg", "mean"),
+            tiempo_std=("tiempo_ejecucion_seg", "std"),
+        )
+        .reset_index()
+    )
+    print(estabilidad.to_string(index=False))
 
 
 def main():
-    """Orquesta la simulación completa y exporta resultados para informe académico."""
+    """Orquesta la simulación completa del AG canónico."""
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
     random.seed(SEED)
     np.random.seed(SEED)
 
-    alertas = generar_alertas()
+    print("=" * 120)
+    print("ALGORITMO GENÉTICO CANÓNICO")
+    print(f"Función objetivo: f(x) = (x / {COEF})²  en el dominio [0, {COEF}]")
+    print(f"Codificación: Binaria de {N_BITS} bits")
+    print("=" * 120)
+
+    # ============================================================
+    # Ejecución base: 20 generaciones, los 3 métodos
+    # ============================================================
     tablas: List[pd.DataFrame] = []
-    resultados: List[Dict[str, object]] = []
+    resultados: List[Dict] = []
 
     for metodo in METODOS:
-        df_metodo, resultado = evolucionar(alertas, metodo=metodo)
+        df_metodo, resultado = evolucionar(metodo=metodo, n_generaciones=N_GENERACIONES)
         tablas.append(df_metodo)
         resultados.append(resultado)
 
     df_metricas = pd.concat(tablas, ignore_index=True)
     df_metricas.to_csv(METRICS_CSV, index=False)
 
-    df_resumen = _construir_resumen_resultados(resultados)
+    df_resumen = pd.DataFrame([
+        {
+            "metodo": r["metodo"],
+            "mejor_fitness": r["mejor_fitness"],
+            "mejor_x": r["mejor_x"],
+            "fitness_max_final": r["fitness_max_poblacion"],
+            "fitness_min_final": r["fitness_min_poblacion"],
+            "fitness_prom_final": r["fitness_prom_poblacion"],
+            "desv_std_final": r["desv_std_final"],
+            "tiempo_ejecucion_total_seg": r["tiempo_ejecucion_total_seg"],
+        }
+        for r in resultados
+    ])
     df_resumen.to_csv(SUMMARY_CSV, index=False)
 
     _graficar_metricas(df_metricas)
 
-    mejor_global = max(resultados, key=lambda r: r["mejor_fitness"])
+    # ============================================================
+    # Batería de experimentos: 20, 100, 200 generaciones
+    # ============================================================
+    print("\n" + "=" * 120)
+    print("EJECUTANDO BATERÍA DE EXPERIMENTOS (20, 100, 200 generaciones)")
+    print("=" * 120)
 
+    df_metricas_variantes, df_repetidos, df_resumen_variantes = ejecutar_bateria_experimentos()
+    df_metricas_variantes.to_csv(OUTPUTS_DIR / "metricas_variantes_generaciones.csv", index=False)
+    df_repetidos.to_csv(OUTPUTS_DIR / "experimentos_repetidos.csv", index=False)
+    df_resumen_variantes.to_csv(OUTPUTS_DIR / "resumen_variantes_generaciones.csv", index=False)
+
+    tabla_agg = df_resumen_variantes.groupby(["n_generaciones", "metodo"]).agg(
+        mejor_fitness_promedio=("mejor_fitness", "mean"),
+        mejor_fitness_max=("mejor_fitness", "max"),
+        mejor_fitness_min=("mejor_fitness", "min"),
+        tiempo_ejecucion_promedio_seg=("tiempo_ejecucion_seg", "mean"),
+        generacion_mejor_fitness_promedio=("generacion_mejor_fitness", "mean"),
+    ).reset_index()
+    tabla_agg.to_csv(OUTPUTS_DIR / "tabla_mins_prom_maxs_por_configuracion.csv", index=False)
+
+    # Tabla de estabilidad y tiempos
+    estabilidad = (
+        df_repetidos.groupby(["n_generaciones", "metodo"])
+        .agg(
+            mejor_fitness_mean=("mejor_fitness", "mean"),
+            mejor_fitness_std=("mejor_fitness", "std"),
+            mejor_x_mean=("mejor_x", "mean"),
+            tiempo_mean=("tiempo_ejecucion_seg", "mean"),
+            tiempo_std=("tiempo_ejecucion_seg", "std"),
+        )
+        .reset_index()
+    )
+    estabilidad.to_csv(OUTPUTS_DIR / "tabla_estabilidad_tiempos.csv", index=False)
+
+    _graficar_por_variantes(df_metricas_variantes)
+
+    # ============================================================
+    # Experimentos adicionales (cambio de parámetros)
+    # ============================================================
+    print("\n" + "=" * 120)
+    print("EXPERIMENTOS ADICIONALES (cambio de parámetros)")
+    print("=" * 120)
+
+    df_exp_adicionales = ejecutar_experimentos_adicionales()
+    df_exp_adicionales.to_csv(OUTPUTS_DIR / "experimentos_adicionales.csv", index=False)
+    print(df_exp_adicionales.to_string(index=False))
+
+    # ============================================================
+    # Resúmenes finales
+    # ============================================================
+    mejor_global = max(resultados, key=lambda r: r["mejor_fitness"])
     _imprimir_resumen_global(df_resumen, mejor_global)
+    _imprimir_resumen_variantes(df_resumen_variantes, df_repetidos)
+
+    print("\n" + "=" * 120)
+    print("ARCHIVOS EXPORTADOS")
+    print("=" * 120)
+    for archivo in ARCHIVOS_EXPORTADOS:
+        if archivo.exists():
+            print(f"✓ {archivo.relative_to(BASE_DIR)}")
+        else:
+            print(f"✗ {archivo.relative_to(BASE_DIR)} (NO GENERADO)")
+
+    print("\n" + "=" * 120)
+    print("EJECUCIÓN COMPLETADA")
+    print("=" * 120)
 
 
 if __name__ == "__main__":
     main()
+

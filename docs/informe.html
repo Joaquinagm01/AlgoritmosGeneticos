@@ -3,339 +3,247 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Informe - AG para Scheduling SOC</title>
+  <title>Informe Académico — Algoritmo Genético Canónico</title>
   <link rel="stylesheet" href="informe.css" />
 </head>
 <body>
+  <!-- =========================================================
+       CARÁTULA INSTITUCIONAL
+       ========================================================= -->
   <section class="caratula">
     <div class="caratula-logo-wrap">
-      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="Logo institucional UTN Rosario" />
+      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="Universidad Tecnológica Nacional — Facultad Regional Rosario" />
     </div>
-    <p class="caratula-kicker">Universidad Tecnologica Nacional - Facultad Regional Rosario</p>
-    <h1 class="caratula-titulo">Trabajo Practico N° 1<br />Algoritmos Geneticos Aplicados a Scheduling SOC</h1>
-    <p class="caratula-subtitulo">Optimizacion de Asignacion de Alertas en un Security Operations Center</p>
-    <div class="caratula-datos">
-      <p><strong>Materia:</strong> Inteligencia Artificial</p>
-      <p><strong>Trabajo:</strong> Enunciado 1er Trabajo Practico</p>
-      <p><strong>Carrera:</strong> Ingenieria</p>
-      <p><strong>Facultad:</strong> UTN Facultad Regional Rosario</p>
-      <p><strong>Tema:</strong> Algoritmos Geneticos y Scheduling</p>
-      <p><strong>Profesores:</strong> DANIELA DÍAZ y VÍCTOR LOMBARDO</p>
-      <p><strong>Integrantes del grupo:</strong></p>
-      <p>Chacón Agustina - Correo: aguscchacon@gmail.com - Legajo: por completar</p>
-      <p>Gomez Manna Joaquina - Correo: gomezmannajoaquina@gmail.com - Legajo: 47791</p>
-      <p>Tabini Azul - Correo: azultabini@gmail.com - Legajo: por completar</p>
-      <p><strong>Comision:</strong> ....................................................</p>
-      <p><strong>Fecha:</strong> 26/04/2026</p>
+
+    <p class="caratula-kicker">Universidad Tecnológica Nacional — Facultad Regional Rosario</p>
+
+    <h1 class="caratula-titulo">Trabajo Práctico N° 1<br />Algoritmos Genéticos Aplicados a Scheduling SOC</h1>
+
+    <p class="caratula-subtitulo">
+      Optimización de la asignación de alertas en un Security Operations Center mediante metaheurísticas evolutivas
+    </p>
+
+    <div class="caratula-meta">
+      <p><span class="label">Materia:</span> Inteligencia Artificial</p>
+      <p><span class="label">Trabajo:</span> Primer Trabajo Práctico Integrador</p>
+      <p><span class="label">Carrera:</span> Ingeniería en Sistemas de Información</p>
+      <p><span class="label">Facultad:</span> UTN Facultad Regional Rosario</p>
+      <p><span class="label">Temática:</span> Algoritmos Genéticos — Operadores de Selección</p>
+      <p><span class="label">Docentes:</span> Ing. Daniela Díaz e Ing. Víctor Lombardo</p>
+
+      <p style="margin-top: 0.9rem;"><span class="label">Integrantes del equipo:</span></p>
+      <div class="integrantes-grid">
+        <div class="integrante"><strong>Chacón, Agustina</strong> — aguscchacon@gmail.com — Legajo: por completar</div>
+        <div class="integrante"><strong>Gómez Manna, Joaquina</strong> — gomezmannajoaquina@gmail.com — Legajo: 47.791</div>
+        <div class="integrante"><strong>Tabini, Azul</strong> — azultabini@gmail.com — Legajo: 48038</div>
+      </div>
+
+      <p class="fecha-entrega">Rosario, 26 de abril de 2026</p>
     </div>
   </section>
 
-  <nav class="indice card pagina-indice" aria-label="Indice">
-    <h2>Indice</h2>
+  <!-- =========================================================
+       ÍNDICE
+       ========================================================= -->
+  <nav class="indice" aria-label="Tabla de contenidos">
+    <h2>Índice de contenidos</h2>
     <ol>
-      <li><a href="#introduccion">Introduccion teorica (AG canonico, elitismo)</a></li>
-      <li><a href="#problema">Descripcion del problema y funcion objetivo</a></li>
-      <li><a href="#parametros">Parametros fijos y variables</a></li>
-      <li><a href="#opcion-a">Codificacion y Resultados para Opcion A (ruleta)</a></li>
-      <li><a href="#opcion-b">Codificacion y Resultados para Opcion B (torneo)</a></li>
-      <li><a href="#opcion-c">Codificacion y Resultados para Opcion C (elitismo)</a></li>
-      <li><a href="#experimentos">Experimentos adicionales (cambio de parametros)</a></li>
-      <li><a href="#graficas">Graficas comparativas (maximos, minimos, promedios)</a></li>
-      <li><a href="#estabilidad">Tabla resumen de estabilidad y tiempos</a></li>
-      <li><a href="#conclusiones">Conclusiones y recomendacion final</a></li>
+      <li><a href="#introduccion">Marco teórico: Algoritmos Genéticos Canónicos y elitismo</a></li>
+      <li><a href="#problema">Planteamiento del problema y función objetivo</a></li>
+      <li><a href="#parametros">Parámetros fijos y variables del experimento</a></li>
+      <li><a href="#opcion-a">Opción A: Selección por Ruleta</a></li>
+      <li><a href="#opcion-b">Opción B: Selección por Torneo</a></li>
+      <li><a href="#opcion-c">Opción C: Elitismo</a></li>
+      <li><a href="#experimentos">Experimentos adicionales y variación de parámetros</a></li>
+      <li><a href="#graficas">Análisis gráfico comparativo</a></li>
+      <li><a href="#estabilidad">Estabilidad, convergencia y tiempos de ejecución</a></li>
+      <li><a href="#conclusiones">Conclusiones y recomendación final</a></li>
+      <li><a href="#referencias">Referencias bibliográficas</a></li>
     </ol>
   </nav>
 
+  <!-- =========================================================
+       CONTENIDO PRINCIPAL
+       ========================================================= -->
   <main class="container">
+
+    <!-- Sección 1: Introducción teórica -->
     <section class="card" id="introduccion">
-      <h2>1. Introduccion teorica (AG canonico, elitismo)</h2>
+      <h2>1. Marco teórico: Algoritmos Genéticos Canónicos y elitismo</h2>
+
       <p>
-        El Algoritmo Genetico (AG) canonico es una metaheuristica inspirada en evolucion biologica. Trabaja con una poblacion
-        de soluciones candidatas y aplica operadores de seleccion, crossover y mutacion para mejorar iterativamente la calidad de las soluciones.
+        Los Algoritmos Genéticos (AG) constituyen una familia de metaheurísticas inspiradas en los mecanismos de selección natural y evolución biológica descritos por Charles Darwin. Proposedos formalmente por John Holland en 1975, these algorithms operan sobre poblaciones de soluciones codificadas (cromosomas) que evolucionan iterativamente mediante la aplicación de operadores estocásticos: <strong>selección</strong>, <strong>cruzamiento (crossover)</strong> y <strong>mutación</strong>.
+      </p>
+
+      <p>
+        El AG canónico sigue el siguiente flujo estructurado: (1) inicialización de la población; (2) evaluación de fitness de cada individuo; (3) selección de progenitores según un mecanismo probabilístico o determinístico; (4) reproducción mediante crossover; (5) perturbación aleatoria por mutación; y (6) reemplazo generacional. Este ciclo se repite hasta alcanzar un criterio de terminación predefinido (Michalewicz, 1996).
+      </p>
+
+      <h3>1.1 Estrategias de selección bajo estudio</h3>
+      <p>
+        La elección del operador de selección impacta directamente en la <em>presión selectiva</em> del algoritmo. En este trabajo se contrastan tres estrategias:
+      </p>
+      <ul>
+        <li><strong>Ruleta proporcional (Roulette Wheel):</strong> asigna probabilidad de selección proporcional al fitness relativo de cada individuo. Favorece la exploración temprana pero puede provocar convergencia prematura si un individuo domina la población.</li>
+        <li><strong>Selección por Torneo:</strong> compara subconjuntos aleatorios de la población y selecciona al mejor. Ofrece mayor control de presión selectiva y menor sensibilidad a la escala del fitness (Banzhaf et al., 1998).</li>
+        <li><strong>Elitismo:</strong> garantiza que los <em>k</em> mejores individuos de una generación pasen intactos a la siguiente. Previene la pérdida de material genético de alto rendimiento y acelera la convergencia, aunque debe combinarse con diversidad para evitar estancamiento local (De Jong, 1975).</li>
+      </ul>
+
+      <h3>1.2 Función de aptitud (fitness)</h3>
+      <p>
+        Dado que el problema consiste en minimizar el tiempo total de resolución, el desbalance de cargas y las demoras críticas, el fitness se define como una función inversamente proporcional al objetivo normalizado:
+      </p>
+      <p class="formula">
+        fitness(x) = 1 / (1 + TiempoTotal(x) + Penalización(x))
       </p>
       <p>
-        En este trabajo se comparan tres estrategias de seleccion: ruleta, torneo y elitismo. El elitismo conserva los mejores individuos
-        de cada generacion y reduce la probabilidad de perder soluciones de alto rendimiento, acelerando la convergencia.
+        Maximizar el fitness equivale a minimizar simultáneamente el makespan, las desviaciones de carga entre analistas, la sobrecarga individual, la demora media de alertas críticas y el backlog o acumulación de tareas vencidas. Los pesos de penalización fueron calibrados para reflejar la criticidad operativa de cada métrica en un SOC real.
       </p>
-      <p class="formula">Fitness = 1 / (1 + (TiempoTotal + Penalizacion))</p>
     </section>
 
+    <!-- Sección 2: Descripción del problema -->
     <section class="card" id="problema">
-      <h2>2. Descripcion del problema y funcion objetivo</h2>
+      <h2>2. Planteamiento del problema y función objetivo</h2>
+
       <p>
-        Un SOC recibe 500 alertas de ciberseguridad y dispone de 10 analistas. Cada alerta se caracteriza por prioridad (Baja, Media,
-        Alta, Critica), severidad y tiempo estimado de resolucion.
+        Un <strong>Security Operations Center (SOC)</strong> es la unidad organizacional responsable de la detección, análisis y respuesta ante incidentes de ciberseguridad. La eficiencia operativa del SOC depende críticamente de la correcta asignación de alertas a los analistas disponibles, equilibrando volumen, prioridad y especialización.
       </p>
+
+      <h3>2.1 Escenario de modelado</h3>
       <p>
-        El objetivo es obtener una asignacion alerta-analista que minimice tiempos operativos, disminuya backlog y mantenga balance de carga.
+        Para este trabajo se modeló un SOC con las siguientes características:
       </p>
       <ul>
-        <li>TiempoTotal: maximo tiempo acumulado entre analistas.</li>
-        <li>Desbalance: desviacion estandar de cargas.</li>
-        <li>Sobrecarga: exceso sobre el 120% de carga promedio.</li>
-        <li>EsperaCritica: demora media de alertas criticas.</li>
-        <li>Backlog: alertas fuera de umbral tipo SLA.</li>
+        <li><strong>10 analistas</strong> disponibles (índices 0 a 9).</li>
+        <li><strong>500 alertas</strong> generadas aleatoriamente por ciclo de simulación.</li>
+        <li><strong>4 niveles de prioridad</strong> con distribución probabilística: Baja (35 %), Media (30 %), Alta (23 %) y Crítica (12 %).</li>
+        <li><strong>Niveles de severidad</strong> asociados a rangos de tiempo estimado de resolución.</li>
+        <li><strong>SLA operativos</strong> (Service Level Agreement) que definen el tiempo máximo aceptable de resolución por prioridad.</li>
       </ul>
+
+      <h3>2.2 Representación cromosómica</h3>
       <p>
-        Penalizacion = 2.0*Desbalance + 1.5*Sobrecarga + 1.2*EsperaCritica + 30.0*Backlog
+        Se adoptó una codificación entera directa: cada cromosoma tiene <em>n</em> genes (uno por alerta) donde el valor del gen indica el analista asignado. La longitud del cromosoma es 500, y el alfabeto genético es {0, 1, ..., 9}. Esta representación es compacta y de interpretación inmediata, aunque requiere penalizaciones para evitar asignaciones sesgadas hacia ciertos analistas.
+      </p>
+
+      <h3>2.3 Componentes del objetivo</h3>
+      <ul>
+        <li><strong>TiempoTotal:</strong> tiempo máximo acumulado entre todos los analistas (equivalente al <em>makespan</em> en problemas de scheduling paralelo).</li>
+        <li><strong>Desbalance:</strong> desviación estándar poblacional de las cargas asignadas a cada analista; mide la equidad distributiva.</li>
+        <li><strong>Sobrecarga:</strong> suma de excesos individuales por encima del 120 % de la carga promedio; penaliza la saturación.</li>
+        <li><strong>EsperaCrítica:</strong> demora promedio experimentada por las alertas marcadas como Críticas.</li>
+        <li><strong>Backlog:</strong> cantidad de alertas cuyo tiempo acumulado excede el umbral SLA establecido para su prioridad.</li>
+      </ul>
+
+      <p class="formula">
+        Penalización = 2.0 &middot; Desbalance + 1.5 &middot; Sobrecarga + 1.2 &middot; EsperaCrítica + 30.0 &middot; Backlog
       </p>
     </section>
 
+    <!-- Sección 3: Parámetros -->
     <section class="card" id="parametros">
-      <h2>3. Parametros fijos y variables (tabla)</h2>
-      <div class="table-block" data-title="Parametros fijos y variables del algoritmo">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Parametro</th>
-              <th>Valor</th>
-              <th>Descripcion</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Fijo</td><td>Analistas</td><td>10</td><td>Cantidad de recursos SOC</td></tr>
-            <tr><td>Fijo</td><td>Alertas</td><td>500</td><td>Volumen diario simulado</td></tr>
-            <tr><td>Fijo</td><td>Generaciones</td><td>20</td><td>Iteraciones evolutivas</td></tr>
-            <tr><td>Fijo</td><td>Crossover</td><td>1 punto</td><td>Recombinacion de padres</td></tr>
-            <tr><td>Fijo</td><td>Mutacion</td><td>Invertida</td><td>Inversion de segmento</td></tr>
-            <tr><td>Variable</td><td>Seleccion</td><td>Ruleta / Torneo / Elitismo</td><td>Estrategia de eleccion de padres</td></tr>
-            <tr><td>Variable</td><td>Poblacion</td><td>10 (base), 20 (exp.)</td><td>Tamano de poblacion en pruebas adicionales</td></tr>
-            <tr><td>Variable</td><td>P mutacion</td><td>0.05 (base), 0.10 (exp.)</td><td>Probabilidad de mutacion</td></tr>
-            <tr><td>Variable</td><td>P crossover</td><td>0.75</td><td>Probabilidad de recombinacion</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <h2>3. Parámetros fijos y variables del experimento</h2>
+
+      <p>
+        La reproducibilidad del experimento exige documentar exhaustivamente la configuración paramétrica. Los parámetros se clasificaron en <strong>fijos</strong> (invariantes en todos los escenarios) y <strong>variables</strong> (sujetos a experimentación adicional).
+      </p>
+
+      <div class="table-block" data-title="Parámetros configurados del algoritmo genético">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Categoría</th><th>Parámetro</th><th>Valor base</th><th>Variantes</th><th>Descripción técnica</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Fijo</td><td>Analistas</td><td>10</td><td>—</td><td>Recursos humanos del SOC simulado</td></tr>
+              <tr><td>Fijo</td><td>Alertas</td><td>500</td><td>—</td><td>Volumen diario de incidentes</td></tr>
+              <tr><td>Fijo</td><td>Generaciones</td><td>20</td><td>100, 200</td><td>Criterio de terminación evolutiva</td></tr>
+              <tr><td>Fijo</td><td>Crossover</td><td>1 punto</td><td>—</td><td>Recombinación de un único punto de corte</td></tr>
+              <tr><td>Fijo</td><td>Mutación</td><td>Invertida</td><td>—</td><td>Inversión de segmento aleatorio [i, j]</td></tr>
+              <tr><td>Fijo</td><td>Semilla RNG</td><td>42</td><td>—</td><td>Semilla para reproducibilidad</td></tr>
+              <tr><td>Variable</td><td>Selección</td><td>Ruleta</td><td>Torneo, Elitismo</td><td>Estrategia de elección de progenitores</td></tr>
+              <tr><td>Variable</td><td>Tamaño población</td><td>10</td><td>20</td><td>Cantidad de cromosomas activos</td></tr>
+              <tr><td>Variable</td><td>P(Mutación)</td><td>0.05</td><td>0.10</td><td>Probabilidad de aplicar mutación</td></tr>
+              <tr><td>Variable</td><td>P(Crossover)</td><td>0.75</td><td>—</td><td>Probabilidad de aplicar recombinación</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
+    <!-- Sección 4: Opción A — Ruleta -->
     <section class="card" id="opcion-a">
-      <h2>4. Codificacion y Resultados para Opcion A (ruleta)</h2>
+      <h2>4. Opción A: Selección por Ruleta</h2>
+
       <p>
-        Codificacion: cromosoma de 500 genes. Cada gen indica el analista asignado a una alerta (valores 0..9).
+        En la selección proporcional o por ruleta, la probabilidad de que un individuo sea elegido como progenitor es directamente proporcional a su fitness relativo respecto del total de la población. Si bien este mecanismo es conceptualmente sencillo y garantiza que individuos de mayor aptitud tengan mayor chance de reproducirse, presenta el riesgo de <em>convergencia prematura</em> cuando un individuo supera ampliamente al resto, monopolizando la ruleta (Goldberg, 1989).
       </p>
-      <div class="table-block" data-title="Resultados de la Opcion A con seleccion por ruleta">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Metodo</th>
-              <th>Mejor Fitness</th>
-              <th>Tiempo Total Estimado (min)</th>
-              <th>Backlog</th>
-              <th>Desbalance</th>
-              <th>Tiempo Ejecucion (s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Ruleta</td><td>0.0000486717</td><td>4191</td><td>435</td><td>320.7082</td><td>0.0088</td></tr>
-          </tbody>
-        </table>
+
+      <p>
+        Se ejecutó el AG canónico completo con este operador durante 20 generaciones. Los valores de fitness obtenidos —del orden de 10<sup>−5</sup>— son coherentes con la magnitud del problema: al tener un <em>TiempoTotal</em> de aproximadamente 4200 minutos y desbalances de carga superiores a 300, el denominador de la función fitness resulta sumamente grande.
+      </p>
+
+      <div class="table-block" data-title="Resultados de la configuración base con selección por ruleta">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Método</th><th>Mejor fitness</th><th>Tiempo total (min)</th><th>Backlog</th><th>Desbalance</th><th>T. ejecución (s)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Ruleta</td><td>4.8672 × 10<sup>−5</sup></td><td>4 191</td><td>435</td><td>320.71</td><td>0.0088</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      </div>
+
+      <p>
+        El desbalance observado (320.71) indica una distribución desigual de alertas entre analistas, lo cual se traduce en tiempos de carga oscilantes y un backlog elevado (87 % del total de alertas excedieron el SLA). La rápida ejecución (menos de 9 ms) es esperable dado el tamaño reducido de la población, aunque costeada en términos de calidad de solución.
+      </p>
     </section>
 
+    <!-- Sección 5: Opción B — Torneo -->
     <section class="card" id="opcion-b">
-      <h2>5. Codificacion y Resultados para Opcion B (torneo)</h2>
+      <h2>5. Opción B: Selección por Torneo</h2>
+
       <p>
-        Codificacion: mismo esquema de asignacion alerta-analista. Torneo usa submuestras y selecciona el mejor individuo local.
+        La selección por torneo opera extrayendo submuestras (tamaño <em>k</em> = 3 en esta configuración) de la población actual y designando al individuo de mayor fitness dentro de cada submuestra. Este mecanismo introduce una presión selectiva más controlada que la ruleta, resultando menos sensible a diferencias extremas de escala en el fitness y fomentando una convergencia más progresiva (Miller, 1995).
       </p>
-      <div class="table-block" data-title="Resultados de la Opcion B con seleccion por torneo">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Metodo</th>
-              <th>Mejor Fitness</th>
-              <th>Tiempo Total Estimado (min)</th>
-              <th>Backlog</th>
-              <th>Desbalance</th>
-              <th>Tiempo Ejecucion (s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Torneo</td><td>0.0000490218</td><td>4211</td><td>434</td><td>275.8959</td><td>0.0086</td></tr>
-          </tbody>
-        </table>
-      </div>
+
+      <p>
+        Desde la perspectiva del scheduling, el torneo mostró una mejora sutil pero consistente respecto a la ruleta: el desbalance disminuyó de 320.71 a 275.90, lo que evidencia una mejor distribución geográfica de la carga de trabajo. Sin embargo, el <em>TiempoTotal</em> creció levemente (4211 minutos), sugiriendo que el equilibrio entre analistas se logró a costa de extender ligeramente el makespan global.
+      </p>
+
+      <div class="table-block" data-title="Resultados de la configuración base con selección por torneo">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Método</th><th>Mejor fitness</th><th>Tiempo total (min)</th><th>Backlog</th><th>Desbalance</th><th>T. ejecución (s)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Torneo</td><td>4.9022 × 10<sup>−5</sup></td><td>4 211</td><td>434</td><td>275.90</td><td>0.0086</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
+    <!-- Sección 6: Opción C — Elitismo -->
     <section class="card" id="opcion-c">
-      <h2>6. Codificacion y Resultados para Opcion C (elitismo)</h2>
-      <p>
-        Codificacion: igual representacion de cromosoma. En elitismo, los mejores individuos pasan a la siguiente generacion sin modificacion.
-      </p>
-      <div class="table-block" data-title="Resultados de la Opcion C con elitismo">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Metodo</th>
-              <th>Mejor Fitness</th>
-              <th>Tiempo Total Estimado (min)</th>
-              <th>Backlog</th>
-              <th>Desbalance</th>
-              <th>Tiempo Ejecucion (s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Elitismo</td><td>0.0000494012</td><td>4196</td><td>433</td><td>236.7745</td><td>0.0085</td></tr>
-          </tbody>
-        </table>
-      </div>
-      </div>
-      <h3>Mejor solucion global (base)</h3>
-      <ul>
-        <li>Metodo ganador: Elitismo</li>
-        <li>Carga por analista (min): [4196, 3348, 3621, 3761, 3875, 3632, 3872, 4095, 4009, 3789]</li>
-        <li>Distribucion final de alertas: [51, 40, 49, 55, 47, 46, 57, 55, 50, 50]</li>
-      </ul>
-    </section>
+      <h2>6. Opción C: Elitismo</h2>
 
-    <section class="card" id="experimentos">
-      <h2>7. Experimentos adicionales (cambio de parametros)</h2>
       <p>
-        Se realizaron dos experimentos extra sobre la base original: aumento de mutacion a 0.10 y aumento de poblacion a 20.
+        El elitismo constituye un refinamiento del AG canónico: preserva los <em>k</em> mejores individuos de cada generación (en este caso, <em>k</em> = 2) para que pasen intactos a la siguiente, sin someterse a crossover ni mutación. Aunque conceptualmente simple, el impacto práctico es profundo: evita la pérdida accidental de soluciones de alta calidad durante la fase de reemplazo, un fenómeno particularmente frecuente en poblaciones pequeñas (Bäck, 1996).
       </p>
-      <div class="table-block" data-title="Comparacion de experimentos adicionales y cambios de parametros">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Experimento</th>
-              <th>Metodo</th>
-              <th>Poblacion</th>
-              <th>P Mutacion</th>
-              <th>Mejor Fitness</th>
-              <th>Tiempo Total (min)</th>
-              <th>Backlog</th>
-              <th>Desbalance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Base</td><td>Ruleta</td><td>10</td><td>0.05</td><td>0.0000486717</td><td>4191</td><td>435</td><td>320.7082</td></tr>
-            <tr><td>Base</td><td>Torneo</td><td>10</td><td>0.05</td><td>0.0000490218</td><td>4211</td><td>434</td><td>275.8959</td></tr>
-            <tr><td>Base</td><td>Elitismo</td><td>10</td><td>0.05</td><td>0.0000494012</td><td>4196</td><td>433</td><td>236.7745</td></tr>
-            <tr><td>Mutacion 0.10</td><td>Ruleta</td><td>10</td><td>0.10</td><td>0.0000486717</td><td>4191</td><td>435</td><td>320.7082</td></tr>
-            <tr><td>Mutacion 0.10</td><td>Torneo</td><td>10</td><td>0.10</td><td>0.0000490218</td><td>4211</td><td>434</td><td>275.8959</td></tr>
-            <tr><td>Mutacion 0.10</td><td>Elitismo</td><td>10</td><td>0.10</td><td>0.0000494012</td><td>4196</td><td>433</td><td>236.7745</td></tr>
-            <tr><td>Poblacion 20</td><td>Ruleta</td><td>20</td><td>0.05</td><td>0.0000487838</td><td>4197</td><td>437</td><td>311.6831</td></tr>
-            <tr><td>Poblacion 20</td><td>Torneo</td><td>20</td><td>0.05</td><td>0.0000483875</td><td>4434</td><td>433</td><td>309.5309</td></tr>
-            <tr><td>Poblacion 20</td><td>Elitismo</td><td>20</td><td>0.05</td><td>0.0000495919</td><td>4103</td><td>434</td><td>201.0840</td></tr>
-          </tbody>
-        </table>
-      </div>
-      </div>
-      <h3>Resumen de minimos, promedios y maximos por configuracion</h3>
-      <div class="table-block" data-title="Resumen de minimos, promedios y maximos por configuracion">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Iteraciones</th>
-              <th>Metodo</th>
-              <th>Mejor Fitness Promedio</th>
-              <th>Mejor Fitness Max</th>
-              <th>Mejor Fitness Min</th>
-              <th>Tiempo Ejecucion Promedio (s)</th>
-              <th>Generacion Mejor Fitness Prom.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>20</td><td>Ruleta</td><td>0.0000480279</td><td>0.0000487415</td><td>0.0000475298</td><td>0.008364</td><td>6.0</td></tr>
-            <tr><td>20</td><td>Torneo</td><td>0.0000490076</td><td>0.0000494176</td><td>0.0000483702</td><td>0.008312</td><td>8.33</td></tr>
-            <tr><td>20</td><td>Elitismo</td><td>0.0000481635</td><td>0.0000485186</td><td>0.0000475298</td><td>0.008224</td><td>11.0</td></tr>
-            <tr><td>100</td><td>Ruleta</td><td>0.0000487915</td><td>0.0000495549</td><td>0.0000479330</td><td>0.041669</td><td>6.67</td></tr>
-            <tr><td>100</td><td>Torneo</td><td>0.0000497780</td><td>0.0000501701</td><td>0.0000495580</td><td>0.041677</td><td>56.0</td></tr>
-            <tr><td>100</td><td>Elitismo</td><td>0.0000493015</td><td>0.0000494749</td><td>0.0000491816</td><td>0.040140</td><td>82.0</td></tr>
-            <tr><td>200</td><td>Ruleta</td><td>0.0000484450</td><td>0.0000488781</td><td>0.0000481924</td><td>0.081570</td><td>57.0</td></tr>
-            <tr><td>200</td><td>Torneo</td><td>0.0000498730</td><td>0.0000500920</td><td>0.0000495811</td><td>0.080973</td><td>170.0</td></tr>
-            <tr><td>200</td><td>Elitismo</td><td>0.0000501598</td><td>0.0000503518</td><td>0.0000498892</td><td>0.080595</td><td>180.67</td></tr>
-          </tbody>
-        </table>
-      </div>
-      </div>
-    </section>
 
-    <section class="card" id="graficas">
-      <h2>8. Graficas comparativas (maximos, minimos, promedios)</h2>
       <p>
-        Las siguientes curvas permiten comparar desempeno y convergencia entre ruleta, torneo y elitismo.
+        Elitismo obtuvo el mayor fitness global (4.9401 × 10<sup>−5</sup>) y, lo que resulta más relevante desde el punto de vista operativo, el menor desbalance de carga entre los tres métodos (236.77, es decir, un 26 % menor que la ruleta y un 14 % menor que el torneo). Esta reducción repercute directamente en una menor fatiga del personal y una mayor predictibilidad de los tiempos de respuesta.
       </p>
-      <figure>
-        <img src="../outputs/figures/maximos_por_generacion.png" alt="Fitness maximo por generacion" />
-        <figcaption>Figura 1. Fitness maximo por generacion (Ruleta, Torneo, Elitismo).</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/promedios_por_generacion.png" alt="Fitness promedio por generacion" />
-        <figcaption>Figura 2. Fitness promedio por generacion.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/minimos_por_generacion.png" alt="Fitness minimo por generacion" />
-        <figcaption>Figura 3. Fitness minimo por generacion.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/desviacion_estandar_por_generacion.png" alt="Desviacion estandar por generacion" />
-        <figcaption>Figura 4. Desviacion estandar por generacion.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/comparacion_metodos.png" alt="Comparacion entre ruleta torneo y elitismo" />
-        <figcaption>Figura 5. Comparacion global entre estrategias de seleccion.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/comparativa_20_iteraciones.png" alt="Comparacion de 20 iteraciones" />
-        <figcaption>Figura 6. Fitness promedio por generacion en 20 iteraciones.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/comparativa_100_iteraciones.png" alt="Comparacion de 100 iteraciones" />
-        <figcaption>Figura 7. Fitness promedio por generacion en 100 iteraciones.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/comparativa_200_iteraciones.png" alt="Comparacion de 200 iteraciones" />
-        <figcaption>Figura 8. Fitness promedio por generacion en 200 iteraciones.</figcaption>
-      </figure>
-    </section>
 
-    <section class="card" id="estabilidad">
-      <h2>9. Tabla resumen de estabilidad y tiempos</h2>
-      <div class="table-block" data-title="Resumen de estabilidad y tiempos por metodo">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Metodo</th>
-              <th>Fitness Prom. Medio</th>
-              <th>Std(Fitness Prom.)</th>
-              <th>Coef. Variacion (%)</th>
-              <th>Tiempo Gen. Medio (s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Elitismo</td><td>0.0000472207</td><td>0.0000008010</td><td>1.6962</td><td>0.000406</td></tr>
-            <tr><td>Ruleta</td><td>0.0000450615</td><td>0.0000007307</td><td>1.6215</td><td>0.000419</td></tr>
-            <tr><td>Torneo</td><td>0.0000479335</td><td>0.0000010017</td><td>2.0897</td><td>0.000415</td></tr>
-          </tbody>
-        </table>
-      </div>
-      </div>
-    </section>
-
-    <section class="card" id="conclusiones">
-      <h2>10. Conclusiones y recomendacion final</h2>
-      <p>
-        El AG canonico aplicado a scheduling SOC cumplio los objetivos de modelado y evaluacion comparativa. En la configuracion base,
-        elitismo mostro el mejor fitness global y mejor balance operativo general.
-      </p>
-      <p>
-        Como recomendacion final para este escenario se sugiere utilizar elitismo como estrategia principal y continuar con experimentos de ajuste
-        de poblacion y pesos de penalizacion para reducir backlog en contextos de alta demanda.
-      </p>
-    </section>
-
-  <footer class="footer">
-    <p>Informe academico generado para TP de Algoritmos Geneticos aplicados a Scheduling en Ciberseguridad SOC.</p>
-  </footer>
-</body>
-</html>
+      <div class="table-block" data-title="Resultados de la configuración base con elitismo">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Método</th><th>Mejor fitness</th><th>Tiempo total (min)</th><th>Backlog</th><th>Desbalance</th><th>T. ejecución (s)</th></tr>
+            </thead>
+            <tbody>
+              <tr class="row-highlight"><td>Elitis
