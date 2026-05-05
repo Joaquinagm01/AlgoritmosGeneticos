@@ -162,10 +162,10 @@ Abrir `docs/informe.html` en un navegador moderno. El informe incluye:
 - **Gomez Manna Joaquina**  gomezmannajoaquina@gmail.com
 - **Tabini Azul** — azultabini@gmail.com 
 - **Carloni, Nahuel Iván** — nahuelcarloni25@gmail.com
-- **Mierez, Joaquin** — Joakomierez1@hotmail.com
+- **Mierez, Joaquin** — joakomierez1@hotmail.com
 
 
-**Materia**: Inteligencia Artificial  
+**Materia**: Algoritmo Genético
 **Facultad**: UTN Facultad Regional Rosario  
 **Profesores**: Daniela Díaz y Víctor Lombardo
 
