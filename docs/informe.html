@@ -3,247 +3,413 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Informe Académico — Algoritmo Genético Canónico</title>
+  <title>Informe Académico - Algoritmo Genético Canónico TP 1</title>
   <link rel="stylesheet" href="informe.css" />
 </head>
 <body>
-  <!-- =========================================================
-       CARÁTULA INSTITUCIONAL
-       ========================================================= -->
   <section class="caratula">
     <div class="caratula-logo-wrap">
-      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="Universidad Tecnológica Nacional — Facultad Regional Rosario" />
+      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="UTN Facultad Regional Rosario" />
     </div>
 
-    <p class="caratula-kicker">Universidad Tecnológica Nacional — Facultad Regional Rosario</p>
+    <p class="caratula-kicker">Universidad Tecnológica Nacional - Facultad Regional Rosario</p>
 
-    <h1 class="caratula-titulo">Trabajo Práctico N° 1<br />Algoritmos Genéticos Aplicados a Scheduling SOC</h1>
+    <h1 class="caratula-titulo">Trabajo Práctico N° 1<br />Algoritmo Genético Canónico</h1>
 
     <p class="caratula-subtitulo">
-      Optimización de la asignación de alertas en un Security Operations Center mediante metaheurísticas evolutivas
+      Maximización de la función f(x) = (x / coef)² con codificación binaria de 30 bits
     </p>
 
-    <div class="caratula-meta">
-      <p><span class="label">Materia:</span> Inteligencia Artificial</p>
-      <p><span class="label">Trabajo:</span> Primer Trabajo Práctico Integrador</p>
-      <p><span class="label">Carrera:</span> Ingeniería en Sistemas de Información</p>
-      <p><span class="label">Facultad:</span> UTN Facultad Regional Rosario</p>
-      <p><span class="label">Temática:</span> Algoritmos Genéticos — Operadores de Selección</p>
-      <p><span class="label">Docentes:</span> Ing. Daniela Díaz e Ing. Víctor Lombardo</p>
-
-      <p style="margin-top: 0.9rem;"><span class="label">Integrantes del equipo:</span></p>
-      <div class="integrantes-grid">
-        <div class="integrante"><strong>Chacón, Agustina</strong> — aguscchacon@gmail.com — Legajo: por completar</div>
-        <div class="integrante"><strong>Gómez Manna, Joaquina</strong> — gomezmannajoaquina@gmail.com — Legajo: 47.791</div>
-        <div class="integrante"><strong>Tabini, Azul</strong> — azultabini@gmail.com — Legajo: 48038</div>
+    <div class="caratula-ficha">
+      <div class="caratula-meta">
+        <p><span class="label">Materia:</span> Inteligencia Artificial</p>
+        <p><span class="label">Tema:</span> Algoritmo Genético Canónico y elitismo</p>
+        <p><span class="label">Función objetivo:</span> f(x) = (x / (2³⁰ - 1))²</p>
+        <p><span class="label">Población inicial:</span> 10 individuos</p>
+        <p><span class="label">Generaciones base:</span> 20</p>
+        <p><span class="label">Métodos de selección:</span> ruleta, torneo y elitismo</p>
       </div>
 
-      <p class="fecha-entrega">Rosario, 26 de abril de 2026</p>
+      <div class="caratula-equipo">
+        <div class="caratula-personas">
+          <div class="caratula-persona">
+            <strong>Chacón Agustina</strong>
+            <span>aguscchacon@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Gomez Manna Joaquina</strong>
+            <span>gomezmannajoaquina@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Tabini Azul</strong>
+            <span>azultabini@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Carloni Nahuel Iván</strong>
+            <span>nahuelcarloni25@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Mierez Joaquin</strong>
+            <span>Joakomierez1@hotmail.com</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="fecha-entrega">Rosario, mayo de 2026</p>
     </div>
   </section>
 
-  <!-- =========================================================
-       ÍNDICE
-       ========================================================= -->
   <nav class="indice" aria-label="Tabla de contenidos">
     <h2>Índice de contenidos</h2>
     <ol>
-      <li><a href="#introduccion">Marco teórico: Algoritmos Genéticos Canónicos y elitismo</a></li>
-      <li><a href="#problema">Planteamiento del problema y función objetivo</a></li>
-      <li><a href="#parametros">Parámetros fijos y variables del experimento</a></li>
-      <li><a href="#opcion-a">Opción A: Selección por Ruleta</a></li>
-      <li><a href="#opcion-b">Opción B: Selección por Torneo</a></li>
-      <li><a href="#opcion-c">Opción C: Elitismo</a></li>
-      <li><a href="#experimentos">Experimentos adicionales y variación de parámetros</a></li>
-      <li><a href="#graficas">Análisis gráfico comparativo</a></li>
-      <li><a href="#estabilidad">Estabilidad, convergencia y tiempos de ejecución</a></li>
+      <li><a href="#introduccion">Introducción teórica</a></li>
+      <li><a href="#problema">Descripción del problema y función objetivo</a></li>
+      <li><a href="#parametros">Parámetros fijos y variables</a></li>
+      <li><a href="#opcion-a">Codificación y resultados: Opción A (ruleta)</a></li>
+      <li><a href="#opcion-b">Codificación y resultados: Opción B (torneo)</a></li>
+      <li><a href="#opcion-c">Codificación y resultados: Opción C (elitismo)</a></li>
+      <li><a href="#experimentos">Experimentos adicionales</a></li>
+      <li><a href="#graficas">Gráficas comparativas</a></li>
+      <li><a href="#estabilidad">Tabla resumen de estabilidad y tiempos</a></li>
       <li><a href="#conclusiones">Conclusiones y recomendación final</a></li>
-      <li><a href="#referencias">Referencias bibliográficas</a></li>
     </ol>
   </nav>
 
-  <!-- =========================================================
-       CONTENIDO PRINCIPAL
-       ========================================================= -->
   <main class="container">
-
-    <!-- Sección 1: Introducción teórica -->
     <section class="card" id="introduccion">
-      <h2>1. Marco teórico: Algoritmos Genéticos Canónicos y elitismo</h2>
-
+      <h2>1. Introducción teórica</h2>
       <p>
-        Los Algoritmos Genéticos (AG) constituyen una familia de metaheurísticas inspiradas en los mecanismos de selección natural y evolución biológica descritos por Charles Darwin. Proposedos formalmente por John Holland en 1975, these algorithms operan sobre poblaciones de soluciones codificadas (cromosomas) que evolucionan iterativamente mediante la aplicación de operadores estocásticos: <strong>selección</strong>, <strong>cruzamiento (crossover)</strong> y <strong>mutación</strong>.
-      </p>
-
-      <p>
-        El AG canónico sigue el siguiente flujo estructurado: (1) inicialización de la población; (2) evaluación de fitness de cada individuo; (3) selección de progenitores según un mecanismo probabilístico o determinístico; (4) reproducción mediante crossover; (5) perturbación aleatoria por mutación; y (6) reemplazo generacional. Este ciclo se repite hasta alcanzar un criterio de terminación predefinido (Michalewicz, 1996).
-      </p>
-
-      <h3>1.1 Estrategias de selección bajo estudio</h3>
-      <p>
-        La elección del operador de selección impacta directamente en la <em>presión selectiva</em> del algoritmo. En este trabajo se contrastan tres estrategias:
-      </p>
-      <ul>
-        <li><strong>Ruleta proporcional (Roulette Wheel):</strong> asigna probabilidad de selección proporcional al fitness relativo de cada individuo. Favorece la exploración temprana pero puede provocar convergencia prematura si un individuo domina la población.</li>
-        <li><strong>Selección por Torneo:</strong> compara subconjuntos aleatorios de la población y selecciona al mejor. Ofrece mayor control de presión selectiva y menor sensibilidad a la escala del fitness (Banzhaf et al., 1998).</li>
-        <li><strong>Elitismo:</strong> garantiza que los <em>k</em> mejores individuos de una generación pasen intactos a la siguiente. Previene la pérdida de material genético de alto rendimiento y acelera la convergencia, aunque debe combinarse con diversidad para evitar estancamiento local (De Jong, 1975).</li>
-      </ul>
-
-      <h3>1.2 Función de aptitud (fitness)</h3>
-      <p>
-        Dado que el problema consiste en minimizar el tiempo total de resolución, el desbalance de cargas y las demoras críticas, el fitness se define como una función inversamente proporcional al objetivo normalizado:
-      </p>
-      <p class="formula">
-        fitness(x) = 1 / (1 + TiempoTotal(x) + Penalización(x))
+        Un Algoritmo Genético (AG) es una metaheurística poblacional inspirada en la evolución biológica. Parte de una población inicial de soluciones, evalúa su aptitud con una función fitness y aplica operadores estocásticos de selección, cruzamiento y mutación para construir nuevas generaciones.
       </p>
       <p>
-        Maximizar el fitness equivale a minimizar simultáneamente el makespan, las desviaciones de carga entre analistas, la sobrecarga individual, la demora media de alertas críticas y el backlog o acumulación de tareas vencidas. Los pesos de penalización fueron calibrados para reflejar la criticidad operativa de cada métrica en un SOC real.
+        En su versión canónica, el AG utiliza una representación fija de los individuos, una población de tamaño constante y un ciclo de reemplazo iterativo. La presión selectiva y la diversidad genética determinan el equilibrio entre explotación de buenas soluciones y exploración del espacio de búsqueda.
+      </p>
+      <p>
+        El elitismo agrega un mecanismo de preservación: los mejores individuos de una generación se copian directamente a la siguiente. Esto evita perder soluciones de alta calidad y suele acelerar la convergencia, aunque puede reducir la diversidad si se aplica sin control.
       </p>
     </section>
 
-    <!-- Sección 2: Descripción del problema -->
     <section class="card" id="problema">
-      <h2>2. Planteamiento del problema y función objetivo</h2>
-
+      <h2>2. Descripción del problema y función objetivo</h2>
       <p>
-        Un <strong>Security Operations Center (SOC)</strong> es la unidad organizacional responsable de la detección, análisis y respuesta ante incidentes de ciberseguridad. La eficiencia operativa del SOC depende críticamente de la correcta asignación de alertas a los analistas disponibles, equilibrando volumen, prioridad y especialización.
+        El objetivo del trabajo es maximizar la función:
       </p>
-
-      <h3>2.1 Escenario de modelado</h3>
+      <p class="formula">f(x) = (x / 2³⁰)², con dominio x ∈ [0, 2³⁰ - 1].</p>
       <p>
-        Para este trabajo se modeló un SOC con las siguientes características:
+        La codificación elegida es binaria de 30 bits, de modo que cada cromosoma representa un entero del dominio. Para la implementación práctica se trabaja con el máximo representable $2^{30}-1$, pero el coeficiente solicitado por el enunciado se reporta como $2^{30}$. El óptimo global se encuentra en el extremo superior del intervalo, cuando $x=2^{30}-1$, y el fitness máximo posible es 1.
       </p>
-      <ul>
-        <li><strong>10 analistas</strong> disponibles (índices 0 a 9).</li>
-        <li><strong>500 alertas</strong> generadas aleatoriamente por ciclo de simulación.</li>
-        <li><strong>4 niveles de prioridad</strong> con distribución probabilística: Baja (35 %), Media (30 %), Alta (23 %) y Crítica (12 %).</li>
-        <li><strong>Niveles de severidad</strong> asociados a rangos de tiempo estimado de resolución.</li>
-        <li><strong>SLA operativos</strong> (Service Level Agreement) que definen el tiempo máximo aceptable de resolución por prioridad.</li>
-      </ul>
-
-      <h3>2.2 Representación cromosómica</h3>
       <p>
-        Se adoptó una codificación entera directa: cada cromosoma tiene <em>n</em> genes (uno por alerta) donde el valor del gen indica el analista asignado. La longitud del cromosoma es 500, y el alfabeto genético es {0, 1, ..., 9}. Esta representación es compacta y de interpretación inmediata, aunque requiere penalizaciones para evitar asignaciones sesgadas hacia ciertos analistas.
-      </p>
-
-      <h3>2.3 Componentes del objetivo</h3>
-      <ul>
-        <li><strong>TiempoTotal:</strong> tiempo máximo acumulado entre todos los analistas (equivalente al <em>makespan</em> en problemas de scheduling paralelo).</li>
-        <li><strong>Desbalance:</strong> desviación estándar poblacional de las cargas asignadas a cada analista; mide la equidad distributiva.</li>
-        <li><strong>Sobrecarga:</strong> suma de excesos individuales por encima del 120 % de la carga promedio; penaliza la saturación.</li>
-        <li><strong>EsperaCrítica:</strong> demora promedio experimentada por las alertas marcadas como Críticas.</li>
-        <li><strong>Backlog:</strong> cantidad de alertas cuyo tiempo acumulado excede el umbral SLA establecido para su prioridad.</li>
-      </ul>
-
-      <p class="formula">
-        Penalización = 2.0 &middot; Desbalance + 1.5 &middot; Sobrecarga + 1.2 &middot; EsperaCrítica + 30.0 &middot; Backlog
+        El trabajo solicita reportar el cromosoma ganador, el valor máximo alcanzado, el valor mínimo y el promedio de cada población, además de la desviación estándar del fitness por generación para estudiar la convergencia.
       </p>
     </section>
 
-    <!-- Sección 3: Parámetros -->
     <section class="card" id="parametros">
-      <h2>3. Parámetros fijos y variables del experimento</h2>
-
-      <p>
-        La reproducibilidad del experimento exige documentar exhaustivamente la configuración paramétrica. Los parámetros se clasificaron en <strong>fijos</strong> (invariantes en todos los escenarios) y <strong>variables</strong> (sujetos a experimentación adicional).
-      </p>
-
-      <div class="table-block" data-title="Parámetros configurados del algoritmo genético">
+      <h2>3. Parámetros fijos y variables</h2>
+      <div class="table-block" data-title="Configuración base del algoritmo genético">
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Categoría</th><th>Parámetro</th><th>Valor base</th><th>Variantes</th><th>Descripción técnica</th></tr>
+              <tr>
+                <th>Parámetro</th>
+                <th>Valor fijo</th>
+                <th>Variantes usadas</th>
+                <th>Observación</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>Fijo</td><td>Analistas</td><td>10</td><td>—</td><td>Recursos humanos del SOC simulado</td></tr>
-              <tr><td>Fijo</td><td>Alertas</td><td>500</td><td>—</td><td>Volumen diario de incidentes</td></tr>
-              <tr><td>Fijo</td><td>Generaciones</td><td>20</td><td>100, 200</td><td>Criterio de terminación evolutiva</td></tr>
-              <tr><td>Fijo</td><td>Crossover</td><td>1 punto</td><td>—</td><td>Recombinación de un único punto de corte</td></tr>
-              <tr><td>Fijo</td><td>Mutación</td><td>Invertida</td><td>—</td><td>Inversión de segmento aleatorio [i, j]</td></tr>
-              <tr><td>Fijo</td><td>Semilla RNG</td><td>42</td><td>—</td><td>Semilla para reproducibilidad</td></tr>
-              <tr><td>Variable</td><td>Selección</td><td>Ruleta</td><td>Torneo, Elitismo</td><td>Estrategia de elección de progenitores</td></tr>
-              <tr><td>Variable</td><td>Tamaño población</td><td>10</td><td>20</td><td>Cantidad de cromosomas activos</td></tr>
-              <tr><td>Variable</td><td>P(Mutación)</td><td>0.05</td><td>0.10</td><td>Probabilidad de aplicar mutación</td></tr>
-              <tr><td>Variable</td><td>P(Crossover)</td><td>0.75</td><td>—</td><td>Probabilidad de aplicar recombinación</td></tr>
+              <tr><td>Codificación</td><td>Binaria de 30 bits</td><td>Sin variante</td><td>Representa enteros del dominio completo</td></tr>
+              <tr><td>Población inicial</td><td>10 individuos</td><td>20 en experimentos adicionales</td><td>Población pequeña para observar convergencia</td></tr>
+              <tr><td>Probabilidad de crossover</td><td>0.75</td><td>Sin variante</td><td>Preserva buen equilibrio entre mezcla y conservación</td></tr>
+              <tr><td>Probabilidad de mutación</td><td>0.05</td><td>0.01 y 0.10</td><td>Sirve para analizar exploración y estabilidad</td></tr>
+              <tr><td>Método de crossover</td><td>1 punto</td><td>Sin variante</td><td>Implementación canónica</td></tr>
+              <tr><td>Método de mutación</td><td>Invertida</td><td>Sin variante</td><td>Se invierte un segmento aleatorio del cromosoma</td></tr>
+              <tr><td>Métodos de selección</td><td>Ruleta, torneo, elitismo</td><td>Sin variante</td><td>Se comparan calidad, estabilidad y tiempo</td></tr>
+              <tr><td>Generaciones base</td><td>20</td><td>100 y 200</td><td>Permite comparar calidad vs costo computacional</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- Sección 4: Opción A — Ruleta -->
     <section class="card" id="opcion-a">
-      <h2>4. Opción A: Selección por Ruleta</h2>
-
+      <h2>4. Codificación y resultados para Opción A (ruleta)</h2>
       <p>
-        En la selección proporcional o por ruleta, la probabilidad de que un individuo sea elegido como progenitor es directamente proporcional a su fitness relativo respecto del total de la población. Si bien este mecanismo es conceptualmente sencillo y garantiza que individuos de mayor aptitud tengan mayor chance de reproducirse, presenta el riesgo de <em>convergencia prematura</em> cuando un individuo supera ampliamente al resto, monopolizando la ruleta (Goldberg, 1989).
+        La selección por ruleta asigna a cada individuo una probabilidad proporcional a su fitness. En este problema, la ruleta fue la opción más conservadora en 20 generaciones: mejora la población, pero converge con menor estabilidad que torneo o elitismo.
       </p>
-
-      <p>
-        Se ejecutó el AG canónico completo con este operador durante 20 generaciones. Los valores de fitness obtenidos —del orden de 10<sup>−5</sup>— son coherentes con la magnitud del problema: al tener un <em>TiempoTotal</em> de aproximadamente 4200 minutos y desbalances de carga superiores a 300, el denominador de la función fitness resulta sumamente grande.
-      </p>
-
-      <div class="table-block" data-title="Resultados de la configuración base con selección por ruleta">
+      <div class="table-block" data-title="Resumen base de la selección por ruleta">
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Método</th><th>Mejor fitness</th><th>Tiempo total (min)</th><th>Backlog</th><th>Desbalance</th><th>T. ejecución (s)</th></tr>
+              <tr>
+                <th>Métrica</th>
+                <th>Valor</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>Ruleta</td><td>4.8672 × 10<sup>−5</sup></td><td>4 191</td><td>435</td><td>320.71</td><td>0.0088</td></tr>
+              <tr><td>Mejor fitness global</td><td>0.536633505295</td></tr>
+              <tr><td>Mejor valor de x</td><td>786572506</td></tr>
+              <tr><td>Cromosoma ganador</td><td>101110111000100010010011011010</td></tr>
+              <tr><td>Fitness máximo de la población final</td><td>0.536633505295</td></tr>
+              <tr><td>Fitness mínimo de la población final</td><td>0.496200560127</td></tr>
+              <tr><td>Fitness promedio de la población final</td><td>0.531448125488</td></tr>
+              <tr><td>Desviación estándar final</td><td>0.011962907246</td></tr>
+              <tr><td>Tiempo total de ejecución</td><td>0.003355 s</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-
       <p>
-        El desbalance observado (320.71) indica una distribución desigual de alertas entre analistas, lo cual se traduce en tiempos de carga oscilantes y un backlog elevado (87 % del total de alertas excedieron el SLA). La rápida ejecución (menos de 9 ms) es esperable dado el tamaño reducido de la población, aunque costeada en términos de calidad de solución.
+        La evolución muestra que ruleta mejora gradualmente, pero su sensibilidad a la distribución del fitness produce una estabilidad inferior en corridas repetidas. A 100 generaciones, sin embargo, puede alcanzar soluciones muy cercanas al óptimo, aunque con mayor dispersión entre repeticiones.
       </p>
     </section>
 
-    <!-- Sección 5: Opción B — Torneo -->
     <section class="card" id="opcion-b">
-      <h2>5. Opción B: Selección por Torneo</h2>
-
+      <h2>5. Codificación y resultados para Opción B (torneo)</h2>
       <p>
-        La selección por torneo opera extrayendo submuestras (tamaño <em>k</em> = 3 en esta configuración) de la población actual y designando al individuo de mayor fitness dentro de cada submuestra. Este mecanismo introduce una presión selectiva más controlada que la ruleta, resultando menos sensible a diferencias extremas de escala en el fitness y fomentando una convergencia más progresiva (Miller, 1995).
+        El torneo selecciona el mejor individuo dentro de un subconjunto aleatorio. Esto incrementa la presión selectiva y suele acelerar la convergencia sin depender tanto de la escala absoluta del fitness.
       </p>
-
-      <p>
-        Desde la perspectiva del scheduling, el torneo mostró una mejora sutil pero consistente respecto a la ruleta: el desbalance disminuyó de 320.71 a 275.90, lo que evidencia una mejor distribución geográfica de la carga de trabajo. Sin embargo, el <em>TiempoTotal</em> creció levemente (4211 minutos), sugiriendo que el equilibrio entre analistas se logró a costa de extender ligeramente el makespan global.
-      </p>
-
-      <div class="table-block" data-title="Resultados de la configuración base con selección por torneo">
+      <div class="table-block" data-title="Resumen base de la selección por torneo">
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Método</th><th>Mejor fitness</th><th>Tiempo total (min)</th><th>Backlog</th><th>Desbalance</th><th>T. ejecución (s)</th></tr>
+              <tr>
+                <th>Métrica</th>
+                <th>Valor</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>Torneo</td><td>4.9022 × 10<sup>−5</sup></td><td>4 211</td><td>434</td><td>275.90</td><td>0.0086</td></tr>
+              <tr><td>Mejor fitness global</td><td>0.833557591769</td></tr>
+              <tr><td>Mejor valor de x</td><td>980319576</td></tr>
+              <tr><td>Cromosoma ganador</td><td>111010011011100111110101011000</td></tr>
+              <tr><td>Fitness máximo de la población final</td><td>0.833557591769</td></tr>
+              <tr><td>Fitness mínimo de la población final</td><td>0.833557591769</td></tr>
+              <tr><td>Fitness promedio de la población final</td><td>0.833557591769</td></tr>
+              <tr><td>Desviación estándar final</td><td>0.000000000000</td></tr>
+              <tr><td>Tiempo total de ejecución</td><td>0.003314 s</td></tr>
             </tbody>
           </table>
         </div>
       </div>
+      <p>
+        En 20 generaciones, torneo produjo una población final completamente homogeneizada, con desviación estándar nula en la última generación. Esto indica convergencia fuerte, aunque sin llegar al máximo absoluto.
+      </p>
     </section>
 
-    <!-- Sección 6: Opción C — Elitismo -->
     <section class="card" id="opcion-c">
-      <h2>6. Opción C: Elitismo</h2>
-
+      <h2>6. Codificación y resultados para Opción C (elitismo)</h2>
       <p>
-        El elitismo constituye un refinamiento del AG canónico: preserva los <em>k</em> mejores individuos de cada generación (en este caso, <em>k</em> = 2) para que pasen intactos a la siguiente, sin someterse a crossover ni mutación. Aunque conceptualmente simple, el impacto práctico es profundo: evita la pérdida accidental de soluciones de alta calidad durante la fase de reemplazo, un fenómeno particularmente frecuente en poblaciones pequeñas (Bäck, 1996).
+        El elitismo preserva exactamente dos cromosomas por generación sin alterarlos. Para ajustarse al enunciado, esta opción se evaluó con 100 iteraciones del algoritmo y luego se resumieron sus resultados promedio. También mostró la mejor relación entre calidad de solución y estabilidad en las repeticiones más largas.
       </p>
-
-      <p>
-        Elitismo obtuvo el mayor fitness global (4.9401 × 10<sup>−5</sup>) y, lo que resulta más relevante desde el punto de vista operativo, el menor desbalance de carga entre los tres métodos (236.77, es decir, un 26 % menor que la ruleta y un 14 % menor que el torneo). Esta reducción repercute directamente en una menor fatiga del personal y una mayor predictibilidad de los tiempos de respuesta.
-      </p>
-
-      <div class="table-block" data-title="Resultados de la configuración base con elitismo">
+      <div class="table-block" data-title="Resumen de la selección por elitismo en 100 iteraciones">
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Método</th><th>Mejor fitness</th><th>Tiempo total (min)</th><th>Backlog</th><th>Desbalance</th><th>T. ejecución (s)</th></tr>
+              <tr>
+                <th>Métrica</th>
+                <th>Valor</th>
+              </tr>
             </thead>
             <tbody>
-              <tr class="row-highlight"><td>Elitis
+              <tr><td>Iteraciones evaluadas</td><td>100</td></tr>
+              <tr><td>Cromosomas preservados en la élite</td><td>2</td></tr>
+              <tr><td>Mejor fitness promedio</td><td>0.999830552797</td></tr>
+              <tr><td>Mejor fitness máximo</td><td>0.999999990687</td></tr>
+              <tr><td>Mejor fitness mínimo</td><td>0.999510800704</td></tr>
+              <tr><td>Generación promedio del mejor fitness</td><td>95.33</td></tr>
+              <tr><td>Mejor x promedio</td><td>1073650841.00</td></tr>
+              <tr><td>Tiempo promedio de ejecución</td><td>0.008385 s</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p>
+        Con una élite de dos cromosomas, elitismo alcanzó soluciones prácticamente óptimas en 100 iteraciones y mantuvo la mejor estabilidad agregada de la comparación. Ese comportamiento lo deja como la alternativa más sólida cuando importa tanto la calidad de la solución como el costo computacional medio.
+      </p>
+    </section>
+
+    <section class="card" id="experimentos">
+      <h2>7. Experimentos adicionales</h2>
+      <p>
+        Para enriquecer las conclusiones, se variaron el tamaño poblacional y la tasa de mutación. Los resultados muestran que aumentar la población ayuda a explorar mejor el espacio de búsqueda, y que una mutación demasiado baja puede estancar a ruleta, mientras que elitismo tolera mejor estos cambios.
+      </p>
+      <div class="table-block" data-title="Experimentos adicionales con parámetros variables">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Configuración</th>
+                <th>Método</th>
+                <th>Tamaño población</th>
+                <th>P(mutación)</th>
+                <th>Mejor fitness</th>
+                <th>Mejor x</th>
+                <th>Tiempo (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Ruleta, Pobl=20</td><td>ruleta</td><td>20</td><td>0.05</td><td>0.997153</td><td>1072212229</td><td>0.014333</td></tr>
+              <tr><td>Ruleta, Pmut=0.10</td><td>ruleta</td><td>10</td><td>0.10</td><td>0.995830</td><td>1071500998</td><td>0.009481</td></tr>
+              <tr><td>Torneo, Pobl=20</td><td>torneo</td><td>20</td><td>0.05</td><td>0.999998</td><td>1073740780</td><td>0.016485</td></tr>
+              <tr><td>Torneo, Pmut=0.10</td><td>torneo</td><td>10</td><td>0.10</td><td>1.000000</td><td>1073741560</td><td>0.012816</td></tr>
+              <tr><td>Elitismo, Pobl=20</td><td>elitismo</td><td>20</td><td>0.05</td><td>1.000000</td><td>1073741823</td><td>0.013284</td></tr>
+              <tr><td>Elitismo, Pmut=0.10</td><td>elitismo</td><td>10</td><td>0.10</td><td>0.999866</td><td>1073669835</td><td>0.009196</td></tr>
+              <tr><td>Ruleta, Pmut=0.01</td><td>ruleta</td><td>10</td><td>0.01</td><td>0.650290</td><td>865871177</td><td>0.007812</td></tr>
+              <tr><td>Elitismo, Pmut=0.01</td><td>elitismo</td><td>10</td><td>0.01</td><td>0.996763</td><td>1072002645</td><td>0.007632</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p>
+        La mutación baja perjudicó especialmente a ruleta, que quedó lejos del óptimo. En cambio, elitismo mantuvo soluciones competitivas incluso con una tasa reducida, y torneo fue capaz de llegar al óptimo cuando se amplió la población o se extendió el número de generaciones.
+      </p>
+    </section>
+
+    <section class="card" id="graficas">
+      <h2>8. Gráficas comparativas</h2>
+      <p>
+        La desviación estándar del fitness por generación se calcula como:
+      </p>
+      <p class="formula">σ = sqrt( Σ<sub>i=1</sub><sup>N</sup> (f<sub>i</sub> - f̄)² / N )</p>
+      <p>
+        Una desviación baja sugiere convergencia de la población; una desviación alta indica diversidad. Las figuras muestran además cómo evolucionan los máximos, mínimos y promedios del fitness por generación.
+      </p>
+
+      <figure>
+        <img src="assets/figures/maximos_por_generacion.png" alt="Fitness máximo por generación" />
+        <figcaption>Fitness máximo por generación para los tres métodos.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/minimos_por_generacion.png" alt="Fitness mínimo por generación" />
+        <figcaption>Fitness mínimo por generación para los tres métodos.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/promedios_por_generacion.png" alt="Fitness promedio por generación" />
+        <figcaption>Fitness promedio por generación y método de selección.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/desviacion_estandar_por_generacion.png" alt="Desviación estándar por generación" />
+        <figcaption>Desviación estándar del fitness por generación.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparacion_metodos.png" alt="Comparación global de métodos" />
+        <figcaption>Comparación global entre ruleta, torneo y elitismo.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_20_iteraciones.png" alt="Comparativa 20 iteraciones" />
+        <figcaption>Comparativa por generación para 20 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_20_fitness_max.png" alt="Máximos 20 iteraciones" />
+        <figcaption>Fitness máximo promedio por generación para 20 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_20_fitness_min.png" alt="Mínimos 20 iteraciones" />
+        <figcaption>Fitness mínimo promedio por generación para 20 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_20_fitness_prom.png" alt="Promedios 20 iteraciones" />
+        <figcaption>Fitness promedio por generación para 20 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_100_iteraciones.png" alt="Comparativa 100 iteraciones" />
+        <figcaption>Comparativa por generación para 100 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_100_fitness_max.png" alt="Máximos 100 iteraciones" />
+        <figcaption>Fitness máximo promedio por generación para 100 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_100_fitness_min.png" alt="Mínimos 100 iteraciones" />
+        <figcaption>Fitness mínimo promedio por generación para 100 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_100_fitness_prom.png" alt="Promedios 100 iteraciones" />
+        <figcaption>Fitness promedio por generación para 100 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_200_iteraciones.png" alt="Comparativa 200 iteraciones" />
+        <figcaption>Comparativa por generación para 200 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_200_fitness_max.png" alt="Máximos 200 iteraciones" />
+        <figcaption>Fitness máximo promedio por generación para 200 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_200_fitness_min.png" alt="Mínimos 200 iteraciones" />
+        <figcaption>Fitness mínimo promedio por generación para 200 corridas.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparativa_200_fitness_prom.png" alt="Promedios 200 iteraciones" />
+        <figcaption>Fitness promedio por generación para 200 corridas.</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="estabilidad">
+      <h2>9. Tabla resumen de estabilidad y tiempos</h2>
+      <p>
+        En la comparación de 20, 100 y 200 corridas se observa que la calidad mejora de manera clara con elitismo y, en menor medida, con torneo. Ruleta es la más variable en corridas largas y la que más se beneficia de aumentar la mutación o el tamaño poblacional. También se reporta la generación promedio en la que se alcanzó el mejor fitness para que la comparación no se limite solo al valor final.
+      </p>
+      <div class="table-block" data-title="Resumen de estabilidad y tiempos">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Generaciones</th>
+                <th>Método</th>
+                <th>Mejor fitness medio</th>
+                <th>Gen. mejor fitness</th>
+                <th>Desv. estándar</th>
+                <th>Mejor x medio</th>
+                <th>Tiempo medio (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>20</td><td>elitismo</td><td>0.989780</td><td>12.00</td><td>0.008954</td><td>1068233423.67</td><td>0.001860</td></tr>
+              <tr><td>20</td><td>ruleta</td><td>0.976725</td><td>11.67</td><td>0.019439</td><td>1061137537.67</td><td>0.001944</td></tr>
+              <tr><td>20</td><td>torneo</td><td>0.988848</td><td>17.00</td><td>0.015498</td><td>1067715679.00</td><td>0.002179</td></tr>
+              <tr><td>100</td><td>elitismo</td><td>0.999831</td><td>95.33</td><td>0.000277</td><td>1073650841.00</td><td>0.008271</td></tr>
+              <tr><td>100</td><td>ruleta</td><td>0.891340</td><td>62.33</td><td>0.163292</td><td>1010712863.33</td><td>0.008482</td></tr>
+              <tr><td>100</td><td>torneo</td><td>0.973489</td><td>90.00</td><td>0.044219</td><td>1059228803.00</td><td>0.009514</td></tr>
+              <tr><td>200</td><td>elitismo</td><td>1.000000</td><td>154.33</td><td>0.000000</td><td>1073741801.67</td><td>0.015363</td></tr>
+              <tr><td>200</td><td>ruleta</td><td>0.998252</td><td>190.67</td><td>0.002048</td><td>1072802729.33</td><td>0.016860</td></tr>
+              <tr><td>200</td><td>torneo</td><td>0.999366</td><td>190.33</td><td>0.000851</td><td>1073401158.67</td><td>0.018759</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p>
+        La tabla confirma el trade-off pedido por el enunciado: al aumentar generaciones, el costo computacional sube casi linealmente, pero la calidad también mejora. Elitismo ofrece la mejor combinación entre óptimo alcanzado, estabilidad entre corridas y tiempo de ejecución.
+      </p>
+    </section>
+
+    <section class="card" id="conclusiones">
+      <h2>10. Conclusiones y recomendación final</h2>
+      <p>
+        El TP se resolvió con un AG canónico que maximiza correctamente la función pedida y reporta cromosoma, fitness máximo, mínimo, promedio, desviación estándar y tiempo de cómputo.
+      </p>
+      <p>
+        En la corrida base de 20 generaciones, elitismo obtuvo el mejor fitness global, torneo alcanzó una convergencia fuerte con población completamente homogénea y ruleta mostró la mayor variabilidad. En experimentos más largos, elitismo fue el único método que llegó de manera consistente al óptimo global.
+      </p>
+      <p>
+        El trade-off principal no está en el tiempo, porque los tres métodos son muy rápidos en esta escala, sino en la estabilidad y la calidad de la solución. La recomendación final es usar elitismo para búsquedas largas y torneo cuando se quiera un equilibrio razonable entre presión selectiva y robustez. Ruleta queda como referencia didáctica, pero no como mejor opción práctica para este problema.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

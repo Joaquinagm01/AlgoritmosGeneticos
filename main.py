@@ -2,13 +2,14 @@
 Trabajo Práctico N° 1 - Algoritmo Genético Canónico
 Materia: Inteligencia Artificial
 
-Objetivo: Maximizar f(x) = (x / coef)^2 en el dominio [0, 2^30 - 1]
-donde coef = 2^30 - 1
+Objetivo: maximizar f(x) = (x / coef)^2 en el dominio [0, 2^30 - 1]
+donde coef = 2^30 - 1.
 
-Codificación: Binaria de 30 bits
+Codificación: binaria de 30 bits.
 """
 
 import random
+import shutil
 import statistics
 import time
 from pathlib import Path
@@ -40,6 +41,8 @@ METODOS = ["ruleta", "torneo", "elitismo"]
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUTS_DIR = BASE_DIR / "outputs"
 FIGURES_DIR = OUTPUTS_DIR / "figures"
+DOCS_DIR = BASE_DIR / "docs"
+DOCS_FIGURES_DIR = DOCS_DIR / "assets" / "figures"
 
 # Archivos de salida
 METRICS_CSV = OUTPUTS_DIR / "metricas_generacionales.csv"
@@ -59,6 +62,15 @@ ARCHIVOS_EXPORTADOS = [
     FIGURES_DIR / "minimos_por_generacion.png",
     FIGURES_DIR / "desviacion_estandar_por_generacion.png",
     FIGURES_DIR / "comparacion_metodos.png",
+    FIGURES_DIR / "comparativa_20_fitness_max.png",
+    FIGURES_DIR / "comparativa_20_fitness_min.png",
+    FIGURES_DIR / "comparativa_20_fitness_prom.png",
+    FIGURES_DIR / "comparativa_100_fitness_max.png",
+    FIGURES_DIR / "comparativa_100_fitness_min.png",
+    FIGURES_DIR / "comparativa_100_fitness_prom.png",
+    FIGURES_DIR / "comparativa_200_fitness_max.png",
+    FIGURES_DIR / "comparativa_200_fitness_min.png",
+    FIGURES_DIR / "comparativa_200_fitness_prom.png",
     FIGURES_DIR / "comparativa_20_iteraciones.png",
     FIGURES_DIR / "comparativa_100_iteraciones.png",
     FIGURES_DIR / "comparativa_200_iteraciones.png",
@@ -199,6 +211,13 @@ def _imprimir_resultado_metodo(resultado: Dict):
     print(f"Desv. std última generación  : {resultado['desv_std_final']:.12f}")
     print(f"Tiempo ejecución método (s)  : {resultado['tiempo_ejecucion_total_seg']:.6f}")
     print("=" * 120)
+
+
+def sincronizar_figuras_para_informe():
+    """Copia las figuras generadas a la carpeta usada por el informe HTML."""
+    DOCS_FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    for archivo_png in FIGURES_DIR.glob("*.png"):
+        shutil.copy2(archivo_png, DOCS_FIGURES_DIR / archivo_png.name)
 
 
 def evolucionar(metodo: str = "ruleta", n_generaciones: int = N_GENERACIONES,
@@ -406,6 +425,29 @@ def _graficar_metricas(df_metricas: pd.DataFrame):
 def _graficar_por_variantes(df_variantes: pd.DataFrame):
     """Genera una gráfica por cada conjunto de iteraciones (20, 100, 200)."""
     for n_generaciones, grupo_variantes in df_variantes.groupby("n_generaciones"):
+        for metrica, sufijo, titulo_metrica in [
+            ("fitness_max", "fitness_max", "Fitness máximo"),
+            ("fitness_min", "fitness_min", "Fitness mínimo"),
+            ("fitness_prom", "fitness_prom", "Fitness promedio"),
+        ]:
+            plt.figure(figsize=(10, 6))
+            for metodo, grupo in grupo_variantes.groupby("metodo"):
+                promedio_por_gen = grupo.groupby("generacion")[metrica].mean().reset_index()
+                plt.plot(
+                    promedio_por_gen["generacion"],
+                    promedio_por_gen[metrica],
+                    marker="o",
+                    label=metodo.capitalize(),
+                )
+            plt.title(f"{titulo_metrica} por generación - {n_generaciones} iteraciones")
+            plt.xlabel("Generación")
+            plt.ylabel(titulo_metrica)
+            plt.grid(True, linestyle="--", alpha=0.45)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(FIGURES_DIR / f"comparativa_{n_generaciones}_{sufijo}.png", dpi=200)
+            plt.close()
+
         plt.figure(figsize=(10, 6))
         for metodo, grupo in grupo_variantes.groupby("metodo"):
             # Promediamos por generación entre repeticiones
@@ -495,7 +537,7 @@ def main():
     np.random.seed(SEED)
 
     print("=" * 120)
-    print("ALGORITMO GENÉTICO CANÓNICO")
+    print("ALGORITMO GENÉTICO CANÓNICO - TP N° 1")
     print(f"Función objetivo: f(x) = (x / {COEF})²  en el dominio [0, {COEF}]")
     print(f"Codificación: Binaria de {N_BITS} bits")
     print("=" * 120)
@@ -567,6 +609,7 @@ def main():
     estabilidad.to_csv(OUTPUTS_DIR / "tabla_estabilidad_tiempos.csv", index=False)
 
     _graficar_por_variantes(df_metricas_variantes)
+    sincronizar_figuras_para_informe()
 
     # ============================================================
     # Experimentos adicionales (cambio de parámetros)

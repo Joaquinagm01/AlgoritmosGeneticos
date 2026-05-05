@@ -1,39 +1,43 @@
-# TP - Algoritmos Genéticos para Scheduling SOC
+# TP 1 - Algoritmo Genético Canónico
 
-Trabajo Práctico universitario de **Inteligencia Artificial** aplicado a un problema real de **Ciberseguridad**: optimización de asignación de alertas en un **Security Operations Center (SOC)** mediante un **Algoritmo Genético Canónico**.
+Trabajo Práctico universitario de **Inteligencia Artificial** para implementar un **Algoritmo Genético Canónico** que maximiza la función:
+
+f(x) = (x / coef)^2
+
+Dentro del dominio [0, 2^30 - 1], donde `coef = 2^30 - 1`.
 
 ---
 
 ## Contexto del Problema
 
-Un SOC recibe cientos de alertas de seguridad por día. El objetivo es optimizar automáticamente la asignación de alertas a analistas para:
+Se busca encontrar el máximo de una función mediante un AG canónico con:
 
-- Reducir tiempo de respuesta.
-- Priorizar alertas críticas.
-- Balancear la carga entre analistas.
-- Evitar saturación y backlog.
+- Codificación binaria de 30 bits.
+- Población inicial de 10 individuos.
+- Probabilidad de crossover de 0.75.
+- Probabilidad de mutación de 0.05.
+- Crossover de 1 punto.
+- Mutación invertida.
+- Selección por ruleta, torneo y elitismo.
 
 ---
 
 ## Escenario del Modelo
 
-- **10 analistas** SOC.
-- **500 alertas** generadas aleatoriamente.
-- Cada alerta posee:
-  - **Prioridad**: Baja, Media, Alta, Crítica.
-  - **Tiempo estimado** de resolución.
-  - **Severidad**.
+- Dominio de búsqueda: enteros entre `0` y `2^30 - 1`.
+- Cromosoma: 30 bits.
+- Objetivo: maximizar el valor de la función objetivo.
 
 ---
 
 ## Representación Genética
 
-Cada **cromosoma** representa una solución completa. Cada **gen** representa la asignación de una alerta a un analista.
+Cada cromosoma representa un número entero codificado en binario.
 
-Ejemplo: `[3, 1, 5, 2, 2, 7, 8, 1, ...]`
+Ejemplo: `010101001011...` (30 bits)
 
-- **Índice** = alerta.
-- **Valor** = analista asignado (0..9).
+- Índice = posición del gen.
+- Valor = `0` o `1`.
 
 ---
 
@@ -42,7 +46,7 @@ Ejemplo: `[3, 1, 5, 2, 2, 7, 8, 1, ...]`
 | Parámetro | Valor |
 |-----------|-------|
 | Población inicial | 10 individuos |
-| Generaciones (base) | 20 |
+| Generaciones base | 20 |
 | Probabilidad de crossover | 0.75 |
 | Probabilidad de mutación | 0.05 |
 | Método de crossover | 1 punto |
@@ -53,36 +57,31 @@ Ejemplo: `[3, 1, 5, 2, 2, 7, 8, 1, ...]`
 
 ## Función Fitness
 
-```
-Fitness = 1 / (1 + (TiempoTotal + Penalización))
-```
+La aptitud coincide con la función objetivo:
 
-**Penalizaciones consideradas:**
-- **Desbalance** de carga entre analistas (peso 2.0).
-- **Sobrecarga** por encima del 120% de la carga promedio (peso 1.5).
-- **Espera crítica**: demora media de alertas críticas (peso 1.2).
-- **Backlog**: alertas fuera del umbral SLA (peso 30.0).
+f(x) = (x / coef)^2
+
+Cuanto mayor es `x`, mayor es el fitness, y el óptimo se encuentra en el extremo superior del dominio.
 
 ---
 
 ## Estructura del Proyecto
 
-```
+```text
 .
-├── main.py                          # Punto de entrada principal (ejecutable)
-├── src/main.py                      # Implementación alternativa (módulo)
-├── requirements.txt                 # Dependencias de Python
-├── README.md                        # Este archivo
+├── main.py
+├── src/main.py
+├── requirements.txt
+├── README.md
 ├── docs/
-│   ├── informe.html                 # Informe académico completo
-│   ├── informe.css                  # Estilos del informe
+│   ├── informe.html
+│   ├── informe.css
 │   └── assets/
-│       ├── utn_rosario_logo.png     # Logo institucional
-│       └── figures/                 # Gráficos embebidos en el informe
-├── outputs/
-│   ├── *.csv                        # Métricas y resultados exportados
-│   └── figures/                     # Gráficos generados por el script
-└── outputs/legacy/                  # Artefactos históricos
+│       ├── utn_rosario_logo.png
+│       └── figures/
+└── outputs/
+    ├── *.csv
+    └── figures/
 ```
 
 ---
@@ -96,84 +95,75 @@ Fitness = 1 / (1 + (TiempoTotal + Penalización))
 
 ---
 
-## Instalación
-
-```bash
-# Crear entorno virtual (opcional pero recomendado)
-python3 -m venv .venv
-source .venv/bin/activate  # En Windows: .venv\Scripts\activate
-
-# Instalar dependencias
-pip install -r requirements.txt
-```
-
----
-
 ## Ejecución
 
-### Opción 1: Ejecutar desde la raíz (recomendado)
+### Opción 1: Ejecutar desde la raíz
 ```bash
-python3 main.py
+python main.py
 ```
 
-### Opción 2: Ejecutar desde el módulo src
+### Opción 2: Ejecutar desde el módulo `src`
 ```bash
-python3 src/main.py
+python src/main.py
 ```
 
 ---
 
 ## Resultados Generados
 
-El script genera automáticamente:
-
 ### Por consola
-- Tablas de métricas por generación (fitness máx, mín, promedio, desv. std, tiempo).
+- Tablas de métricas por generación.
 - Resumen final por método de selección.
-- Mejor solución global encontrada.
-- Resumen de variantes (20, 100, 200 generaciones).
+- Mejor cromosoma y valor máximo encontrado.
+- Resumen de variantes para 20, 100 y 200 corridas.
 
 ### Archivos CSV exportados
-- `metricas_generacionales_soc.csv` — métricas por generación (base).
-- `resumen_resultados_soc.csv` — resumen final por método.
-- `metricas_variantes_generaciones.csv` — métricas de variantes.
-- `experimentos_repetidos.csv` — resultados de repeticiones por configuración.
-- `resumen_variantes_generaciones.csv` — resumen de variantes.
-- `tabla_mins_prom_maxs_por_configuracion.csv` — estadísticas agregadas.
+- `metricas_generacionales.csv`
+- `resumen_resultados.csv`
+- `metricas_variantes_generaciones.csv`
+- `experimentos_repetidos.csv`
+- `resumen_variantes_generaciones.csv`
+- `tabla_mins_prom_maxs_por_configuracion.csv`
+- `tabla_estabilidad_tiempos.csv`
+- `experimentos_adicionales.csv`
 
-### Gráficos exportados (PNG, 200 DPI)
-1. `maximos_por_generacion.png` — Fitness máximo por generación.
-2. `promedios_por_generacion.png` — Fitness promedio por generación.
-3. `minimos_por_generacion.png` — Fitness mínimo por generación.
-4. `desviacion_estandar_por_generacion.png` — Desviación estándar.
-5. `comparacion_metodos.png` — Comparación global Ruleta vs Torneo vs Elitismo.
-6. `comparativa_20_iteraciones.png` — Variante 20 generaciones.
-7. `comparativa_100_iteraciones.png` — Variante 100 generaciones.
-8. `comparativa_200_iteraciones.png` — Variante 200 generaciones.
+### Gráficos exportados
+- `maximos_por_generacion.png`
+- `promedios_por_generacion.png`
+- `minimos_por_generacion.png`
+- `desviacion_estandar_por_generacion.png`
+- `comparacion_metodos.png`
+- `comparativa_20_iteraciones.png`
+- `comparativa_100_iteraciones.png`
+- `comparativa_200_iteraciones.png`
 
 ---
 
-## Visualización del Informe
+## Informe
 
-Abrir `docs/informe.html` en cualquier navegador moderno. El informe incluye:
+Abrir `docs/informe.html` en un navegador moderno. El informe incluye:
 
-- Carátula institucional.
-- Índice navegable.
-- Marco teórico del AG.
-- Descripción del problema SOC.
-- Tablas de parámetros y resultados.
-- **Gráficos comparativos embebidos** (ajustados para impresión y pantalla).
-- Conclusiones y recomendación final.
+- Marco teórico del AG canónico.
+- Descripción del problema y función objetivo.
+- Parámetros fijos y variables.
+- Resultados para ruleta, torneo y elitismo.
+- Experimentos adicionales.
+- Gráficas comparativas.
+- Tabla de estabilidad y tiempos.
+- Conclusiones.
 
-> **Nota**: Los gráficos del informe se cargan desde `docs/assets/figures/` (copia local) para garantizar visualización offline y compatibilidad con el protocolo `file://`.
+> El script copia automáticamente los gráficos de `outputs/figures/` a `docs/assets/figures/` para que el informe se vea correctamente en local.
 
 ---
 
 ## Autores
 
-- **Chacón Agustina** — aguscchacon@gmail.com
-- **Gomez Manna Joaquina** — gomezmannajoaquina@gmail.com — Legajo: 47791
-- **Tabini Azul** — azultabini@gmail.com
+- **Chacón Agustina** — aguscchacon@gmail.com 
+- **Gomez Manna Joaquina**  gomezmannajoaquina@gmail.com
+- **Tabini Azul** — azultabini@gmail.com 
+- **Carloni, Nahuel Iván** — nahuelcarloni25@gmail.com
+- **Mierez, Joaquin** — Joakomierez1@hotmail.com
+
 
 **Materia**: Inteligencia Artificial  
 **Facultad**: UTN Facultad Regional Rosario  
