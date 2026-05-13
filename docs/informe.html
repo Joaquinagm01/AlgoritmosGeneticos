@@ -17,14 +17,16 @@
     <h1 class="caratula-titulo">Trabajo Práctico N° 1<br />Algoritmo Genético Canónico</h1>
 
     <p class="caratula-subtitulo">
-      Maximización de la función f(x) = (x / coef)² con codificación binaria de 30 bits
+      Maximización de la función f(x) = (x / 2³⁰)² con codificación binaria de 30 bits
     </p>
 
     <div class="caratula-ficha">
       <div class="caratula-meta">
         <p><span class="label">Materia:</span> Algoritmo Genético</p>
         <p><span class="label">Tema:</span> Algoritmo Genético Canónico y elitismo</p>
-        <p><span class="label">Función objetivo:</span> f(x) = (x / (2³⁰ - 1))²</p>
+        <p><span class="label">Función objetivo:</span> f(x) = (x / 2³⁰)²</p>
+        <p class="nota"><em>Nota:</em> en la implementación se mantiene la codificación canónica de 30 bits; el máximo fenotipo representable es $2^{30}-1$, por lo que en la práctica el extremo superior del dominio efectivo es $2^{30}-1$.</p>
+      </div>
         <p><span class="label">Población inicial:</span> 10 individuos</p>
         <p><span class="label">Generaciones base:</span> 20</p>
         <p><span class="label">Métodos de selección:</span> ruleta, torneo y elitismo</p>
@@ -94,9 +96,9 @@
       <p>
         El objetivo del trabajo es maximizar la función:
       </p>
-      <p class="formula">f(x) = (x / 2³⁰)², con dominio x ∈ [0, 2³⁰ - 1].</p>
+      <p class="formula">f(x) = (x / 2³⁰)², con dominio x ∈ [0, 2³⁰].</p>
       <p>
-        La codificación elegida es binaria de 30 bits, de modo que cada cromosoma representa un entero del dominio. Para la implementación práctica se trabaja con el máximo representable $2^{30}-1$, pero el coeficiente solicitado por el enunciado se reporta como $2^{30}$. El óptimo global se encuentra en el extremo superior del intervalo, cuando $x=2^{30}-1$, y el fitness máximo posible es 1.
+        La codificación elegida es binaria de 30 bits, de modo que cada cromosoma representa un entero del dominio. En la práctica computacional el fenotipo máximo representable en binario puro es $2^{30}-1$. Resulta matemáticamente imposible representar el límite superior cerrado del dominio ($2^{30}$) mediante una conversión entera directa sin aplicar un factor de escala. Se priorizó mantener la representación canónica original asumiendo la pérdida marginal en el límite superior; por tanto, el máximo observado y reportado en los experimentos es $2^{30}-1$.
       </p>
       <p>
         El trabajo solicita reportar el cromosoma ganador, el valor máximo alcanzado, el valor mínimo y el promedio de cada población, además de la desviación estándar del fitness por generación para estudiar la convergencia.
@@ -236,8 +238,8 @@
         Los resultados completos de estos experimentos se guardan en un <strong>archivo de resultados de los experimentos</strong> y las figuras generadas se incluyen en la carpeta de figuras del informe. Para regenerar los datos y las gráficas desde el código fuente, ejecutar en la raíz del repositorio:
       </p>
       <pre><code>python -m pip install -r requirements.txt
-python src/main.py
-</code></pre>
+    python main.py
+    </code></pre>
       <div class="table-block" data-title="Experimentos adicionales con parámetros variables">
         <div class="table-wrap">
           <table>
@@ -267,9 +269,10 @@ python src/main.py
       </div>
       <p>
         La mutación baja perjudicó especialmente a ruleta, que quedó lejos del óptimo. En cambio, elitismo mantuvo soluciones competitivas incluso con una tasa reducida, y torneo fue capaz de llegar al óptimo cuando se amplió la población o se extendió el número de generaciones.
+      <p>
+        Con una élite de dos cromosomas, elitismo alcanzó soluciones prácticamente óptimas en 100 iteraciones y mantuvo la mejor estabilidad agregada de la comparación. Ese comportamiento lo deja como la alternativa más sólida cuando importa tanto la calidad de la solución como el costo computacional medio.
       </p>
-    </section>
-
+      <p class="nota">La tabla adjunta resume los promedios calculados sobre las repeticiones realizadas por cada configuración (se indican medias y desviaciones relevantes), para mayor rigor académico.</p>
     <section class="card" id="graficas">
       <h2>8. Gráficas comparativas</h2>
       <p>
@@ -386,15 +389,15 @@ python src/main.py
               </tr>
             </thead>
             <tbody>
-              <tr><td>20</td><td>elitismo</td><td>0.989780</td><td>12.00</td><td>0.008954</td><td>1068233423.67</td><td>0.001860</td></tr>
-              <tr><td>20</td><td>ruleta</td><td>0.976725</td><td>11.67</td><td>0.019439</td><td>1061137537.67</td><td>0.001944</td></tr>
-              <tr><td>20</td><td>torneo</td><td>0.988848</td><td>17.00</td><td>0.015498</td><td>1067715679.00</td><td>0.002179</td></tr>
-              <tr><td>100</td><td>elitismo</td><td>0.999831</td><td>95.33</td><td>0.000277</td><td>1073650841.00</td><td>0.008271</td></tr>
-              <tr><td>100</td><td>ruleta</td><td>0.891340</td><td>62.33</td><td>0.163292</td><td>1010712863.33</td><td>0.008482</td></tr>
-              <tr><td>100</td><td>torneo</td><td>0.973489</td><td>90.00</td><td>0.044219</td><td>1059228803.00</td><td>0.009514</td></tr>
-              <tr><td>200</td><td>elitismo</td><td>1.000000</td><td>154.33</td><td>0.000000</td><td>1073741801.67</td><td>0.015363</td></tr>
-              <tr><td>200</td><td>ruleta</td><td>0.998252</td><td>190.67</td><td>0.002048</td><td>1072802729.33</td><td>0.016860</td></tr>
-              <tr><td>200</td><td>torneo</td><td>0.999366</td><td>190.33</td><td>0.000851</td><td>1073401158.67</td><td>0.018759</td></tr>
+              <tr><td>20</td><td>elitismo</td><td>0.989780</td><td>12.00</td><td>0.008954</td><td>1068233423.67</td><td>0.002030</td></tr>
+              <tr><td>20</td><td>ruleta</td><td>0.976725</td><td>11.67</td><td>0.019439</td><td>1061137537.67</td><td>0.002118</td></tr>
+              <tr><td>20</td><td>torneo</td><td>0.988848</td><td>17.00</td><td>0.015498</td><td>1067715679.00</td><td>0.002268</td></tr>
+              <tr><td>100</td><td>elitismo</td><td>0.999831</td><td>95.33</td><td>0.000277</td><td>1073650841.00</td><td>0.008912</td></tr>
+              <tr><td>100</td><td>ruleta</td><td>0.891340</td><td>62.33</td><td>0.163292</td><td>1010712863.33</td><td>0.008914</td></tr>
+              <tr><td>100</td><td>torneo</td><td>0.973489</td><td>90.00</td><td>0.044219</td><td>1059228803.00</td><td>0.010852</td></tr>
+              <tr><td>200</td><td>elitismo</td><td>1.000000</td><td>154.33</td><td>0.000000</td><td>1073741801.67</td><td>0.016720</td></tr>
+              <tr><td>200</td><td>ruleta</td><td>0.998252</td><td>190.67</td><td>0.002048</td><td>1072802729.33</td><td>0.017623</td></tr>
+              <tr><td>200</td><td>torneo</td><td>0.999366</td><td>190.33</td><td>0.000851</td><td>1073401158.67</td><td>0.020388</td></tr>
             </tbody>
           </table>
         </div>

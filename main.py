@@ -2,8 +2,8 @@
 Trabajo Práctico N° 1 - Algoritmo Genético Canónico
 Materia: Inteligencia Artificial
 
-Objetivo: maximizar f(x) = (x / coef)^2 en el dominio [0, 2^30 - 1]
-donde coef = 2^30 - 1.
+Objetivo: maximizar f(x) = (x / coef)^2 en el dominio [0, 2^30]
+donde coef = 2^30.
 
 Codificación: binaria de 30 bits.
 """
@@ -27,7 +27,7 @@ N_GENERACIONES = 20
 P_CROSSOVER = 0.75
 P_MUTACION = 0.05
 N_BITS = 30
-COEF = (2 ** N_BITS) - 1  # 2^30 - 1 = 1,073,741,823
+COEF = (2 ** N_BITS)  # 2^30 = 1,073,741,824
 TORNEO_K = 3
 ELITE_SIZE = 2
 SEED = 42
@@ -170,6 +170,10 @@ def calcular_estadisticas(fitnesses: List[float], tiempo_gen: float) -> Dict:
 
 def _seleccionar_padre(metodo: str, poblacion: Population, fitnesses: List[float]) -> Chromosome:
     """Selecciona un padre según el método configurado."""
+    # Nota: para la variante "elitismo" mantenemos la selección de padres
+    # por Ruleta (continuación de la Opción A). La élite se copia intacta
+    # a la siguiente generación, pero los padres para generar el resto
+    # de la población se eligen por ruleta.
     if metodo in ("ruleta", "elitismo"):
         return seleccion_ruleta(poblacion, fitnesses)
     if metodo == "torneo":
@@ -241,11 +245,15 @@ def evolucionar(metodo: str = "ruleta", n_generaciones: int = N_GENERACIONES,
 
         fitnesses = calcular_fitness_poblacion(poblacion)
 
-        # Actualizar mejor global
-        idx_mejor = int(np.argmax(fitnesses))
-        if fitnesses[idx_mejor] > mejor_global_fitness:
-            mejor_global_fitness = fitnesses[idx_mejor]
-            mejor_global_cromosoma = poblacion[idx_mejor][:]
+        # Mejor de la generación (cromosoma y valor entero)
+        idx_mejor_gen = int(np.argmax(fitnesses))
+        mejor_cromosoma_gen = poblacion[idx_mejor_gen][:]
+        mejor_x_gen = binario_a_entero(mejor_cromosoma_gen)
+
+        # Actualizar mejor global histórico
+        if fitnesses[idx_mejor_gen] > mejor_global_fitness:
+            mejor_global_fitness = fitnesses[idx_mejor_gen]
+            mejor_global_cromosoma = poblacion[idx_mejor_gen][:]
             mejor_global_x = binario_a_entero(mejor_global_cromosoma)
 
         # Crear nueva población
@@ -270,11 +278,13 @@ def evolucionar(metodo: str = "ruleta", n_generaciones: int = N_GENERACIONES,
         stats["metodo"] = metodo
         stats["n_generaciones"] = n_generaciones
         stats["tam_poblacion"] = tam_poblacion
-        stats["mejor_x"] = mejor_global_x
+        # Registrar el mejor de ESTA generación (cromosoma y x)
+        stats["mejor_x_gen"] = mejor_x_gen
+        stats["mejor_cromosoma_gen"] = "".join(map(str, mejor_cromosoma_gen))
         historial.append(stats)
 
         if verbose:
-            _imprimir_fila_generacion(gen, stats, mejor_global_x)
+            _imprimir_fila_generacion(gen, stats, mejor_x_gen)
 
     tiempo_total = time.time() - inicio_total
 
