@@ -68,9 +68,8 @@ Cuanto mayor es `x`, mayor es el fitness, y el óptimo se encuentra en el extrem
 ## Estructura del Proyecto
 
 ```text
-.
+TP1/
 ├── main.py
-├── src/main.py
 ├── requirements.txt
 ├── README.md
 ├── docs/
@@ -99,12 +98,12 @@ Cuanto mayor es `x`, mayor es el fitness, y el óptimo se encuentra en el extrem
 
 ### Opción 1: Ejecutar desde la raíz
 ```bash
-python main.py
+python TP1/main.py
 ```
 
-### Opción 2: Ejecutar desde el módulo `src`
+### Opción 2: Ejecutar desde la carpeta TP1
 ```bash
-python src/main.py
+cd TP1 && python main.py
 ```
 
 ---
