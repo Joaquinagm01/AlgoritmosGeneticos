@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe Académico - TP 2 Problema de la Mochila</title>
+  <link rel="stylesheet" href="informe.css" />
+</head>
+<body>
+  <section class="caratula">
+    <div class="caratula-logo-wrap">
+      <img class="caratula-logo" src="../../TP1/docs/assets/utn_rosario_logo.png" alt="UTN Facultad Regional Rosario" />
+    </div>
+
+    <p class="caratula-kicker">Universidad Tecnológica Nacional - Facultad Regional Rosario</p>
+
+    <h1 class="caratula-titulo">Trabajo Práctico N° 2<br />Problema de la Mochila</h1>
+    <p class="caratula-subtitulo">
+      Maximización del valor total con capacidad limitada, comparando búsqueda exhaustiva y algoritmo greedy
+    </p>
+
+    <div class="caratula-ficha">
+      <div class="caratula-meta">
+        <p><span class="label">Materia:</span> Algoritmos Genéticos</p>
+        <p><span class="label">Tema:</span> Problema de la mochila</p>
+        <p><span class="label">Función objetivo:</span> maximizar valor sin exceder capacidad</p>
+        <p class="nota"><em>Nota:</em> el enunciado principal trabaja con una mochila de 4200 cm3; para el análisis comparativo se resuelve además el caso de 3000 grs. con tres elementos.</p>
+      </div>
+
+      <div class="caratula-equipo">
+        <div class="caratula-personas">
+          <div class="caratula-persona">
+            <strong>Chacón Agustina</strong>
+            <span>aguscchacon@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Gomez Manna Joaquina</strong>
+            <span>gomezmannajoaquina@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Tabini Azul</strong>
+            <span>azultabini@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Carloni Nahuel Iván</strong>
+            <span>nahuelcarloni25@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Mierez Joaquin</strong>
+            <span>joakomierez1@hotmail.com</span>
+          </div>
+        </div>
+      </div>
+
+    <p class="fecha-entrega">Rosario, mayo de 2026</p>
+  </section>
+
+  <nav class="indice" aria-label="Tabla de contenidos">
+    <h2>Índice de contenidos</h2>
+    <ol>
+      <li><a href="#introduccion">Introducción teórica</a></li>
+      <li><a href="#problema">Descripción del problema y función objetivo</a></li>
+      <li><a href="#parametros">Parámetros y representación</a></li>
+      <li><a href="#exhaustivo">Punto 1: búsqueda exhaustiva</a></li>
+      <li><a href="#greedy">Punto 2: algoritmo greedy</a></li>
+      <li><a href="#caso">Punto 3: caso con tres elementos</a></li>
+      <li><a href="#comparacion">Comparación y grado de optimización</a></li>
+      <li><a href="#conclusiones">Conclusiones</a></li>
+    </ol>
+  </nav>
+
+  <main class="container">
+    <section class="card" id="introduccion">
+      <h2>1. Introducción teórica</h2>
+      <p>
+        El problema de la mochila es un clásico de optimización combinatoria. Consiste en seleccionar un subconjunto de elementos, cada uno con peso y valor, de modo que el valor acumulado sea máximo sin superar la capacidad disponible.
+      </p>
+      <p>
+        Este tipo de problema permite contrastar métodos exactos y heurísticos. La búsqueda exhaustiva garantiza el óptimo porque evalúa todas las combinaciones posibles, mientras que el algoritmo greedy privilegia decisiones locales rápidas, pero no siempre obtiene la mejor solución global.
+      </p>
+      <p>
+        En el contexto del trabajo práctico, la comparación sirve para mostrar la diferencia entre exactitud, simplicidad de implementación y costo computacional.
+      </p>
+    </section>
+
+    <section class="card" id="problema">
+      <h2>2. Descripción del problema y función objetivo</h2>
+      <p>
+        El enunciado plantea una mochila con capacidad de 4200 cm3 y un conjunto de elementos, cada uno con un valor monetario y un volumen asociado. Se pide determinar qué subconjunto maximiza el valor total sin exceder la capacidad.
+      </p>
+      <p>
+        Para el caso de estudio adicional, el enunciado propone trabajar con tres elementos de 1800, 600 y 1200 grs., con valores de $72, $36 y $60 respectivamente, y una mochila con capacidad de 3000 grs.
+      </p>
+      <p>
+        El programa implementado en <a href="../main.py">main.py</a> resuelve ambas variantes mediante una función genérica de evaluación sobre subconjuntos.
+      </p>
+    </section>
+
+    <section class="card" id="parametros">
+      <h2>3. Parámetros y representación</h2>
+      <div class="table-block">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Elemento</th>
+                <th>Representación</th>
+                <th>Valor del modelo</th>
+                <th>Observación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Capacidad</td><td>Entero positivo</td><td>4200 cm3</td><td>Caso base del enunciado</td></tr>
+              <tr><td>Capacidad del caso 3</td><td>Entero positivo</td><td>3000 grs.</td><td>Instancia de análisis</td></tr>
+              <tr><td>Valor</td><td>Entero</td><td>$</td><td>Se maximiza</td></tr>
+              <tr><td>Peso/volumen</td><td>Entero</td><td>grs./cm3</td><td>Restricción de factibilidad</td></tr>
+              <tr><td>Representación</td><td>Subconjunto de items</td><td>{...}</td><td>Solución factible o no factible</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="exhaustivo">
+      <h2>4. Punto 1: resolución por búsqueda exhaustiva</h2>
+      <p>
+        La solución exhaustiva consiste en enumerar todos los subconjuntos posibles de elementos, calcular su peso total, descartar los que superan la capacidad y, entre los factibles, conservar el de mayor valor.
+      </p>
+      <p>
+        Para una lista de n elementos, el número de subconjuntos es 2<sup>n</sup>, por lo que el método crece de manera exponencial. Esa característica lo vuelve impracticable para listas grandes, pero lo convierte en una referencia exacta para verificar resultados.
+      </p>
+      <p>
+        En el script del trabajo, esta lógica está implementada en la función <strong>resolver_exhaustivo()</strong>, que retorna la mejor combinación encontrada junto con su peso y valor total.
+      </p>
+    </section>
+
+    <section class="card" id="greedy">
+      <h2>5. Punto 2: resolución por algoritmo greedy</h2>
+      <p>
+        El algoritmo greedy ordena los elementos por su relación valor/peso y los incorpora mientras la capacidad lo permita. Es una estrategia local, porque en cada paso toma la mejor decisión inmediata según el criterio elegido.
+      </p>
+      <p>
+        Su mayor ventaja es la simplicidad operativa: requiere menos cómputo que la búsqueda exhaustiva y entrega una solución razonable en poco tiempo. Sin embargo, al no revisar combinaciones alternativas, puede perder soluciones globalmente mejores.
+      </p>
+      <p>
+        En el código, esta estrategia está implementada en la función <strong>resolver_greedy()</strong>.
+      </p>
+    </section>
+
+    <section class="card" id="caso">
+      <h2>6. Punto 3: análisis del caso con pesos</h2>
+      <p>
+        Para los tres elementos dados por el enunciado:
+      </p>
+      <div class="table-block">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Elemento</th>
+                <th>Peso</th>
+                <th>Valor</th>
+                <th>Relación valor/peso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Elemento 1</td><td>1800 grs.</td><td>$72</td><td>0.0400</td></tr>
+              <tr><td>Elemento 2</td><td>600 grs.</td><td>$36</td><td>0.0600</td></tr>
+              <tr><td>Elemento 3</td><td>1200 grs.</td><td>$60</td><td>0.0500</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p>
+        La mochila soporta hasta 3000 grs. En este escenario, el exhaustivo encuentra la combinación óptima formada por los elementos 1 y 3, con un peso total de 3000 grs. y un valor total de $132.
+      </p>
+      <p>
+        El greedy, en cambio, prioriza la mejor relación valor/peso y selecciona los elementos 2 y 3, alcanzando un valor total de $96 con un peso de 1800 grs.
+      </p>
+      <div class="table-block">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Método</th>
+                <th>Selección</th>
+                <th>Peso total</th>
+                <th>Valor total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Exhaustivo</td><td>Elemento 1 + Elemento 3</td><td>3000 grs.</td><td>$132</td></tr>
+              <tr><td>Greedy</td><td>Elemento 2 + Elemento 3</td><td>1800 grs.</td><td>$96</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="comparacion">
+      <h2>7. Comparación y grado de optimización</h2>
+      <p>
+        La solución exhaustiva es óptima por definición, ya que explora todas las combinaciones posibles. En este caso, además, llena exactamente la capacidad de la mochila y maximiza el valor.
+      </p>
+      <p>
+        El greedy produce una solución válida, pero subóptima. Aunque su criterio local es razonable, no detecta que la combinación de los elementos 1 y 3 supera en valor a la selección tomada por la heurística.
+      </p>
+      <p>
+        La conclusión técnica es que el greedy resulta útil como aproximación rápida, pero no debe presentarse como solución exacta del problema general de la mochila.
+      </p>
+    </section>
+
+    <section class="card" id="conclusiones">
+      <h2>8. Conclusiones</h2>
+      <p>
+        El trabajo muestra que el problema de la mochila admite enfoques con distinto costo y distinta garantía de optimalidad. La búsqueda exhaustiva es adecuada para validar instancias pequeñas y obtener la solución exacta. El algoritmo greedy, en cambio, simplifica el proceso pero puede sacrificar calidad.
+      </p>
+      <p>
+        Para el ejercicio analizado, la solución exacta alcanza un valor de $132 y el greedy queda en $96. Esa diferencia confirma que la estrategia golosa no asegura el óptimo global, aunque sí aporta rapidez y simplicidad de implementación.
+      </p>
+      <p>
+        En términos académicos, el TP permite justificar por qué los problemas combinatorios se analizan con técnicas exactas y heurísticas, y por qué resulta importante comparar ambas antes de elegir una estrategia de resolución.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

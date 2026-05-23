@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe Académico - TP3 Problema del Viajante</title>
+  <link rel="stylesheet" href="informe.css" />
+</head>
+<body>
+  <section class="caratula">
+    <div class="caratula-badge">Universidad Tecnológica Nacional</div>
+    <h1>Trabajo Práctico N° 3</h1>
+    <h2>Problema del Viajante</h2>
+    <p class="subtitulo">Resolución heurística y mediante algoritmo genético sobre las capitales provinciales de la República Argentina</p>
+    <div class="ficha">
+      <p><strong>Problema:</strong> TSP aplicado a 23 capitales provinciales</p>
+      <p><strong>Métodos:</strong> análisis exhaustivo teórico, vecino más cercano y algoritmo genético</p>
+      <p><strong>Codificación genético:</strong> permutaciones de ciudades con crossover cíclico</p>
+      <p><strong>Parámetros base:</strong> población 50, ciclos 200, elite 2</p>
+    </div>
+    <p class="fecha">Rosario, mayo de 2026</p>
+  </section>
+
+  <nav class="indice" aria-label="Tabla de contenidos">
+    <h2>Índice de contenidos</h2>
+    <ol>
+      <li><a href="#introduccion">Introducción y definición del TSP</a></li>
+      <li><a href="#exhaustivo">Análisis del método exhaustivo</a></li>
+      <li><a href="#heuristica-a">Heurística: inicio elegido por el usuario</a></li>
+      <li><a href="#heuristica-b">Heurística: mejor inicio global</a></li>
+      <li><a href="#genetico">Algoritmo genético</a></li>
+      <li><a href="#parametros">Parámetros del experimento</a></li>
+      <li><a href="#graficas">Recorridos y gráficas</a></li>
+      <li><a href="#aportes">Aportes prácticos del TSP</a></li>
+      <li><a href="#conclusiones">Conclusiones</a></li>
+    </ol>
+  </nav>
+
+  <main class="container">
+    <section class="card" id="introduccion">
+      <h2>1. Introducción y definición del TSP</h2>
+      <p>
+        El problema del viajante de comercio, o TSP, consiste en encontrar una ruta mínima que visite una sola vez cada ciudad y regrese al punto de partida. Es un problema clásico de optimización combinatoria y, para instancias grandes, su resolución exacta se vuelve impracticable por el crecimiento factorial del espacio de búsqueda.
+      </p>
+      <p>
+        En este trabajo se modelaron las 23 capitales provinciales argentinas como nodos de un grafo completo ponderado. La distancia entre dos ciudades se estimó mediante la fórmula de Haversine, usando sus coordenadas geográficas.
+      </p>
+    </section>
+
+    <section class="card" id="exhaustivo">
+      <h2>2. Análisis del método exhaustivo</h2>
+      <p>
+        Si se fija una ciudad de inicio, el número de recorridos posibles es de $22!$; si además se aprovecha la simetría del ciclo en un problema métrico simétrico, la mitad de esas rutas representan el mismo circuito recorrido en sentido inverso. La magnitud del espacio de búsqueda vuelve al enfoque exhaustivo inviable en tiempo razonable.
+      </p>
+      <p>
+        A nivel teórico, el problema sí puede formularse y resolverse de forma exacta, pero en la práctica computacional el costo crece tan rápido que el algoritmo deja de ser útil para 23 ciudades. Por eso el trabajo compara heurísticas y un algoritmo genético como alternativas aproximadas.
+      </p>
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Aspecto</th>
+              <th>Observación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Espacio de búsqueda</td><td>Factorial en el número de ciudades</td></tr>
+            <tr><td>Resolución exacta</td><td>Correcta en teoría, impracticable en 23 capitales</td></tr>
+            <tr><td>Salida del análisis</td><td>Justificación teórica de la inviabilidad</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="heuristica-a">
+      <h2>3. Heurística desde una provincia elegida por el usuario</h2>
+      <p>
+        La heurística empleada fue la de vecino más cercano: desde la ciudad actual se avanza siempre a la ciudad no visitada más próxima y al final se regresa al origen. Esta estrategia es simple, rápida y fácil de explicar, aunque no garantiza el óptimo global.
+      </p>
+      <p>
+        El programa permite ingresar una provincia o su capital, construye el recorrido completo y genera un mapa del trayecto. El resultado depende fuertemente de la capital elegida al inicio.
+      </p>
+      <figure>
+        <img src="assets/figures/heuristica_inicio_elegido.png" alt="Recorrido heurístico desde una capital elegida" />
+        <figcaption>Mapa del recorrido heurístico desde la capital seleccionada por el usuario.</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="heuristica-b">
+      <h2>4. Heurística con mejor inicio global</h2>
+      <p>
+        Para comparar de forma más justa el comportamiento del heurístico, se evaluó el mismo criterio desde cada capital y se eligió el mejor recorrido obtenido. Esto permite medir la sensibilidad de la heurística con respecto al punto de partida.
+      </p>
+      <p>
+        La conclusión esperable es que el vecino más cercano mejora rápidamente la solución inicial, pero puede quedarse atrapado en decisiones locales desfavorables. Aun así, ofrece una línea base clara para comparar con el algoritmo genético.
+      </p>
+      <figure>
+        <img src="assets/figures/heuristica_mejor_inicio.png" alt="Mejor recorrido heurístico global" />
+        <figcaption>Mejor recorrido heurístico encontrado al probar todos los inicios posibles.</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="genetico">
+      <h2>5. Algoritmo genético</h2>
+      <p>
+        El algoritmo genético trabaja sobre permutaciones de ciudades. Cada cromosoma representa un orden de visita y la aptitud se define como el inverso de la distancia total del circuito. Se utilizó crossover cíclico, que es adecuado para preservar la validez de las permutaciones.
+      </p>
+      <p>
+        La población inicial se generó aleatoriamente y en cada ciclo se aplicaron selección, crossover y mutación por intercambio. El elitismo preservó los mejores individuos para evitar perder soluciones prometedoras.
+      </p>
+      <figure>
+        <img src="assets/figures/ag_mejor_ruta.png" alt="Mejor ruta encontrada por algoritmo genetico" />
+        <figcaption>Mejor recorrido obtenido por el algoritmo genético.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/figures/ag_evolucion_distancia.png" alt="Evolucion de la distancia en el algoritmo genetico" />
+        <figcaption>Evolución de la distancia mínima y promedio durante la corrida del algoritmo genético.</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="parametros">
+      <h2>6. Parámetros del experimento</h2>
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>Valor</th>
+              <th>Comentario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Población</td><td>50</td><td>Valor recomendado por el enunciado</td></tr>
+            <tr><td>Ciclos</td><td>200</td><td>Suficiente para observar convergencia</td></tr>
+            <tr><td>Crossover</td><td>Cíclico</td><td>Adecua la recombinación a permutaciones</td></tr>
+            <tr><td>Mutación</td><td>Intercambio aleatorio</td><td>Mantiene cromosomas válidos</td></tr>
+            <tr><td>Selección</td><td>Ruleta, torneo y elitismo</td><td>Configurable por menú</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="graficas">
+      <h2>7. Recorridos y gráficas</h2>
+      <p>
+        El programa guarda los mapas y métricas en la carpeta de salidas y copia automáticamente las figuras al informe para su visualización local. De esta forma se mantiene una salida consistente con el estilo del TP1.
+      </p>
+      <p>
+        Los recorridos impresos por consola incluyen la provincia de inicio, el trayecto completo y la longitud total del circuito.
+      </p>
+    </section>
+
+    <section class="card" id="aportes">
+      <h2>8. Aportes prácticos del TSP</h2>
+      <p>
+        Una de las aplicaciones más conocidas del TSP es la logística de distribución. En empresas de reparto o transporte, definir el orden de visita de múltiples destinos con el menor costo posible reduce tiempo, combustible y desgaste operativo.
+      </p>
+      <p>
+        Otra aplicación importante aparece en la fabricación de circuitos impresos y en el diseño de rutas de inspección. En esos contextos, minimizar el recorrido entre puntos de trabajo mejora la productividad y reduce tiempos muertos.
+      </p>
+      <p>
+        También aparece en robótica móvil, secuenciación de tareas, biología computacional y planificación de recorridos turísticos. Aunque cada dominio impone restricciones propias, la idea central del TSP sigue siendo la misma: recorrer puntos con el menor costo total.
+      </p>
+    </section>
+
+    <section class="card" id="conclusiones">
+      <h2>9. Conclusiones</h2>
+      <p>
+        El método exhaustivo queda descartado para las 23 capitales por su costo combinatorio. La heurística de vecino más cercano ofrece una respuesta inmediata y útil como línea base, pero su calidad depende del punto inicial y no garantiza optimalidad.
+      </p>
+      <p>
+        El algoritmo genético, en cambio, incorpora exploración y explotación del espacio de soluciones y permite mejorar recorridos complejos sin enumerar todas las permutaciones. Por eso es la alternativa más flexible para instancias grandes del TSP.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

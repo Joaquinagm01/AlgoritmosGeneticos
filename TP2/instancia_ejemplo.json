@@ -1,0 +1,8 @@
+{
+  "capacidad": 3000,
+  "items": [
+    {"nombre": "Elemento 1", "peso": 1800, "valor": 72},
+    {"nombre": "Elemento 2", "peso": 600, "valor": 36},
+    {"nombre": "Elemento 3", "peso": 1200, "valor": 60}
+  ]
+}
