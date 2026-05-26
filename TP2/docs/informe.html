@@ -88,11 +88,14 @@
       <p>
         El enunciado plantea una mochila con capacidad de 4200 cm3 y un conjunto de elementos, cada uno con un valor monetario y un volumen asociado. Se pide determinar qué subconjunto maximiza el valor total sin exceder la capacidad.
       </p>
+      <p class="nota">
+        <strong>Nota:</strong> la lista de ítems para la mochila de 4200 cm3 fue proporcionada y se usó como instancia principal para las ejecuciones mostradas a continuación. Los resultados y métricas se resumen directamente en las tablas del informe.
+      </p>
       <p>
         Para el caso de estudio adicional, el enunciado propone trabajar con tres elementos de 1800, 600 y 1200 grs., con valores de $72, $36 y $60 respectivamente, y una mochila con capacidad de 3000 grs.
       </p>
       <p>
-        El programa implementado en <a href="../main.py">main.py</a> resuelve ambas variantes mediante una función genérica de evaluación sobre subconjuntos.
+        El programa implementado en main.py resuelve ambas variantes mediante una función genérica de evaluación sobre subconjuntos.
       </p>
     </section>
 
@@ -121,13 +124,89 @@
       </div>
     </section>
 
+    <section class="card" id="instancia_enunciado">
+      <h2>Instancia utilizada (archivo de entrada)</h2>
+      <p>
+        A continuación se muestra la instancia usada y un resumen de los datos generados por las ejecuciones. Los resultados
+        (selección, peso, valor y tiempos) se presentan directamente en las tablas que siguen, para facilitar la lectura sin
+        recurrir a archivos externos.
+      </p>
+      <div class="table-block">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Peso</th>
+                <th>Valor</th>
+                <th>Relación valor/peso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Objeto 1</td><td>150</td><td>$20</td><td>0.1333</td></tr>
+              <tr><td>Objeto 2</td><td>325</td><td>$40</td><td>0.1231</td></tr>
+              <tr><td>Objeto 3</td><td>600</td><td>$50</td><td>0.0833</td></tr>
+              <tr><td>Objeto 4</td><td>805</td><td>$36</td><td>0.0447</td></tr>
+              <tr><td>Objeto 5</td><td>430</td><td>$25</td><td>0.0581</td></tr>
+              <tr><td>Objeto 6</td><td>1200</td><td>$64</td><td>0.0533</td></tr>
+              <tr><td>Objeto 7</td><td>770</td><td>$54</td><td>0.0701</td></tr>
+              <tr><td>Objeto 8</td><td>60</td><td>$18</td><td>0.3000</td></tr>
+              <tr><td>Objeto 9</td><td>930</td><td>$46</td><td>0.0495</td></tr>
+              <tr><td>Objeto 10</td><td>353</td><td>$28</td><td>0.0793</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3>Resultados del benchmark (instancia actual)</h3>
+      <div class="table-block">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Método</th>
+                <th>Selección</th>
+                <th>Peso total</th>
+                <th>Valor total</th>
+                <th>Repeticiones</th>
+                <th>Tiempo medio (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Exhaustivo</td><td>Objeto 1, Objeto 2, Objeto 3, Objeto 5, Objeto 6, Objeto 7, Objeto 8, Objeto 10</td><td>3888</td><td>$299</td><td>100</td><td>0.000789074</td></tr>
+              <tr><td>Greedy</td><td>Objeto 8, Objeto 1, Objeto 2, Objeto 3, Objeto 10, Objeto 7, Objeto 5, Objeto 6</td><td>3888</td><td>$299</td><td>100</td><td>0.000002215</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h3>Reproducibilidad</h3>
+      <p>Los resultados se obtuvieron con los scripts del repositorio. Para reproducir las mediciones y generar los archivos de salida, ejecutar desde la raíz del proyecto:</p>
+      <pre>python TP2/run_bench.py --reps 100
+python TP2/generate_plots.py</pre>
+      <p>Los archivos de salida se encuentran en <strong>TP2/outputs/</strong> (por ejemplo, <em>instancia_enunciado_bench.csv</em> y <em>instancia_enunciado_bench.txt</em>).</p>
+    </section>
+
     <section class="card" id="exhaustivo">
       <h2>4. Punto 1: resolución por búsqueda exhaustiva</h2>
       <p>
         La solución exhaustiva consiste en enumerar todos los subconjuntos posibles de elementos, calcular su peso total, descartar los que superan la capacidad y, entre los factibles, conservar el de mayor valor.
       </p>
+      <pre>
+Pseudocódigo (esquema):
+  MejorValor ← 0
+  MejorSubconjunto ← ∅
+  para cada subconjunto S de Items:
+    if Peso(S) ≤ Capacidad then
+      if Valor(S) > MejorValor then
+        MejorValor ← Valor(S)
+        MejorSubconjunto ← S
+  devolver MejorSubconjunto, Peso(MejorSubconjunto), MejorValor
+      </pre>
       <p>
         Para una lista de n elementos, el número de subconjuntos es 2<sup>n</sup>, por lo que el método crece de manera exponencial. Esa característica lo vuelve impracticable para listas grandes, pero lo convierte en una referencia exacta para verificar resultados.
+      </p>
+      <p>
+        Nota: el enunciado sugiere "clasificar los subconjuntos por su valor"; la implementación práctica consiste en evaluar cada subconjunto y conservar el de mayor valor, lo que es equivalente (desde la perspectiva del resultado) a ordenar subconjuntos por valor y tomar el primero.
       </p>
       <p>
         En el script del trabajo, esta lógica está implementada en la función <strong>resolver_exhaustivo()</strong>, que retorna la mejor combinación encontrada junto con su peso y valor total.
@@ -138,6 +217,9 @@
       <h2>5. Punto 2: resolución por algoritmo greedy</h2>
       <p>
         El algoritmo greedy ordena los elementos por su relación valor/peso y los incorpora mientras la capacidad lo permita. Es una estrategia local, porque en cada paso toma la mejor decisión inmediata según el criterio elegido.
+      </p>
+      <p>
+        Complejidad: el paso dominante es el ordenamiento por relación valor/peso, por lo que la complejidad típica es O(n log n) para n elementos (más una pasada lineal para seleccionar). Esto contrasta con la complejidad exponencial del método exhaustivo.
       </p>
       <p>
         Su mayor ventaja es la simplicidad operativa: requiere menos cómputo que la búsqueda exhaustiva y entrega una solución razonable en poco tiempo. Sin embargo, al no revisar combinaciones alternativas, puede perder soluciones globalmente mejores.

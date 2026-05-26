@@ -1,0 +1,16 @@
+{
+  "# nota": "Instancia tomada desde el enunciado: mochila de 4200 cm3 (lista proporcionada por el docente/alumno).",
+  "capacidad": 4200,
+  "items": [
+    {"nombre": "Objeto 1", "peso": 150, "valor": 20},
+    {"nombre": "Objeto 2", "peso": 325, "valor": 40},
+    {"nombre": "Objeto 3", "peso": 600, "valor": 50},
+    {"nombre": "Objeto 4", "peso": 805, "valor": 36},
+    {"nombre": "Objeto 5", "peso": 430, "valor": 25},
+    {"nombre": "Objeto 6", "peso": 1200, "valor": 64},
+    {"nombre": "Objeto 7", "peso": 770, "valor": 54},
+    {"nombre": "Objeto 8", "peso": 60, "valor": 18},
+    {"nombre": "Objeto 9", "peso": 930, "valor": 46},
+    {"nombre": "Objeto 10", "peso": 353, "valor": 28}
+  ]
+}

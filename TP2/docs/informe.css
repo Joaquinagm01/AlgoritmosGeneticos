@@ -301,3 +301,38 @@ pre {
     padding: 1.2rem 1rem;
   }
 }
+
+/* Figuras generadas por los benchmarks */
+.figures {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+.figures figure {
+  width: calc(50% - 0.5rem);
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 0.6rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+}
+.figures img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.figures figcaption {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 760px) {
+  .figures figure {
+    width: 100%;
+  }
+}

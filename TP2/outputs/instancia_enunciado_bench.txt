@@ -1,0 +1,14 @@
+Instancia: instancia_enunciado.json (capacidad=4200)
+Items: Objeto 1, Objeto 2, Objeto 3, Objeto 4, Objeto 5, Objeto 6, Objeto 7, Objeto 8, Objeto 9, Objeto 10
+
+Exhaustivo:
+  Selección: Objeto 1, Objeto 2, Objeto 3, Objeto 5, Objeto 6, Objeto 7, Objeto 8, Objeto 10
+  Peso: 3888 | Valor: $299
+  Repeticiones: 100 | Iteraciones internas (media): 32
+  Tiempo medio por llamada: 0.000711124 s | mediana: 0.000707412 s | std: 0.000026281 s
+
+Greedy:
+  Selección: Objeto 8, Objeto 1, Objeto 2, Objeto 3, Objeto 10, Objeto 7, Objeto 5, Objeto 6
+  Peso: 3888 | Valor: $299
+  Repeticiones: 100 | Iteraciones internas (media): 15810
+  Tiempo medio por llamada: 0.000002149 s | mediana: 0.000002067 s | std: 0.000000213 s
