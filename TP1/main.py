@@ -30,7 +30,7 @@ N_BITS = 30
 COEF = (2 ** N_BITS)  # 2^30 = 1,073,741,824
 TORNEO_K = 3
 ELITE_SIZE = 2
-SEED = 42
+SEED = 45
 
 # Variantes de corridas
 VARIANTES_GENERACIONES = [20, 100, 200]

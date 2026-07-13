@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from typing import List
 
-from main import Item, resolver_exhaustivo, resolver_greedy
+from TP2.scripts.main import Item, resolver_exhaustivo, resolver_greedy
 
 
 def cargar_instancia(path: Path):

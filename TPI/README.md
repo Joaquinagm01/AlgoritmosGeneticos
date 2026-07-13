@@ -109,6 +109,10 @@ La salida gráfica incluye:
 - desviación estándar por generación,
 - comparación entre ruleta, torneo y elitismo.
 
+## Documentación de cátedra
+
+El documento de investigación exigido por la cátedra (carátula, índice, denominación, situación problemática, problema y objetivos) está en [docs/informe.html](docs/informe.html), con el mismo formato que los informes de TP1, TP2 y TP3. La versión fuente en Markdown se conserva en [docs/TPI_Documentacion_Proyecto_Investigacion.md](docs/TPI_Documentacion_Proyecto_Investigacion.md).
+
 ## Nota
 
 El directorio `TPI` también contiene PDFs y material de referencia que ya venía en el workspace. El programa nuevo convive con ese material sin modificarlo.

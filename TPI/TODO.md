@@ -27,18 +27,18 @@ Checklist de trabajo para dejar el Trabajo Práctico Integrador cerrado, consist
 
 ## 2. Revisión de enunciados disponibles
 
-- [ ] Leer [UTN_AlgoritmosGen{eticos_Enunciado tema centrales fotovoltaicas_2021.pdf](UTN_AlgoritmosGen%7Beticos_Enunciado%20tema%20centrales%20fotovoltaicas_2021.pdf) para identificar qué pide un enunciado de AG bien armado.
-- [ ] Leer [UTN_AlgoritmosGen{eticos_Enunciado tema parque eólico_2021.pdf](UTN_AlgoritmosGen%7Beticos_Enunciado%20tema%20parque%20e%C3%B3lico_2021.pdf) para comparar restricciones, variables y métricas.
-- [ ] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaFractales_2021.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaFractales_2021.pdf) para observar cómo se redacta un problema académico de AG.
-- [ ] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaMachineLearning.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaMachineLearning.pdf) para rescatar estructura de evaluación y presentación.
-- [ ] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaTeoríaDelCaos.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaTeor%C3%ADaDelCaos.pdf) para verificar criterios de desarrollo teórico y resultados.
+- [x] Leer [UTN_AlgoritmosGen{eticos_Enunciado tema centrales fotovoltaicas_2021.pdf](UTN_AlgoritmosGen%7Beticos_Enunciado%20tema%20centrales%20fotovoltaicas_2021.pdf) para identificar qué pide un enunciado de AG bien armado.
+- [x] Leer [UTN_AlgoritmosGen{eticos_Enunciado tema parque eólico_2021.pdf](UTN_AlgoritmosGen%7Beticos_Enunciado%20tema%20parque%20e%C3%B3lico_2021.pdf) para comparar restricciones, variables y métricas.
+- [x] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaFractales_2021.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaFractales_2021.pdf) para observar cómo se redacta un problema académico de AG.
+- [x] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaMachineLearning.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaMachineLearning.pdf) para rescatar estructura de evaluación y presentación.
+- [x] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaTeoríaDelCaos.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaTeor%C3%ADaDelCaos.pdf) para verificar criterios de desarrollo teórico y resultados. Los cinco enunciados confirman el mismo patrón: elegir tema, formular un problema (a menudo como pregunta abierta), desarrollar marco teórico y concretar un modelo codificado.
 
 ## 3. Definición del TPI
 
-- [ ] Confirmar que el tema final del TPI será Scheduling de Alertas SOC y no otro de los temas listados en los PDFs.
-- [ ] Redactar el problema de forma académica: contexto SOC, volumen de alertas, analistas disponibles, prioridades y SLA.
-- [ ] Definir claramente la representación genética: gen = analista asignado, cromosoma = asignación completa.
-- [ ] Especificar restricciones y objetivos: tiempo total, backlog, alertas críticas, balance de carga y saturación.
+- [x] Confirmar que el tema final del TPI será Scheduling de Alertas SOC y no otro de los temas listados en los PDFs.
+- [x] Redactar el problema de forma académica: contexto SOC, volumen de alertas, analistas disponibles, prioridades y SLA. Ver [docs/TPI_Documentacion_Proyecto_Investigacion.md](docs/TPI_Documentacion_Proyecto_Investigacion.md), punto 5.
+- [x] Definir claramente la representación genética: gen = analista asignado, cromosoma = asignación completa.
+- [x] Especificar restricciones y objetivos: tiempo total, backlog, alertas críticas, balance de carga y saturación. Ver punto 6 (objetivos específicos) del documento.
 - [ ] Ajustar la función fitness para que la penalización sea coherente con el dominio y fácil de justificar en el informe.
 
 ## 4. Validación técnica del programa
@@ -60,12 +60,12 @@ Checklist de trabajo para dejar el Trabajo Práctico Integrador cerrado, consist
 
 ## 6. Informe académico
 
-- [ ] Completar el marco teórico de algoritmos genéticos aplicado a scheduling.
-- [ ] Explicar por qué el problema de SOC se modela como un problema de asignación y balance de carga.
-- [ ] Describir cada operador genético y justificar la elección de sus parámetros.
-- [ ] Incluir tablas por generación y tablas resumen comparativas entre métodos.
-- [ ] Incluir los gráficos obligatorios: máximo, promedio, mínimo, desviación estándar y comparación de métodos.
-- [ ] Redactar conclusiones con foco en calidad de solución, estabilidad y costo computacional.
+- [ ] Completar el marco teórico de algoritmos genéticos aplicado a scheduling. (Punto 7 de la guía de cátedra — fuera del alcance de la entrega hasta el punto 6; queda para la próxima etapa.)
+- [x] Explicar por qué el problema de SOC se modela como un problema de asignación y balance de carga. Ver puntos 3 y 4 del documento.
+- [ ] Describir cada operador genético y justificar la elección de sus parámetros en detalle (se reserva para el informe técnico de la segunda parte).
+- [x] Incluir tablas por generación y tablas resumen comparativas entre métodos. Ver Tabla 1 y Tabla 2 del documento (punto 7).
+- [x] Incluir los gráficos obligatorios: máximo, promedio, mínimo, desviación estándar y comparación de métodos. Referenciados en el documento, más una figura adicional de carga final por analista.
+- [ ] Redactar conclusiones con foco en calidad de solución, estabilidad y costo computacional (corresponde al informe técnico de la segunda parte / concreción del modelo).
 
 ## 7. Cierre y entrega
 

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documento de Investigación - TPI Algoritmos Genéticos para Scheduling de Alertas SOC</title>
+  <link rel="stylesheet" href="informe.css" />
+</head>
+<body>
+  <section class="caratula">
+    <div class="caratula-logo-wrap">
+      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="UTN Facultad Regional Rosario" />
+    </div>
+
+    <p class="caratula-kicker">Universidad Tecnológica Nacional - Facultad Regional Rosario</p>
+
+    <h1 class="caratula-titulo">Trabajo Práctico Integrador<br />Algoritmos Genéticos aplicados al Scheduling de Alertas en un SOC</h1>
+
+    <p class="caratula-subtitulo">
+      Documento guía de investigación: carátula, índice, denominación, situación problemática, problema y objetivos (puntos 1 a 6)
+    </p>
+
+    <div class="caratula-ficha">
+      <div class="caratula-meta">
+        <p><span class="label">Materia:</span> Algoritmo Genético</p>
+        <p><span class="label">Cátedra:</span> Algoritmos Genéticos</p>
+        <p><span class="label">Docentes:</span> Daniela Díaz y Víctor Lombardo</p>
+        <p><span class="label">Ciclo lectivo:</span> 2026</p>
+        <p><span class="label">Temática abordada:</span> Algoritmos Genéticos aplicados a la asignación y al balance de carga de alertas en un Centro de Operaciones de Seguridad (SOC)</p>
+      </div>
+
+      <div class="caratula-equipo">
+        <div class="caratula-personas">
+          <div class="caratula-persona">
+            <strong>Chacón, Agustina</strong>
+            <span>Legajo 50980 — aguscchacon@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Gomez Manna, Joaquina</strong>
+            <span>Legajo 47791 — gomezmannajoaquina@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Tabini, Azul</strong>
+            <span>Legajo 48038 — azultabini@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Carloni, Nahuel Iván</strong>
+            <span>Legajo 51095 — nahuelcarloni25@gmail.com</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Mierez, Joaquin</strong>
+            <span>Legajo 49938 — joakomierez1@hotmail.com</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="fecha-entrega">Rosario, julio de 2026</p>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="Tabla de contenidos">
+    <h2>Índice de contenidos</h2>
+    <ol>
+      <li><a href="#caratula-nota">1. Carátula</a></li>
+      <li><a href="#caratula-nota">2. Índice de contenidos</a></li>
+      <li><a href="#denominacion">3. Denominación del futuro proyecto de investigación</a></li>
+      <li><a href="#situacion">4. Situación problemática</a></li>
+      <li><a href="#problema">5. Problema</a></li>
+      <li><a href="#objetivos">6. Objetivos de la investigación</a></li>
+      <li><a href="#evidencia">7. Evidencia preliminar del modelo implementado</a></li>
+      <li><a href="#referencias">8. Referencias bibliográficas</a></li>
+    </ol>
+  </nav>
+
+  <main class="container">
+    <p id="caratula-nota" style="text-align:center; color:var(--ink-muted); font-size:0.82rem; margin: -0.5rem 0 1.25rem;">
+      Los puntos 1 (Carátula) y 2 (Índice) corresponden a las secciones anteriores de este documento.
+    </p>
+
+    <section class="card" id="denominacion">
+      <h2>3. Denominación del futuro proyecto de investigación</h2>
+      <p class="formula">Optimización mediante Algoritmos Genéticos de la asignación y el balance de carga de alertas de seguridad en Centros de Operaciones de Seguridad (SOC)</p>
+      <p>
+        Esta denominación delimita con precisión el alcance del proyecto en tres ejes: la técnica a emplear (algoritmos genéticos, dentro de la familia de los algoritmos evolutivos), el problema de optimización combinatoria abordado (asignación de tareas —<em>scheduling</em>— y balance de carga entre recursos humanos limitados) y el dominio de aplicación (la operación de un SOC, entendido como el equipo y la infraestructura responsables de detectar, triar y responder a alertas de seguridad informática).
+      </p>
+    </section>
+
+    <section class="card" id="situacion">
+      <h2>4. Situación problemática</h2>
+      <p>
+        Los Centros de Operaciones de Seguridad (SOC) son la primera línea de defensa de las organizaciones frente a incidentes de ciberseguridad: reciben, triean y resuelven alertas generadas por sistemas de detección de intrusiones, antivirus, firewalls y plataformas de gestión de eventos (SIEM). La literatura reciente coincide en que el volumen de alertas que procesa un SOC moderno ha crecido a un ritmo muy superior a la disponibilidad de analistas capacitados para atenderlas. Jalalvand et al. (2025) <a href="#ref1">[1]</a> sistematizan decenas de criterios y métodos propuestos en la última década para priorizar alertas, y señalan que la sobrecarga de alertas (<em>alert overload</em>) es uno de los problemas estructurales más persistentes de la operación de un SOC, ya que obliga a los analistas a decidir, con información incompleta y bajo presión de tiempo, qué atender primero.
+      </p>
+      <p>
+        Esa sobrecarga tiene un correlato humano documentado: la fatiga de alertas (<em>alert fatigue</em>). Tariq et al. (2025) <a href="#ref2">[2]</a> identifican cuatro causas principales de este fenómeno —el volumen de alertas, la proporción de falsos positivos, la falta de contexto en cada alerta y el diseño de las herramientas— y advierten que la fatiga degrada la calidad de las decisiones de triage, incrementa el tiempo de respuesta y favorece la rotación de personal capacitado, lo que a su vez reduce aún más la capacidad operativa disponible. Este ciclo (más alertas, menos analistas efectivos, peores tiempos de respuesta) es especialmente crítico cuando las alertas retrasadas son de alta severidad, dado que la demora en su atención incrementa directamente el riesgo de que una intrusión progrese sin ser contenida.
+      </p>
+      <p>
+        A esta escasez estructural de analistas se suma un problema de coordinación: aun cuando el equipo de analistas es suficiente en promedio, la forma en que las alertas se reparten entre ellos rara vez es óptima. Las prácticas habituales de asignación —turnos fijos, reglas estáticas por tipo de alerta, o asignación manual según disponibilidad aparente— no consideran de forma simultánea la prioridad de cada alerta, su plazo de resolución comprometido (SLA), el tiempo estimado que insumirá resolverla y la carga ya acumulada por cada analista. El resultado observado en la práctica es un desbalance de carga: algunos analistas acumulan backlog mientras otros permanecen subutilizados, y las alertas críticas no siempre son atendidas por quien está en condiciones de resolverlas dentro del plazo comprometido. Investigaciones sobre priorización adaptativa de alertas exploran, desde el aprendizaje automático, mecanismos que involucran retroalimentación humana para mejorar estas decisiones <a href="#ref3">[3]</a>, lo que confirma que la asignación de alertas a analistas es, en esencia, un problema de optimización combinatoria bajo restricciones y no una tarea que pueda resolverse satisfactoriamente con reglas fijas.
+      </p>
+      <p>
+        Los algoritmos genéticos son una familia de metaheurísticas particularmente adecuada para este tipo de problemas, porque permiten explorar de manera eficiente un espacio de soluciones combinatorio —en este caso, todas las formas posibles de repartir <em>n</em> alertas entre <em>m</em> analistas— sin necesidad de enumerar exhaustivamente las alternativas, algo inviable incluso para instancias moderadas del problema. Su aplicación a problemas de <em>scheduling</em> y balance de carga está ampliamente documentada: existen antecedentes concretos de algoritmos genéticos aplicados a la programación de tareas en entornos de manufactura (problema de <em>Job Shop Scheduling</em>) <a href="#ref4">[4]</a>, y al balanceo dinámico de carga entre recursos computacionales en sistemas distribuidos (Luna Rosas, Tristán Ávila y Martínez Pedroza, 2003) <a href="#ref5">[5]</a>. Ambos antecedentes comparten con el problema del SOC la misma estructura de fondo: unidades de trabajo heterogéneas que deben repartirse entre recursos limitados minimizando tiempo total y desbalance, lo que respalda la pertinencia de adaptar un algoritmo genético canónico al dominio de la asignación de alertas en un SOC.
+      </p>
+      <p>
+        En síntesis, la situación problemática identificada combina tres factores que se retroalimentan: (a) un volumen de alertas que excede la capacidad de análisis manual eficiente, (b) el riesgo de incumplir plazos de atención en alertas críticas cuando la asignación no prioriza correctamente, y (c) la ausencia de mecanismos de asignación que balanceen la carga entre analistas de forma sistemática y verificable. Estos tres factores configuran un escenario donde una técnica de optimización combinatoria como los algoritmos genéticos puede aportar un modelo formal, medible y comparable frente a las heurísticas manuales actualmente en uso.
+      </p>
+    </section>
+
+    <section class="card" id="problema">
+      <h2>5. Problema</h2>
+      <p>
+        La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad no logra, de manera consistente, minimizar simultáneamente el tiempo total de resolución, el incumplimiento de los plazos de atención (SLA) de las alertas críticas y el desbalance de carga entre analistas, por lo que resulta necesario investigar y modelar mediante Algoritmos Genéticos una estrategia de asignación que, a partir de un conjunto de alertas caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA, distribuya dichas alertas entre un número limitado de analistas optimizando de forma conjunta esos objetivos operativos.
+      </p>
+    </section>
+
+    <section class="card" id="objetivos">
+      <h2>6. Objetivos de la investigación</h2>
+      <h3>6.a. Objetivo general</h3>
+      <p>
+        Diseñar, implementar y evaluar un modelo de Algoritmo Genético Canónico que optimice la asignación de alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad, minimizando de forma conjunta el tiempo total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga entre analistas.
+      </p>
+      <h3>6.b. Objetivos específicos</h3>
+      <ol>
+        <li>Diseñar una representación cromosómica que codifique una asignación completa de alertas a analistas, donde cada gen indique el analista responsable de resolver la alerta correspondiente.</li>
+        <li>Formular una función de fitness multiobjetivo que integre el tiempo total estimado de resolución junto con penalizaciones por espera promedio, espera y retraso de alertas críticas respecto del SLA, backlog acumulado y desbalance de carga, de modo que un fitness mayor represente siempre una asignación operativamente mejor.</li>
+        <li>Implementar y comparar, bajo idénticas condiciones iniciales (semilla aleatoria, tamaño de población y número de generaciones), tres operadores de selección de padres —ruleta, torneo y elitismo— a fin de determinar cuál produce el mejor fitness global y la convergencia más estable.</li>
+        <li>Registrar y analizar, generación a generación, el fitness máximo, mínimo, promedio y su desvío estándar para cada operador de selección, documentando la velocidad y la estabilidad con la que cada estrategia converge hacia una solución de buena calidad.</li>
+        <li>Cuantificar, a partir del mejor cromosoma hallado, la distribución final de alertas y de carga horaria entre los analistas del SOC, verificando el grado de equilibrio efectivamente alcanzado por el modelo.</li>
+        <li>Medir el tiempo de ejecución de cada estrategia evolutiva, para poder contrastar la calidad de la solución obtenida por cada operador de selección frente a su costo computacional.</li>
+      </ol>
+    </section>
+
+    <section class="card" id="evidencia">
+      <h2>7. Evidencia preliminar del modelo implementado</h2>
+      <p>
+        Esta sección no forma parte de los seis apartados exigidos, pero se incorpora porque el grupo ya cuenta con un prototipo funcional (<span class="mono">TPI/main.py</span>) que instrumenta exactamente lo descripto en los objetivos específicos, y sus resultados reales permiten anticipar y justificar con datos concretos varias de las afirmaciones anteriores.
+      </p>
+
+      <h3>Configuración utilizada</h3>
+      <p>
+        El modelo simula 10 analistas SOC y 500 alertas sintéticas generadas con semilla fija (semilla = 42), sobre un horizonte de trabajo de 8 horas (480 minutos). Cada estrategia evolutiva —ruleta, torneo (k = 3) y elitismo (2 individuos preservados)— se ejecutó con una población de 10 cromosomas durante 20 generaciones, con probabilidad de cruza de un punto del 75&nbsp;% y probabilidad de mutación invertida del 5&nbsp;%.
+      </p>
+
+      <div class="table-block" data-title="Resumen comparativo final por método de selección">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Método</th>
+                <th>Mejor fitness global</th>
+                <th>Tiempo total estimado (min)</th>
+                <th>Backlog (alertas)</th>
+                <th>Desbalance de carga</th>
+                <th>Tiempo de ejecución (s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Ruleta</td><td>7,4691 × 10⁻⁵</td><td>2125</td><td>364</td><td>0,1217</td><td>0,0291</td></tr>
+              <tr class="row-highlight"><td>Torneo</td><td>7,6081 × 10⁻⁵</td><td>1905</td><td>369</td><td>0,0397</td><td>0,0254</td></tr>
+              <tr><td>Elitismo</td><td>7,5725 × 10⁻⁵</td><td>2089</td><td>365</td><td>0,0929</td><td>0,0254</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="nota">Fuente: <span class="mono">TPI/outputs/resumen_resultados_soc.csv</span>, corrida con semilla 42.</p>
+
+      <p>
+        El método <strong>Torneo</strong> obtuvo el mejor fitness global de las tres estrategias, explicado por una combinación de menor tiempo total estimado (1905 minutos) y el menor desbalance de carga (0,0397, es decir, menos de la mitad que ruleta). Elitismo logró la penalización total más baja de las tres (11.115,6) gracias a que preserva siempre a los dos mejores individuos de cada generación, pero un tiempo total ligeramente mayor lo dejó en segundo lugar. Ruleta, al ser puramente proporcional al fitness y no conservar explícitamente a los mejores individuos, resultó la estrategia menos estable: como puede verse en la Figura 1, su fitness máximo cae abruptamente después de la generación 3 y nunca vuelve a alcanzar el valor hallado en la primera generación, evidenciando que la selección por ruleta, sin elitismo, puede perder al mejor individuo encontrado.
+      </p>
+
+      <div class="table-block" data-title="Carga final por analista en la mejor solución (método Torneo)">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Analista</th>
+                <th>Alertas asignadas</th>
+                <th>Carga total (min)</th>
+                <th>Alertas críticas</th>
+                <th>Severidad promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>46</td><td>1799</td><td>9</td><td>51,9</td></tr>
+              <tr><td>2</td><td>55</td><td>1900</td><td>6</td><td>47,1</td></tr>
+              <tr><td>3</td><td>48</td><td>1827</td><td>8</td><td>51,0</td></tr>
+              <tr><td>4</td><td>50</td><td>1871</td><td>8</td><td>51,5</td></tr>
+              <tr><td>5</td><td>44</td><td>1712</td><td>8</td><td>51,7</td></tr>
+              <tr><td>6</td><td>46</td><td>1698</td><td>7</td><td>51,2</td></tr>
+              <tr><td>7</td><td>49</td><td>1784</td><td>8</td><td>49,4</td></tr>
+              <tr><td>8</td><td>55</td><td>1721</td><td>3</td><td>43,1</td></tr>
+              <tr><td>9</td><td>57</td><td>1766</td><td>7</td><td>42,5</td></tr>
+              <tr><td>10</td><td>50</td><td>1682</td><td>6</td><td>45,4</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="nota">Fuente: <span class="mono">TPI/outputs/distribucion_final_alertas_soc.csv</span>.</p>
+
+      <p>
+        La carga total osciló entre 1682 y 1900 minutos (media de 1776 minutos), es decir, una dispersión relativa moderada dado que ningún analista quedó ni ampliamente ocioso ni saturado muy por encima del resto: el objetivo específico 5 se verifica con estos datos reales y no con una expectativa teórica.
+      </p>
+
+      <h3>Figuras</h3>
+
+      <figure>
+        <img src="assets/figures/maximos_por_generacion.png" alt="Fitness máximo por generación" />
+        <figcaption>Fitness máximo por generación para los tres métodos. Torneo alcanza y sostiene el fitness máximo más alto desde la generación 9, mientras que Ruleta pierde su mejor valor tras la generación 3 y nunca lo recupera, lo que ilustra la falta de presión elitista de ese operador.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/comparacion_metodos.png" alt="Comparación global de métodos" />
+        <figcaption>Comparación entre Ruleta, Torneo y Elitismo (fitness promedio por generación). Torneo domina durante casi toda la evolución; Elitismo converge más lento pero termina muy cerca de Torneo; Ruleta se mantiene sistemáticamente por debajo de ambos y con mayor ruido generación a generación.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/desviacion_estandar_por_generacion.png" alt="Desviación estándar por generación" />
+        <figcaption>Desviación estándar del fitness por generación. Elitismo reduce su desvío a valores cercanos a cero a partir de la generación 13, porque preserva a los mejores individuos, mientras que Ruleta mantiene un desvío alto y errático durante toda la corrida.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/promedios_por_generacion.png" alt="Fitness promedio por generación" />
+        <figcaption>Fitness promedio por generación y método de selección, complementaria a la comparación global anterior.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/minimos_por_generacion.png" alt="Fitness mínimo por generación" />
+        <figcaption>Fitness mínimo por generación para los tres métodos, útil para observar la cola inferior de cada población.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="assets/figures/carga_final_por_analista.png" alt="Carga final por analista" />
+        <figcaption>Carga final por analista en la mejor solución encontrada (método Torneo), generada especialmente para este documento a partir de <span class="mono">distribucion_final_alertas_soc.csv</span>. Se aprecia que la mejor solución reparte la carga sin picos extremos, con todos los analistas dentro de un rango de ±120 minutos respecto de la media.</figcaption>
+      </figure>
+
+      <p class="nota">
+        Estas figuras y tablas no reemplazan el marco teórico ni la concreción del modelo (punto 7 y segunda parte de la guía de cátedra), que quedan fuera del alcance de esta entrega, pero constituyen el avance de programación ya disponible para mostrar durante la clase, ejecutable de punta a punta con:
+      </p>
+      <pre><code>cd TPI
+python3 -m pip install -r requirements.txt
+python3 main.py</code></pre>
+    </section>
+
+    <section class="card" id="referencias">
+      <h2>8. Referencias bibliográficas</h2>
+      <ol class="referencias-lista">
+        <li id="ref1">Jalalvand, F.; Baruwal Chhetri, M.; Nepal, S.; Paris, C. (2025). «Alert Prioritisation in Security Operations Centres: A Systematic Survey on Criteria and Methods». <em>ACM Computing Surveys</em>, 57(2). <a href="https://dl.acm.org/doi/10.1145/3695462" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3695462</a></li>
+        <li id="ref2">Tariq, S.; Baruwal Chhetri, M.; Nepal, S.; Paris, C. (2025). «Alert Fatigue in Security Operations Centres: Research Challenges and Opportunities». <em>ACM Computing Surveys</em>, 57(9), art. 224. <a href="https://dl.acm.org/doi/10.1145/3723158" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3723158</a></li>
+        <li id="ref3">«Adaptive Alert Prioritisation in Security Operations Centres via Learning to Defer with Human Feedback» (2025). arXiv:2506.18462. <a href="https://arxiv.org/abs/2506.18462" target="_blank" rel="noopener">https://arxiv.org/abs/2506.18462</a></li>
+        <li id="ref4">«Algoritmo Genético Simple para Resolver el Problema de Programación de la Tienda de Trabajo (Job Shop Scheduling)» (2018). SciELO Chile. <a href="https://www.scielo.cl/scielo.php?script=sci_arttext&amp;pid=S0718-07642018000500299" target="_blank" rel="noopener">https://www.scielo.cl/scielo.php?script=sci_arttext&amp;pid=S0718-07642018000500299</a></li>
+        <li id="ref5">Luna Rosas, F. J.; Tristán Ávila, R.; Martínez Pedroza, J. de J. (2003). «Aplicando un algoritmo genético para balancear carga dinámicamente en ambientes distribuidos orientados a objetos (CORBA)». <em>ConCiencia Tecnológica</em>, N.º 23. <a href="https://dialnet.unirioja.es/servlet/articulo?codigo=6482681" target="_blank" rel="noopener">https://dialnet.unirioja.es/servlet/articulo?codigo=6482681</a></li>
+      </ol>
+    </section>
+  </main>
+
+  <p class="footer">Universidad Tecnológica Nacional — Facultad Regional Rosario · Cátedra Algoritmos Genéticos · Ciclo lectivo 2026</p>
+</body>
+</html>
