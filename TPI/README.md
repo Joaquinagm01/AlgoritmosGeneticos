@@ -45,7 +45,7 @@ Cuanto menor es el tiempo total y menores son las penalizaciones, mayor es el fi
 - Selección por torneo.
 - Elitismo con preservación de individuos de mayor fitness.
 - Crossover de 1 punto.
-- Mutación invertida sobre un segmento aleatorio.
+- Mutación por reasignación (cambia el analista de una alerta aleatoria).
 
 ## Estructura del programa
 

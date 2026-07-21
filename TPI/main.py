@@ -2,8 +2,9 @@
 
 El programa genera alertas sintéticas, construye una población inicial de
 asignaciones alertas->analistas, evalúa cada cromosoma con una función fitness
-orientada a tiempo de resolución, balance de carga, alertas críticas y backlog,
-y compara tres estrategias evolutivas: ruleta, torneo y elitismo.
+compuesta con penalizaciones ponderadas para tiempo de resolución, balance de
+carga, alertas críticas y alertas pendientes fuera del horizonte, y compara
+tres estrategias evolutivas: ruleta, torneo y ruleta con preservación elitista.
 """
 
 from __future__ import annotations
@@ -46,7 +47,6 @@ PRIORIDAD_RANK = {"Critica": 0, "Alta": 1, "Media": 2, "Baja": 3}
 SLA_POR_PRIORIDAD = {"Baja": 240, "Media": 120, "Alta": 60, "Critica": 30}
 
 BASE_RESOLUCION = {"Baja": 8, "Media": 15, "Alta": 25, "Critica": 40}
-RANGO_RESOLUCION = {"Baja": 12, "Media": 18, "Alta": 25, "Critica": 35}
 RANGO_SEVERIDAD = {"Baja": (10, 35), "Media": (30, 60), "Alta": (55, 85), "Critica": (80, 100)}
 
 METODOS = ("ruleta", "torneo", "elitismo")
@@ -60,6 +60,7 @@ METRICAS_PROMEDIADAS_CSV = OUTPUTS_DIR / "metricas_generacionales_promediadas_so
 RESUMEN_REPETICIONES_CSV = OUTPUTS_DIR / "resumen_repeticiones_soc.csv"
 RESUMEN_AGRUPADO_CSV = OUTPUTS_DIR / "resumen_resultados_agrupados_soc.csv"
 RESUMEN_CSV = OUTPUTS_DIR / "resumen_resultados_soc.csv"
+BASELINES_CSV = OUTPUTS_DIR / "baselines_referencia_soc.csv"
 DISTRIBUCION_FINAL_CSV = OUTPUTS_DIR / "distribucion_final_alertas_soc.csv"
 ASIGNACION_FINAL_CSV = OUTPUTS_DIR / "carga_final_analistas_soc.csv"
 
@@ -314,6 +315,28 @@ def _resumen_distribucion(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -
     return pd.DataFrame(filas)
 
 
+def _baseline_aleatorio(n_alertas: int, n_analistas: int, seed: int = 2026) -> List[int]:
+    rng = random.Random(seed)
+    return [rng.randint(1, n_analistas) for _ in range(n_alertas)]
+
+
+def _baseline_round_robin(n_alertas: int, n_analistas: int) -> List[int]:
+    return [(idx % n_analistas) + 1 for idx in range(n_alertas)]
+
+
+def _baseline_menos_cargado(alertas: Sequence[Alerta], n_analistas: int) -> List[int]:
+    cargas = [0] * n_analistas
+    cromosoma = [0] * len(alertas)
+    orden = sorted(range(len(alertas)), key=lambda idx: (alertas[idx].llegada_min, PRIORIDAD_RANK[alertas[idx].prioridad]))
+
+    for idx_alerta in orden:
+        analista = int(np.argmin(cargas))
+        cromosoma[idx_alerta] = analista + 1
+        cargas[analista] += alertas[idx_alerta].tiempo_estimado_min
+
+    return cromosoma
+
+
 def evolucionar(
     alertas: Sequence[Alerta],
     metodo: str = "ruleta",
@@ -507,7 +530,7 @@ def graficar_metricas(df_metricas: pd.DataFrame) -> None:
     for metodo, grupo in df_metricas.groupby("metodo"):
         grupo = grupo.sort_values("generacion")
         plt.plot(grupo["generacion"], grupo["fitness_prom"], marker="o", linewidth=2, label=metodo.capitalize())
-    plt.title("Comparacion entre Ruleta, Torneo y Elitismo")
+    plt.title("Comparacion entre Ruleta, Torneo y Ruleta con preservacion elitista")
     plt.xlabel("Generacion")
     plt.ylabel("Fitness promedio")
     plt.grid(True, linestyle="--", alpha=0.35)
@@ -523,7 +546,7 @@ def _imprimir_encabezado(metodo: str) -> None:
     print("=" * 126)
     print(
         f"{'Gen':>4} | {'Fitness max':>12} | {'Fitness min':>12} | {'Fitness prom':>12} | "
-        f"{'Desv. std':>12} | {'Tiempo gen (s)':>15} | {'Mejor fitness':>14} | {'Backlog':>8}"
+        f"{'Desv. std':>12} | {'Tiempo gen (s)':>15} | {'Mejor fitness':>14} | {'Pendientes':>10}"
     )
     print("-" * 126)
 
@@ -544,8 +567,8 @@ def _imprimir_resumen_metodo(resumen: Dict[str, object]) -> None:
     print(f"Penalizacion total            : {resumen['penalizacion_total']:.4f}")
     print(f"Espera promedio (min)         : {resumen['espera_promedio_min']:.4f}")
     print(f"Espera critica promedio (min)  : {resumen['espera_critica_promedio_min']:.4f}")
-    print(f"Backlog de alertas            : {resumen['backlog_alertas']}")
-    print(f"Backlog acumulado (min)       : {resumen['backlog_minutos']:.4f}")
+    print(f"Alertas pendientes            : {resumen['backlog_alertas']}")
+    print(f"Alertas pendientes fuera del horizonte (min) : {resumen['backlog_minutos']:.4f}")
     print(f"Desbalance de carga           : {resumen['desbalance_carga']:.6f}")
     print(f"Sobrecarga relativa           : {resumen['sobrecarga_relativa']:.6f}")
     print(f"Cromosoma ganador (compacto)  : {_formatear_cromosoma(resumen['mejor_cromosoma'])}")
@@ -569,7 +592,7 @@ def _imprimir_resumen_global(df_resumen: pd.DataFrame, mejor_indice: int) -> Non
     ]
     print(df_resumen[columnas].to_string(index=False))
 
-    ganador = df_resumen.iloc[mejor_indice]
+    ganador = df_resumen.loc[mejor_indice]
     print("\n" + "=" * 126)
     print("MEJOR SOLUCION GLOBAL")
     print("=" * 126)
@@ -588,7 +611,7 @@ def main() -> None:
     alertas = generar_alertas(seed=SEED_ALERTAS)
 
     print("=" * 126)
-    print("ALGORTIMO GENETICO CANONICO APLICADO A SCHEDULING DE ALERTAS SOC")
+    print("ALGORITMO GENETICO CANONICO APLICADO A SCHEDULING DE ALERTAS SOC")
     print("=" * 126)
     print(f"Analistas SOC                 : {N_ANALISTAS}")
     print(f"Alertas sinteticas             : {N_ALERTAS}")
@@ -625,7 +648,7 @@ def main() -> None:
             print(
                 f"Corrida {corrida:02d} | seed AG {seed_ag} | "
                 f"fitness {resumen['mejor_fitness_global']:.10f} | "
-                f"backlog {resumen['backlog_alertas']} | "
+                f"alertas pendientes {resumen['backlog_alertas']} | "
                 f"desbalance {resumen['desbalance_carga']:.6f} | "
                 f"tiempo {resumen['tiempo_ejecucion_seg']:.4f}s"
             )
@@ -644,8 +667,42 @@ def main() -> None:
     df_resumen_agrupado.to_csv(RESUMEN_AGRUPADO_CSV, index=False)
     df_resumen.to_csv(RESUMEN_CSV, index=False)
 
-    mejor_indice = int(df_resumen["mejor_fitness_global"].idxmax())
-    mejor = df_resumen.iloc[mejor_indice]
+    baselines = [
+        {
+            "metodo": "aleatorio",
+            "cromosoma": _baseline_aleatorio(len(alertas), N_ANALISTAS),
+        },
+        {
+            "metodo": "round_robin",
+            "cromosoma": _baseline_round_robin(len(alertas), N_ANALISTAS),
+        },
+        {
+            "metodo": "least_loaded",
+            "cromosoma": _baseline_menos_cargado(alertas, N_ANALISTAS),
+        },
+    ]
+
+    baselines_resumen = []
+    for baseline in baselines:
+        evaluacion = _evaluar_asignacion(baseline["cromosoma"], alertas)
+        baselines_resumen.append(
+            {
+                "metodo": baseline["metodo"],
+                "fitness": float(evaluacion["fitness"]),
+                "makespan_min": int(evaluacion["tiempo_total_estimado_min"]),
+                "penalizacion_total": float(evaluacion["penalizacion"]),
+                "espera_promedio_min": float(evaluacion["espera_promedio_min"]),
+                "espera_critica_promedio_min": float(evaluacion["espera_critica_promedio_min"]),
+                "backlog_alertas": int(evaluacion["backlog_alertas"]),
+                "desbalance_carga": float(evaluacion["desbalance_carga"]),
+            }
+        )
+
+    df_baselines = pd.DataFrame(baselines_resumen)
+    df_baselines.to_csv(BASELINES_CSV, index=False)
+
+    mejor_indice = df_resumen["mejor_fitness_global"].idxmax()
+    mejor = df_resumen.loc[mejor_indice]
     distribucion_final = _resumen_distribucion(mejor["mejor_cromosoma"], alertas)
     distribucion_final.to_csv(DISTRIBUCION_FINAL_CSV, index=False)
 
@@ -655,6 +712,11 @@ def main() -> None:
     graficar_metricas(df_metricas)
 
     _imprimir_resumen_global(df_resumen, mejor_indice)
+
+    print("\n" + "=" * 126)
+    print("LINEA DE BASE DE REFERENCIA")
+    print("=" * 126)
+    print(df_baselines.to_string(index=False))
 
     print("\n" + "=" * 126)
     print("RESUMEN AGRUPADO DE REPETICIONES")
