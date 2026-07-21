@@ -74,8 +74,8 @@ Diseñar, implementar y evaluar un modelo de Algoritmo Genético Canónico que o
 
 1. Diseñar una representación cromosómica que codifique una asignación completa de alertas a analistas, donde cada gen indique el analista responsable de resolver la alerta correspondiente.
 2. Formular una función de fitness multiobjetivo que integre el tiempo total estimado de resolución junto con penalizaciones por espera promedio, espera y retraso de alertas críticas respecto del SLA, backlog acumulado y desbalance de carga, de modo que un fitness mayor represente siempre una asignación operativamente mejor.
-3. Implementar y comparar, bajo idénticas condiciones iniciales (semilla aleatoria, tamaño de población y número de generaciones), tres operadores de selección de padres —ruleta, torneo y elitismo— a fin de determinar cuál produce el mejor fitness global y la convergencia más estable.
-4. Registrar y analizar, generación a generación, el fitness máximo, mínimo, promedio y su desvío estándar para cada operador de selección, documentando la velocidad y la estabilidad con la que cada estrategia converge hacia una solución de buena calidad.
+3. Implementar y comparar, bajo idénticas condiciones iniciales (semilla aleatoria, tamaño de población y número de generaciones), tres estrategias de selección y preservación de individuos —ruleta, torneo y un esquema elitista de supervivencia— a fin de determinar cuál produce el mejor fitness global y la convergencia más estable.
+4. Registrar y cuantificar, generación a generación, el fitness máximo, mínimo, promedio y su desvío estándar para cada operador de selección, documentando la velocidad y la estabilidad con la que cada estrategia converge hacia una solución de buena calidad.
 5. Cuantificar, a partir del mejor cromosoma hallado, la distribución final de alertas y de carga horaria entre los analistas del SOC, verificando el grado de equilibrio efectivamente alcanzado por el modelo.
 6. Medir el tiempo de ejecución de cada estrategia evolutiva, para poder contrastar la calidad de la solución obtenida por cada operador de selección frente a su costo computacional.
 
@@ -87,21 +87,21 @@ Esta sección no forma parte de los seis apartados exigidos, pero se incorpora p
 
 ### Configuración utilizada
 
-El modelo simula 10 analistas SOC y 500 alertas sintéticas generadas con semilla fija (semilla = 42), sobre un horizonte de trabajo de 8 horas (480 minutos). Cada estrategia evolutiva —ruleta, torneo (k = 3) y elitismo (2 individuos preservados)— se ejecutó con una población de 10 cromosomas durante 20 generaciones, con probabilidad de cruza de un punto del 75 % y probabilidad de mutación invertida del 5 %.
+Por criterio de accesibilidad y porque no se cuenta en esta etapa con una base de alertas reales disponible para el grupo, el modelo utiliza 500 alertas sintéticas generadas localmente con semilla fija (semilla = 42), sobre un horizonte de trabajo de 8 horas (480 minutos). Sobre ese mismo conjunto de alertas, el script ejecuta 30 repeticiones independientes por método de selección, variando la semilla del algoritmo genético en cada corrida (semillas 1001 a 1030), con una población de 10 cromosomas durante 20 generaciones, probabilidad de cruza de un punto del 75 % y probabilidad de mutación del 5 %.
 
-### Tabla 1. Resumen comparativo final por método de selección
+### Tabla 1. Resumen estadístico agregado por método de selección
 
-| Método | Mejor fitness global | Tiempo total estimado (min) | Backlog (alertas) | Desbalance de carga | Tiempo de ejecución (s) |
-|---|---|---|---|---|---|
-| Ruleta | 7,4691 × 10⁻⁵ | 2125 | 364 | 0,1217 | 0,0291 |
-| Torneo | **7,6081 × 10⁻⁵** | **1905** | 369 | **0,0397** | 0,0254 |
-| Elitismo | 7,5725 × 10⁻⁵ | 2089 | 365 | 0,0929 | 0,0254 |
+| Método | Fitness medio | Fitness mínimo | Fitness máximo | Tiempo total medio (min) | Desbalance medio | Tiempo de ejecución medio (s) |
+|---|---|---|---|---|---|---|
+| Ruleta | 7,5191 × 10⁻⁵ | 7,3723 × 10⁻⁵ | 7,6139 × 10⁻⁵ | 1993,8 | 0,0821 | 0,0592 |
+| Torneo | 7,4910 × 10⁻⁵ | 7,3215 × 10⁻⁵ | 7,6178 × 10⁻⁵ | 1999,4 | 0,0873 | 0,0593 |
+| Elitismo | 7,5190 × 10⁻⁵ | 7,4196 × 10⁻⁵ | 7,6892 × 10⁻⁵ | 1996,6 | 0,0795 | 0,0596 |
 
-*Fuente: `TPI/outputs/resumen_resultados_soc.csv`, corrida con semilla 42.*
+*Fuente: `TPI/outputs/resumen_resultados_agrupados_soc.csv`, consolidado de 30 repeticiones por método.*
 
-El método **Torneo** obtuvo el mejor fitness global de las tres estrategias, explicado por una combinación de menor tiempo total estimado (1905 minutos) y el menor desbalance de carga (0,0397, es decir, menos de la mitad que ruleta). Elitismo logró la penalización total más baja de las tres (11.115,6) gracias a que preserva siempre a los dos mejores individuos de cada generación, pero un tiempo total ligeramente mayor lo dejó en segundo lugar. Ruleta, al ser puramente proporcional al fitness y no conservar explícitamente a los mejores individuos, resultó la estrategia menos estable: como puede verse en la Figura 2, su fitness máximo cae abruptamente después de la generación 3 y nunca vuelve a alcanzar el valor hallado en la primera generación, evidenciando que la selección por ruleta, sin elitismo, puede perder al mejor individuo encontrado.
+En términos promedio, las diferencias entre métodos fueron pequeñas. Ruleta y elitismo quedaron apenas por encima de torneo en fitness medio, mientras que elitismo alcanzó el mayor fitness máximo puntual de toda la experimentación. Bajo el criterio de selección de mejor solución que implementa `main.py`, el escenario global ganador corresponde a esa mejor corrida puntual de elitismo.
 
-### Tabla 2. Carga final por analista en la mejor solución (método Torneo)
+### Tabla 2. Carga final por analista en la mejor solución global (método Elitismo)
 
 | Analista | Alertas asignadas | Carga total (min) | Alertas críticas | Severidad promedio |
 |---|---|---|---|---|
@@ -116,18 +116,30 @@ El método **Torneo** obtuvo el mejor fitness global de las tres estrategias, ex
 | 9 | 57 | 1766 | 7 | 42,5 |
 | 10 | 50 | 1682 | 6 | 45,4 |
 
-*Fuente: `TPI/outputs/distribucion_final_alertas_soc.csv`.*
+*Fuente: `TPI/outputs/distribucion_final_alertas_soc.csv`, calculado a partir de la mejor corrida global entre las 30 repeticiones.*
 
-La carga total osciló entre 1682 y 1900 minutos (media de 1776 minutos), es decir, una dispersión relativa moderada dado que ningún analista quedó ni ampliamente ocioso ni saturado muy por encima del resto — el objetivo específico 5 se verifica con estos datos reales y no con una expectativa teórica.
+La carga total osciló entre 1682 y 1900 minutos (media de 1776 minutos), es decir, una dispersión relativa moderada dado que ningún analista quedó ni ampliamente ocioso ni saturado muy por encima del resto. Ese reparto corresponde a la mejor solución global puntual obtenida por el script, no al promedio de las 30 repeticiones.
 
 ### Figuras
 
-- **Figura 1 — Fitness máximo por generación** ([`outputs/figures/maximos_por_generacion.png`](../outputs/figures/maximos_por_generacion.png)): muestra que Torneo alcanza y sostiene el fitness máximo más alto desde la generación 9, mientras que Ruleta pierde su mejor valor tras la generación 3 y nunca lo recupera, ilustrando la falta de presión elitista de ese operador.
-- **Figura 2 — Comparación entre Ruleta, Torneo y Elitismo (fitness promedio)** ([`outputs/figures/comparacion_metodos.png`](../outputs/figures/comparacion_metodos.png)): Torneo domina en fitness promedio durante casi toda la evolución; Elitismo converge más lento pero termina muy cerca de Torneo; Ruleta se mantiene sistemáticamente por debajo de ambos y con mayor ruido generación a generación.
-- **Figura 3 — Desviación estándar por generación** ([`outputs/figures/desviacion_estandar_por_generacion.png`](../outputs/figures/desviacion_estandar_por_generacion.png)): Elitismo reduce su desvío estándar a valores cercanos a cero a partir de la generación 13 (la población converge porque los mejores individuos se preservan), mientras que Ruleta mantiene un desvío alto y errático durante toda la corrida, reflejo directo de la ausencia de elitismo.
+- **Figura 1 — Fitness máximo por generación** ([`outputs/figures/maximos_por_generacion.png`](../outputs/figures/maximos_por_generacion.png)): se exporta a partir del histórico generacional acumulado de las 30 repeticiones por método y funciona como una referencia visual de la variabilidad de la corrida masiva.
+- **Figura 2 — Comparación entre Ruleta, Torneo y Elitismo (fitness promedio)** ([`outputs/figures/comparacion_metodos.png`](../outputs/figures/comparacion_metodos.png)): resume la evolución de las 30 repeticiones acumuladas para cada método y permite contrastar el comportamiento global de las tres estrategias.
+- **Figura 3 — Desviación estándar por generación** ([`outputs/figures/desviacion_estandar_por_generacion.png`](../outputs/figures/desviacion_estandar_por_generacion.png)): muestra la dispersión generacional registrada por el experimento masivo; en conjunto con la tabla agregada, aporta una lectura complementaria de la estabilidad de cada estrategia.
 - **Figura 4 — Carga final por analista** ([`outputs/figures/carga_final_por_analista.png`](../outputs/figures/carga_final_por_analista.png), generada especialmente para este documento a partir de `distribucion_final_alertas_soc.csv`): visualiza la Tabla 2 y permite apreciar de un vistazo que la mejor solución hallada reparte la carga sin picos extremos, con todos los analistas dentro de un rango de ±120 minutos respecto de la media.
 
 Estas figuras y tablas no reemplazan el marco teórico ni la concreción del modelo (punto 7 y segunda parte de la guía de cátedra), que quedan fuera del alcance de esta entrega, pero constituyen el avance de programación ya disponible para mostrar durante la clase, ejecutable de punta a punta con `python3 main.py` desde la carpeta `TPI`.
+
+### A. Introducción de la tecnología al medio
+
+El entorno que se modela en este trabajo es el flujo operativo de un Centro de Operaciones de Seguridad, en particular la recepción, priorización y asignación de alertas o *tickets* provenientes del SIEM y de otras fuentes de monitoreo. En ese sentido, el "medio" no es un espacio abstracto sino el sistema real de atención de incidencias del SOC, donde cada alerta compite por recursos humanos limitados y debe ser derivada al analista más conveniente según su severidad, su tiempo estimado de resolución y su plazo de atención comprometido.
+
+La tecnología introducida en ese medio es un motor evolutivo programado en Python, basado en un Algoritmo Genético Canónico, que simula el criterio de asignación óptima de las alertas. El script funciona como un módulo de decisión en segundo plano: toma las alertas generadas por el sistema, evalúa múltiples distribuciones posibles entre analistas y devuelve una matriz de asignación que busca equilibrar carga, reducir esperas y evitar incumplimientos de SLA. De esta manera, la propuesta no reemplaza al SOC, sino que actúa como una capa de optimización que podría integrarse sobre el flujo habitual de tickets para asistir al analista de turno.
+
+### B. Especificación técnica del Hardware y Software
+
+El experimento se ejecutó de forma local sobre un entorno Windows 11 (`Windows-11-10.0.26200-SP0`), utilizando Python 3.13.7 desde el workspace de VS Code. El hardware disponible para la corrida fue un equipo con procesador `Intel64 Family 6 Model 165 Stepping 5`, sin requerir aceleración por GPU ni infraestructura externa, ya que el modelo se apoya únicamente en procesamiento secuencial y en operaciones de cálculo livianas sobre estructuras de datos en memoria.
+
+En cuanto al software, el prototipo se implementó en `TPI/main.py` y emplea las bibliotecas `numpy`, `pandas` y `matplotlib` para el cálculo numérico, el manejo de resultados y la generación de gráficos. Las dependencias mínimas del proyecto se encuentran listadas en `TPI/requirements.txt`, con `matplotlib>=3.7`, `numpy>=1.24` y `pandas>=2.0`. Esta configuración fue suficiente para ejecutar tanto la simulación evolutiva como la exportación de tablas CSV y figuras PNG generadas por el experimento.
 
 ---
 

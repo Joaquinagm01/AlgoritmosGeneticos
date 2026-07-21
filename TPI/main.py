@@ -27,7 +27,9 @@ import pandas as pd
 # =========================
 # Configuracion general
 # =========================
-SEED = 42
+SEED_ALERTAS = 42
+SEED_AG_BASE = 1000
+N_REPETICIONES = 30
 N_ANALISTAS = 10
 N_ALERTAS = 500
 TAM_POBLACION = 10
@@ -40,7 +42,7 @@ HORIZONTE_MINUTOS = 8 * 60
 
 PRIORIDADES = ("Baja", "Media", "Alta", "Critica")
 PRIORIDAD_PESOS = (0.35, 0.30, 0.22, 0.13)
-PRIORIDAD_RANK = {"Baja": 0, "Media": 1, "Alta": 2, "Critica": 3}
+PRIORIDAD_RANK = {"Critica": 0, "Alta": 1, "Media": 2, "Baja": 3}
 SLA_POR_PRIORIDAD = {"Baja": 240, "Media": 120, "Alta": 60, "Critica": 30}
 
 BASE_RESOLUCION = {"Baja": 8, "Media": 15, "Alta": 25, "Critica": 40}
@@ -54,6 +56,9 @@ OUTPUTS_DIR = BASE_DIR / "outputs"
 FIGURES_DIR = OUTPUTS_DIR / "figures"
 
 METRICAS_CSV = OUTPUTS_DIR / "metricas_generacionales_soc.csv"
+METRICAS_PROMEDIADAS_CSV = OUTPUTS_DIR / "metricas_generacionales_promediadas_soc.csv"
+RESUMEN_REPETICIONES_CSV = OUTPUTS_DIR / "resumen_repeticiones_soc.csv"
+RESUMEN_AGRUPADO_CSV = OUTPUTS_DIR / "resumen_resultados_agrupados_soc.csv"
 RESUMEN_CSV = OUTPUTS_DIR / "resumen_resultados_soc.csv"
 DISTRIBUCION_FINAL_CSV = OUTPUTS_DIR / "distribucion_final_alertas_soc.csv"
 ASIGNACION_FINAL_CSV = OUTPUTS_DIR / "carga_final_analistas_soc.csv"
@@ -69,7 +74,7 @@ class Alerta:
     sla_min: int
 
 
-def generar_alertas(n_alertas: int = N_ALERTAS, seed: int = SEED) -> List[Alerta]:
+def generar_alertas(n_alertas: int = N_ALERTAS, seed: int = SEED_ALERTAS) -> List[Alerta]:
     """Genera alertas sintéticas de un SOC con prioridad, severidad y tiempo estimado."""
     rng = random.Random(seed)
     prioridades = rng.choices(PRIORIDADES, weights=PRIORIDAD_PESOS, k=n_alertas)
@@ -192,13 +197,14 @@ def calcular_fitness(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> flo
 
 def seleccion_ruleta(poblacion: Sequence[Sequence[int]], fitnesses: Sequence[float]) -> List[int]:
     """Seleccion por ruleta proporcional al fitness."""
-    total = float(sum(fitnesses))
+    fitnesses_escalados = _escalar_fitness_para_ruleta(fitnesses)
+    total = float(sum(fitnesses_escalados))
     if total <= 0:
         return list(random.choice(poblacion))
 
     objetivo = random.uniform(0, total)
     acumulado = 0.0
-    for individuo, fitness in zip(poblacion, fitnesses):
+    for individuo, fitness in zip(poblacion, fitnesses_escalados):
         acumulado += fitness
         if acumulado >= objetivo:
             return list(individuo)
@@ -231,15 +237,31 @@ def crossover(padre1: Sequence[int], padre2: Sequence[int]) -> Tuple[List[int], 
     return hijo1, hijo2
 
 
+def _escalar_fitness_para_ruleta(fitnesses: Sequence[float]) -> List[float]:
+    """Reescala fitness positivos para que la ruleta sea menos sensible a valores muy pequeños."""
+    if not fitnesses:
+        return []
+
+    fitness_min = min(fitnesses)
+    fitness_max = max(fitnesses)
+    if fitness_max <= fitness_min:
+        return [1.0 for _ in fitnesses]
+
+    rango = fitness_max - fitness_min
+    return [((fitness - fitness_min) / rango) + 1e-9 for fitness in fitnesses]
+
+
 def mutacion(cromosoma: Sequence[int], p_mutacion: float = P_MUTACION) -> List[int]:
-    """Mutacion invertida: revierte un segmento aleatorio del cromosoma."""
+    """Mutacion por reasignacion: cambia una alerta a otro analista aleatorio."""
     hijo = list(cromosoma)
     if len(hijo) < 2:
         return hijo
 
     if random.random() < p_mutacion:
-        i, j = sorted(random.sample(range(len(hijo)), 2))
-        hijo[i : j + 1] = reversed(hijo[i : j + 1])
+        indice = random.randrange(len(hijo))
+        analista_actual = hijo[indice]
+        analistas_posibles = [analista for analista in range(1, N_ANALISTAS + 1) if analista != analista_actual]
+        hijo[indice] = random.choice(analistas_posibles)
     return hijo
 
 
@@ -299,7 +321,7 @@ def evolucionar(
     tam_poblacion: int = TAM_POBLACION,
     p_crossover: float = P_CROSSOVER,
     p_mutacion: float = P_MUTACION,
-    seed: int = SEED,
+    seed: int = SEED_AG_BASE,
 ) -> Tuple[pd.DataFrame, Dict[str, object]]:
     """Ejecuta la evolucion genetica para un metodo de seleccion concreto."""
     if metodo not in METODOS:
@@ -390,6 +412,70 @@ def evolucionar(
     }
 
     return pd.DataFrame(historial), resumen
+
+
+def _agrupar_metricas_repetidas(df_metricas: pd.DataFrame) -> pd.DataFrame:
+    """Agrega las metricas generacionales para medir variacion entre corridas."""
+    columnas_base = ["metodo", "generacion"]
+    agregadas = (
+        df_metricas.groupby(columnas_base, as_index=False)
+        .agg(
+            repeticiones=("corrida", "count"),
+            fitness_max_media=("fitness_max", "mean"),
+            fitness_max_desvio=("fitness_max", "std"),
+            fitness_min_media=("fitness_min", "mean"),
+            fitness_min_desvio=("fitness_min", "std"),
+            fitness_prom_media=("fitness_prom", "mean"),
+            fitness_prom_desvio=("fitness_prom", "std"),
+            desv_std_media=("desv_std", "mean"),
+            desv_std_desvio=("desv_std", "std"),
+            fitness_mejor_gen_media=("fitness_mejor_gen", "mean"),
+            fitness_mejor_gen_desvio=("fitness_mejor_gen", "std"),
+            backlog_alertas_media=("backlog_alertas", "mean"),
+            backlog_alertas_desvio=("backlog_alertas", "std"),
+            desbalance_carga_media=("desbalance_carga", "mean"),
+            desbalance_carga_desvio=("desbalance_carga", "std"),
+            tiempo_gen_media=("tiempo_seg", "mean"),
+            tiempo_gen_desvio=("tiempo_seg", "std"),
+        )
+        .fillna(0.0)
+    )
+    return agregadas
+
+
+def _agrupar_resumen_repeticiones(df_resumen: pd.DataFrame) -> pd.DataFrame:
+    """Resume cada metodo sobre todas las repeticiones del AG."""
+    return (
+        df_resumen.groupby("metodo", as_index=False)
+        .agg(
+            repeticiones=("corrida", "count"),
+            mejor_fitness_global_media=("mejor_fitness_global", "mean"),
+            mejor_fitness_global_min=("mejor_fitness_global", "min"),
+            mejor_fitness_global_max=("mejor_fitness_global", "max"),
+            mejor_fitness_global_desvio=("mejor_fitness_global", "std"),
+            tiempo_total_estimado_min_media=("tiempo_total_estimado_min", "mean"),
+            tiempo_total_estimado_min_min=("tiempo_total_estimado_min", "min"),
+            tiempo_total_estimado_min_max=("tiempo_total_estimado_min", "max"),
+            tiempo_total_estimado_min_desvio=("tiempo_total_estimado_min", "std"),
+            penalizacion_total_media=("penalizacion_total", "mean"),
+            penalizacion_total_min=("penalizacion_total", "min"),
+            penalizacion_total_max=("penalizacion_total", "max"),
+            penalizacion_total_desvio=("penalizacion_total", "std"),
+            backlog_alertas_media=("backlog_alertas", "mean"),
+            backlog_alertas_min=("backlog_alertas", "min"),
+            backlog_alertas_max=("backlog_alertas", "max"),
+            backlog_alertas_desvio=("backlog_alertas", "std"),
+            desbalance_carga_media=("desbalance_carga", "mean"),
+            desbalance_carga_min=("desbalance_carga", "min"),
+            desbalance_carga_max=("desbalance_carga", "max"),
+            desbalance_carga_desvio=("desbalance_carga", "std"),
+            tiempo_ejecucion_seg_media=("tiempo_ejecucion_seg", "mean"),
+            tiempo_ejecucion_seg_min=("tiempo_ejecucion_seg", "min"),
+            tiempo_ejecucion_seg_max=("tiempo_ejecucion_seg", "max"),
+            tiempo_ejecucion_seg_desvio=("tiempo_ejecucion_seg", "std"),
+        )
+        .fillna(0.0)
+    )
 
 
 def graficar_metricas(df_metricas: pd.DataFrame) -> None:
@@ -499,10 +585,7 @@ def main() -> None:
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
-    random.seed(SEED)
-    np.random.seed(SEED)
-
-    alertas = generar_alertas()
+    alertas = generar_alertas(seed=SEED_ALERTAS)
 
     print("=" * 126)
     print("ALGORTIMO GENETICO CANONICO APLICADO A SCHEDULING DE ALERTAS SOC")
@@ -514,29 +597,51 @@ def main() -> None:
     print(f"Probabilidad de crossover      : {P_CROSSOVER}")
     print(f"Probabilidad de mutacion       : {P_MUTACION}")
     print(f"Horizonte de trabajo (min)     : {HORIZONTE_MINUTOS}")
+    print(f"Repeticiones por metodo        : {N_REPETICIONES}")
     print("=" * 126)
 
     metricas_totales = []
     resueltas = []
 
     for metodo in METODOS:
-        _imprimir_encabezado(metodo)
-        df_historial, resumen = evolucionar(alertas, metodo=metodo, seed=SEED)
+        print("\n" + "=" * 126)
+        print(f"METODO: {metodo.upper()}")
+        print("=" * 126)
+        for corrida in range(1, N_REPETICIONES + 1):
+            seed_ag = SEED_AG_BASE + corrida
+            df_historial, resumen = evolucionar(alertas, metodo=metodo, seed=seed_ag)
 
-        for _, fila in df_historial.iterrows():
-            _imprimir_fila(fila.to_dict())
+            df_historial = df_historial.copy()
+            df_historial["metodo"] = metodo
+            df_historial["corrida"] = corrida
+            df_historial["seed_ag"] = seed_ag
+            metricas_totales.append(df_historial)
 
-        _imprimir_resumen_metodo(resumen)
+            resumen = dict(resumen)
+            resumen["corrida"] = corrida
+            resumen["seed_ag"] = seed_ag
+            resueltas.append(resumen)
 
-        df_historial = df_historial.copy()
-        df_historial["metodo"] = metodo
-        metricas_totales.append(df_historial)
-        resueltas.append(resumen)
+            print(
+                f"Corrida {corrida:02d} | seed AG {seed_ag} | "
+                f"fitness {resumen['mejor_fitness_global']:.10f} | "
+                f"backlog {resumen['backlog_alertas']} | "
+                f"desbalance {resumen['desbalance_carga']:.6f} | "
+                f"tiempo {resumen['tiempo_ejecucion_seg']:.4f}s"
+            )
 
     df_metricas = pd.concat(metricas_totales, ignore_index=True)
-    df_resumen = pd.DataFrame(resueltas)
+    df_resumen_repeticiones = pd.DataFrame(resueltas)
+    df_metricas_promediadas = _agrupar_metricas_repetidas(df_metricas)
+    df_resumen_agrupado = _agrupar_resumen_repeticiones(df_resumen_repeticiones)
+    df_resumen = df_resumen_repeticiones.loc[
+        df_resumen_repeticiones.groupby("metodo")["mejor_fitness_global"].idxmax()
+    ].sort_values("metodo")
 
     df_metricas.to_csv(METRICAS_CSV, index=False)
+    df_metricas_promediadas.to_csv(METRICAS_PROMEDIADAS_CSV, index=False)
+    df_resumen_repeticiones.to_csv(RESUMEN_REPETICIONES_CSV, index=False)
+    df_resumen_agrupado.to_csv(RESUMEN_AGRUPADO_CSV, index=False)
     df_resumen.to_csv(RESUMEN_CSV, index=False)
 
     mejor_indice = int(df_resumen["mejor_fitness_global"].idxmax())
@@ -550,6 +655,31 @@ def main() -> None:
     graficar_metricas(df_metricas)
 
     _imprimir_resumen_global(df_resumen, mejor_indice)
+
+    print("\n" + "=" * 126)
+    print("RESUMEN AGRUPADO DE REPETICIONES")
+    print("=" * 126)
+    columnas_resumen = [
+        "metodo",
+        "repeticiones",
+        "mejor_fitness_global_media",
+        "mejor_fitness_global_min",
+        "mejor_fitness_global_max",
+        "mejor_fitness_global_desvio",
+        "tiempo_total_estimado_min_media",
+        "tiempo_total_estimado_min_min",
+        "tiempo_total_estimado_min_max",
+        "tiempo_total_estimado_min_desvio",
+        "desbalance_carga_media",
+        "desbalance_carga_min",
+        "desbalance_carga_max",
+        "desbalance_carga_desvio",
+        "tiempo_ejecucion_seg_media",
+        "tiempo_ejecucion_seg_min",
+        "tiempo_ejecucion_seg_max",
+        "tiempo_ejecucion_seg_desvio",
+    ]
+    print(df_resumen_agrupado[columnas_resumen].to_string(index=False))
 
     print("\n" + "=" * 126)
     print("DISTRIBUCION FINAL DE ALERTAS EN EL MEJOR ESCENARIO")
