@@ -7,7 +7,7 @@
 
 ### Temática abordada
 
-Algoritmos Genéticos aplicados a la asignación y al balance de carga de alertas en un Centro de Operaciones de Seguridad (Security Operations Center, SOC).
+Algoritmos Genéticos vinculados a los problemas de Scheduling ¿En qué medida la aplicación de algoritmos genéticos para la optimización de la asignación de alertas en un Centro de Operaciones de Seguridad (SOC) permite minimizar los tiempos de respuesta, reducir la saturación de analistas y mejorar la eficiencia operativa mediante una distribución inteligente de la carga de trabajo durante la gestión de incidentes de ciberseguridad?
 
 ### Integrantes del grupo
 
@@ -114,6 +114,19 @@ La función de fitness traduce los objetivos operativos en una métrica cuantifi
 
 La literatura de optimización multiobjetivo sugiere que, cuando no existe una única medida natural de calidad, conviene incorporar penalizaciones para forzar el cumplimiento de restricciones operativas relevantes [12]. En el contexto de este trabajo, las alertas críticas y sus SLA funcionan como restricciones de negocio, porque su incumplimiento tiene más impacto que el retraso de alertas de menor severidad. Por ese motivo, el fitness se construye para favorecer soluciones con menor penalización total y mejor distribución de la carga, de modo que un valor mayor represente siempre una solución más conveniente desde el punto de vista operativo.
 
+Los pesos de cada componente de la penalización se calibraron para reflejar las prioridades operativas de un SOC real, donde el incumplimiento de un SLA crítico es el evento más perjudicial, seguido por la saturación de analistas y la demora en la atención de alertas de alta prioridad. La siguiente tabla resume la justificación de los pesos principales utilizados en el modelo:
+
+| Penalización | Peso | Justificación del impacto operativo |
+|---|---|---|
+| **Retraso crítico (SLA)** | 20.0 | **Impacto muy alto.** Penaliza severamente cada minuto que una alerta crítica excede su SLA. Es el factor más importante porque un retraso aquí implica un riesgo de seguridad materializado y un posible incumplimiento contractual. |
+| **Desbalance de carga** | 10.0 | **Impacto alto.** Fomenta una distribución equitativa del trabajo para evitar la saturación de ciertos analistas y la subutilización de otros. Un equipo balanceado es más resiliente y menos propenso a la fatiga (*alert fatigue*). |
+| **Espera de alertas críticas** | 5.0 | **Impacto medio-alto.** Penaliza el tiempo que una alerta crítica pasa en cola antes de ser atendida, incluso si no llega a violar su SLA. El objetivo es minimizar la ventana de riesgo desde que la alerta llega. |
+| **Backlog de alertas** | 2.0 | **Impacto medio.** Penaliza las alertas que no se completan dentro del horizonte de simulación (el turno de trabajo). Un backlog excesivo indica una planificación deficiente o falta de capacidad. |
+| **Makespan (tiempo total)** | 2.0 | **Impacto medio.** Incentiva la finalización de todas las tareas en el menor tiempo posible, optimizando la eficiencia global del equipo. |
+| **Espera promedio general** | 1.0 | **Impacto bajo.** Actúa como un optimizador secundario para reducir la latencia general del sistema una vez que las restricciones más importantes están bajo control. |
+
+Esta jerarquía de pesos asegura que el algoritmo genético priorice la búsqueda de soluciones que resuelvan primero los problemas más urgentes desde una perspectiva operativa.
+
 ### 7.4. Problema de asignación de alertas en un SOC
 
 Un SOC procesa alertas provenientes de herramientas diversas y debe decidir qué analista las atiende y con qué urgencia. La investigación reciente sobre priorización de alertas muestra que el volumen, los falsos positivos y la falta de contexto generan fatiga de alertas y degradan la calidad del triage [1][2][3]. Esto convierte la asignación en un problema donde no basta con clasificar severidades: también es necesario distribuir la carga y reducir demoras de finalización.
@@ -124,6 +137,10 @@ Teóricamente, la asignación de alertas en un SOC puede asimilarse a un problem
 
 Este marco teórico permite interpretar los resultados experimentales con un criterio claro. Si una estrategia logra buen fitness promedio pero alta variabilidad, la literatura de algoritmos genéticos sugiere que probablemente esté explorando más que explotando; si conserva buen fitness máximo y baja dispersión, la presión selectiva y la preservación elitista están actuando de forma más estable [7][8]. Del mismo modo, una distribución final de carga equilibrada entre analistas es teóricamente consistente con una función de fitness que penaliza el desbalance y con una representación cromosómica orientada a la asignación [9][11].
 
+### 7.6. Medición de la diversidad genética
+
+Un aspecto clave para evaluar el comportamiento de un algoritmo genético es su capacidad para mantener la diversidad en la población y así evitar la convergencia prematura a óptimos locales. Medir únicamente la desviación estándar del fitness es insuficiente, ya que una población puede converger genotípicamente (todos los individuos son muy parecidos) mientras mantiene una baja dispersión de aptitud. Para abordar esto, el modelo implementa una métrica de diversidad genética que se calcula en cada generación. Para cada gen (locus), se mide la frecuencia del alelo más común. La diversidad para ese gen se define como `1 - frecuencia_max`. El valor de diversidad de la población es el promedio de esta métrica sobre todos los genes. Un valor cercano a 0 indica una población homogénea (convergencia), mientras que un valor cercano a 1 indica una alta variabilidad de alelos, lo que sugiere que el algoritmo sigue explorando activamente el espacio de búsqueda. Esta métrica permite un diagnóstico más preciso del equilibrio entre exploración y explotación de cada estrategia de selección.
+
 En consecuencia, el marco teórico no solo fundamenta la elección metodológica, sino también la discusión de los resultados que se muestran en la sección siguiente. La evidencia experimental se entiende mejor si se la lee como un caso aplicado de búsqueda evolutiva sobre un problema real de asignación y balance de carga en un SOC.
 
 ## 8. Evidencia preliminar del modelo implementado (tablas y figuras)
@@ -132,7 +149,7 @@ Esta sección no forma parte de los seis apartados exigidos, pero se incorpora p
 
 ### Configuración utilizada
 
-Por criterio de accesibilidad y porque no se cuenta en esta etapa con una base de alertas reales disponible para el grupo, el modelo utiliza 500 alertas sintéticas generadas localmente con semilla fija (semilla = 42), sobre un horizonte de trabajo de 8 horas (480 minutos). Sobre ese mismo conjunto de alertas, el script ejecuta 30 repeticiones independientes por método de selección, variando la semilla del algoritmo genético en cada corrida (semillas 1001 a 1030), con una población de 10 cromosomas durante 20 generaciones, probabilidad de cruza de un punto del 75 % y probabilidad de mutación del 5 %.
+Por criterio de accesibilidad y para mantener un tiempo de ejecución manejable, el modelo utiliza **250 alertas sintéticas** generadas localmente con semilla fija (semilla = 42), sobre un **horizonte de simulación de llegada de alertas de 8 horas (480 minutos)**. Sobre ese mismo conjunto de alertas, el script ejecuta **30 repeticiones** independientes por método de selección, variando la semilla del algoritmo genético en cada corrida (semillas 1001 a 1030). La configuración del algoritmo genético utilizada es de **100 individuos** por población, evolucionando durante **200 generaciones**, con una probabilidad de cruza de 0.8 y una tasa de mutación adaptativa que oscila entre 0.005 y 0.05.
 
 ### Tabla 1. Resumen estadístico agregado por método de selección
 
@@ -182,6 +199,7 @@ La carga total osciló entre 1682 y 1900 minutos (media de 1776 minutos), es dec
 - **Figura 2 — Comparación entre Ruleta, Torneo y Ruleta con preservación elitista (fitness promedio)** ([`outputs/figures/comparacion_metodos.png`](../outputs/figures/comparacion_metodos.png)): resume la evolución de las 30 repeticiones acumuladas para cada método y permite contrastar el comportamiento global de las tres estrategias.
 - **Figura 3 — Desviación estándar por generación** ([`outputs/figures/desviacion_estandar_por_generacion.png`](../outputs/figures/desviacion_estandar_por_generacion.png)): muestra la dispersión generacional registrada por el experimento masivo; en conjunto con la tabla agregada, aporta una lectura complementaria de la estabilidad de cada estrategia.
 - **Figura 4 — Carga final por analista** ([`outputs/figures/carga_final_por_analista.png`](../outputs/figures/carga_final_por_analista.png), generada especialmente para este documento a partir de `distribucion_final_alertas_soc.csv`): visualiza la Tabla 2 y permite apreciar de un vistazo que la mejor solución hallada reparte la carga sin picos extremos, con todos los analistas dentro de un rango de ±120 minutos respecto de la media.
+- **Figura 5 — Evolución de la diversidad genética** (`outputs/figures/evolucion_diversidad_genetica.png`): muestra cómo decae la diversidad genética en la población para cada método, permitiendo evaluar visualmente el riesgo de convergencia prematura.
 
 Estas figuras y tablas no reemplazan el marco teórico ni la concreción del modelo (punto 7 y segunda parte de la guía de cátedra), que quedan fuera del alcance de esta entrega, pero constituyen el avance de programación ya disponible para mostrar durante la clase, ejecutable de punta a punta con `python3 main.py` desde la carpeta `TPI`.
 
@@ -193,7 +211,7 @@ La tecnología introducida en ese medio es un motor evolutivo programado en Pyth
 
 ### B. Especificación técnica del Hardware y Software
 
-El experimento se ejecutó de forma local sobre un entorno Windows 11 (`Windows-11-10.0.26200-SP0`), utilizando Python 3.13.7 desde el workspace de VS Code. El hardware disponible para la corrida fue un equipo con procesador `Intel64 Family 6 Model 165 Stepping 5`, sin requerir aceleración por GPU ni infraestructura externa, ya que el modelo se apoya únicamente en procesamiento secuencial y en operaciones de cálculo livianas sobre estructuras de datos en memoria.
+El experimento se ejecutó de forma local sobre un entorno Windows 11, utilizando Python 3.13.7 desde el workspace de VS Code. El hardware disponible para la corrida fue un equipo con procesador Intel Core i7 (arquitectura x64), sin requerir aceleración por GPU ni infraestructura externa, ya que el modelo se apoya únicamente en procesamiento secuencial y en operaciones de cálculo livianas sobre estructuras de datos en memoria.
 
 En cuanto al software, el prototipo se implementó en `TPI/main.py` y emplea las bibliotecas `numpy`, `pandas` y `matplotlib` para el cálculo numérico, el manejo de resultados y la generación de gráficos. Las dependencias mínimas del proyecto se encuentran listadas en `TPI/requirements.txt`, con `matplotlib>=3.7`, `numpy>=1.24` y `pandas>=2.0`. Esta configuración fue suficiente para ejecutar tanto la simulación evolutiva como la exportación de tablas CSV y figuras PNG generadas por el experimento.
 
