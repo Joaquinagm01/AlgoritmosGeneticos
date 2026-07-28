@@ -1,83 +1,309 @@
-# TODO del TPI
+Actúa como un investigador, docente universitario y editor científico especializado en Metodología de la Investigación, Algoritmos Genéticos y redacción de artículos académicos.
 
-Checklist de trabajo para dejar el Trabajo Práctico Integrador cerrado, consistente con el material de referencia que hay dentro de `TPI`.
+Tengo un proyecto HTML que contiene el informe de mi Trabajo Práctico Integrador sobre:
 
-## 1. Revisión de material base
+"Algoritmos Genéticos aplicados al Scheduling de Alertas en un Centro de Operaciones de Seguridad (SOC)"
 
-- [x] Leer [Diapositivas_Introducción a Investigación.pdf](Diapositivas_Introducción%20a%20Investigaci%C3%B3n.pdf) para adaptar la introducción, el encuadre académico y el tono del informe.
-- [x] Revisar [UTN_Algoritmos_Genéticos_DirDeBibliotecasDigitales.pdf](UTN_Algoritmos_Gen%C3%A9ticos_DirDeBibliotecasDigitales.pdf) para chequear bibliografía, formato y criterios de presentación.
-- [x] Revisar [UTN_Algoritmos_Genéticos_ProyectoInv_2020.pdf](UTN_Algoritmos_Gen%C3%A9ticos_ProyectoInv_2020.pdf) para reutilizar estructura, alcance y nivel de detalle esperado.
-- [x] Abrir [EG_TP_DWeb_Chacón_GomezManna_Carrizo_Jordán.docx](EG_TP_DWeb_Chac%C3%B3n_GomezManna_Carrizo_Jord%C3%A1n.docx) como referencia de estilo, portada o formato si corresponde.
+NO debes crear un proyecto nuevo.
 
-### Criterios extraídos de la presentación
+Debes MODIFICAR el informe HTML existente respetando completamente su diseño, CSS, JavaScript, gráficos, tablas y estilos visuales.
 
-- Delimitar el tema con precisión antes de plantear el problema.
-- Evitar preguntas cerradas tipo sí/no para que el informe tenga valor investigativo.
-- Buscar y citar literatura reciente y material técnico relevante del área.
-- Presentar el problema como una exploración progresiva: tema, fuentes, acotación y formulación.
-- Justificar por qué el problema del SOC es concreto, accesible y relevante para la especialidad.
+La guía de la materia exige DOS documentos:
 
-### Notas de los materiales revisados
+1. Documento Guía de Investigación
+2. Artículo científico (máximo 8 páginas)
 
-- Bibliotecas digitales: usar SciELO, Dialnet, WorldWideScience y Google Scholar como fuentes base para bibliografía académica y técnica.
-- Proyecto de investigación: estructurar la entrega con carátula, índice, situación problemática, problema, objetivos, marco teórico y una segunda parte de concreción del modelo.
-- Proyecto de investigación: el documento guía pide un problema formulado en un párrafo, objetivos concretos y marco teórico con referencias bibliográficas sólidas.
-- Proyecto de investigación: la implementación debe documentarse de manera sintética, con especificación técnica de hardware y software.
-- DOCX de referencia: sirve como guía de formato y prolijidad de presentación, pero su temática es de Desarrollo Web, así que sólo aporta estilo general.
+El objetivo es adaptar el informe existente para que cumpla exactamente con la guía.
 
-## 2. Revisión de enunciados disponibles
+========================
+TAREAS
+========================
 
-- [x] Leer [UTN_AlgoritmosGen{eticos_Enunciado tema centrales fotovoltaicas_2021.pdf](UTN_AlgoritmosGen%7Beticos_Enunciado%20tema%20centrales%20fotovoltaicas_2021.pdf) para identificar qué pide un enunciado de AG bien armado.
-- [x] Leer [UTN_AlgoritmosGen{eticos_Enunciado tema parque eólico_2021.pdf](UTN_AlgoritmosGen%7Beticos_Enunciado%20tema%20parque%20e%C3%B3lico_2021.pdf) para comparar restricciones, variables y métricas.
-- [x] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaFractales_2021.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaFractales_2021.pdf) para observar cómo se redacta un problema académico de AG.
-- [x] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaMachineLearning.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaMachineLearning.pdf) para rescatar estructura de evaluación y presentación.
-- [x] Leer [UTN_Algoritmos_Genéticos_EnunciadoTemaTeoríaDelCaos.pdf](UTN_Algoritmos_Gen%C3%A9ticos_EnunciadoTemaTeor%C3%ADaDelCaos.pdf) para verificar criterios de desarrollo teórico y resultados. Los cinco enunciados confirman el mismo patrón: elegir tema, formular un problema (a menudo como pregunta abierta), desarrollar marco teórico y concretar un modelo codificado.
+## 1. Revisar toda la estructura
 
-## 3. Definición del TPI
+Verificar que existan las siguientes secciones:
 
-- [x] Confirmar que el tema final del TPI será Scheduling de Alertas SOC y no otro de los temas listados en los PDFs.
-- [x] Redactar el problema de forma académica: contexto SOC, volumen de alertas, analistas disponibles, prioridades y SLA. Ver [docs/TPI_Documentacion_Proyecto_Investigacion.md](docs/TPI_Documentacion_Proyecto_Investigacion.md), punto 5.
-- [x] Definir claramente la representación genética: gen = analista asignado, cromosoma = asignación completa.
-- [x] Especificar restricciones y objetivos: tiempo total, backlog, alertas críticas, balance de carga y saturación. Ver punto 6 (objetivos específicos) del documento.
-- [ ] Ajustar la función fitness para que la penalización sea coherente con el dominio y fácil de justificar en el informe.
+- Carátula
+- Índice
+- Denominación del proyecto
+- Situación problemática
+- Problema
+- Objetivo general
+- Objetivos específicos
+- Marco teórico
+- Referencias bibliográficas
 
-## 4. Validación técnica del programa
+Si alguna sección falta, crearla.
 
-- [ ] Revisar [main.py](main.py) para confirmar que todas las funciones obligatorias están presentes y bien documentadas.
-- [ ] Verificar que la generación de alertas sea reproducible con semilla y que use prioridades, severidad y tiempos estimados.
-- [ ] Confirmar que la selección por ruleta, por torneo y el elitismo estén implementados de forma diferenciada.
-- [ ] Revisar el crossover de 1 punto y la mutación invertida para asegurar que respetan el cromosoma completo.
-- [ ] Comprobar que la evolución registre por generación fitness máximo, mínimo, promedio, desvío estándar y tiempo.
-- [ ] Validar que el mejor cromosoma final produzca una distribución de cargas razonable entre analistas.
+Si alguna está incompleta, mejorarla.
 
-## 5. Salidas y resultados
+No eliminar información útil.
 
-- [ ] Verificar que se generen los CSV de métricas y resúmenes en [outputs](outputs).
-- [ ] Verificar que se generen los gráficos en [outputs/figures](outputs/figures).
-- [ ] Revisar los valores finales obtenidos para ruleta, torneo y elitismo.
-- [ ] Confirmar cuál método obtiene el mejor fitness global y si eso coincide con la interpretación académica.
-- [ ] Revisar si la salida por consola necesita redacción más limpia para entrega o captura en el informe.
+========================
 
-## 6. Informe académico
+## 2. Crear un verdadero Marco Teórico
 
-- [ ] Completar el marco teórico de algoritmos genéticos aplicado a scheduling. (Punto 7 de la guía de cátedra — fuera del alcance de la entrega hasta el punto 6; queda para la próxima etapa.)
-- [x] Explicar por qué el problema de SOC se modela como un problema de asignación y balance de carga. Ver puntos 3 y 4 del documento.
-- [ ] Describir cada operador genético y justificar la elección de sus parámetros en detalle (se reserva para el informe técnico de la segunda parte).
-- [x] Incluir tablas por generación y tablas resumen comparativas entre métodos. Ver Tabla 1 y Tabla 2 del documento (punto 7).
-- [x] Incluir los gráficos obligatorios: máximo, promedio, mínimo, desviación estándar y comparación de métodos. Referenciados en el documento, más una figura adicional de carga final por analista.
-- [ ] Redactar conclusiones con foco en calidad de solución, estabilidad y costo computacional (corresponde al informe técnico de la segunda parte / concreción del modelo).
+Actualmente parte del marco teórico está mezclado dentro de la Situación Problemática.
 
-## 7. Cierre y entrega
+Debes:
 
-- [ ] Releer el `README` para que explique el uso del proyecto sin ambigüedades.
-- [ ] Dejar limpio el directorio `TPI` quitando archivos de referencia que no correspondan a la entrega, si el criterio de la cátedra lo exige.
-- [ ] Confirmar que el proyecto corre desde cero con `python3 main.py` dentro de `TPI`.
-- [ ] Revisar si conviene generar una versión final del informe en HTML o PDF para entrega.
+• separar ambos apartados
 
-## Orden recomendado de trabajo
+La Situación Problemática debe explicar únicamente:
 
-1. Leer todos los PDFs y confirmar el encuadre final.
-2. Ajustar el programa a ese encuadre.
-3. Validar salidas, gráficos y tablas.
-4. Cerrar informe académico.
-5. Preparar versión final para entrega.
+- cuál es el problema
+- por qué existe
+- por qué es importante investigarlo
+
+Mientras que el Marco Teórico debe desarrollar conceptos como:
+
+- Algoritmos Genéticos
+- Optimización
+- Metaheurísticas
+- Scheduling
+- Job Shop Scheduling
+- Balanceo de carga
+- Centros de Operaciones de Seguridad (SOC)
+- SIEM
+- Alert Fatigue
+- Alert Overload
+- Fitness
+- Selección
+- Cruza
+- Mutación
+- Elitismo
+- Representación cromosómica
+
+Usar un lenguaje científico.
+
+No repetir información.
+
+========================
+
+## 3. Revisar todos los objetivos
+
+Verificar que:
+
+- sean medibles
+- verificables
+- concretos
+- realizables
+
+Si alguno no cumple, reescribirlo.
+
+========================
+
+## 4. Mejorar la redacción
+
+Reescribir todo el documento con estilo académico.
+
+Eliminar:
+
+- redundancias
+- frases informales
+- repeticiones
+- oraciones demasiado largas
+
+Mantener el contenido técnico.
+
+========================
+
+## 5. Corregir coherencia
+
+Verificar coherencia entre:
+
+Denominación
+
+↓
+
+Situación problemática
+
+↓
+
+Problema
+
+↓
+
+Objetivo general
+
+↓
+
+Objetivos específicos
+
+Si existe alguna contradicción, corregirla.
+
+========================
+
+## 6. Mantener toda la evidencia del modelo
+
+NO eliminar:
+
+- tablas
+- gráficos
+- resultados
+- análisis
+- métricas
+- comparaciones
+- imágenes
+
+Estas pertenecen a la segunda parte del trabajo.
+
+Solo reorganizarlas si es necesario.
+
+========================
+
+## 7. Crear una versión de Artículo Científico
+
+Dentro del mismo proyecto HTML crear una segunda página llamada:
+
+articulo.html
+
+Debe reutilizar el contenido del informe.
+
+Debe tener el siguiente formato:
+
+Título
+
+Autores
+
+Abstract
+
+Palabras clave
+
+Introducción
+
+Elementos del trabajo y metodología
+
+Resultados
+
+Discusión
+
+Conclusiones
+
+Referencias
+
+Datos de contacto
+
+Debe cumplir el formato solicitado por la guía.
+
+========================
+
+## 8. Agregar Abstract
+
+Escribir un Abstract profesional de menos de 250 palabras.
+
+Debe incluir:
+
+- objetivo
+- metodología
+- resultados
+- conclusión
+
+========================
+
+## 9. Agregar Palabras Clave
+
+Agregar entre 5 y 8 keywords.
+
+========================
+
+## 10. Crear Introducción
+
+Separar la introducción del resto del trabajo.
+
+Debe:
+
+- presentar el problema
+- justificar la investigación
+- resumir antecedentes
+- presentar el objetivo
+
+========================
+
+## 11. Crear Metodología
+
+Explicar:
+
+- representación del cromosoma
+- función fitness
+- operadores
+- población
+- generaciones
+- mutación
+- cruza
+- selección
+- parámetros
+- software utilizado
+
+========================
+
+## 12. Resultados
+
+Organizar todos los resultados existentes.
+
+Mantener:
+
+tablas
+
+figuras
+
+explicaciones
+
+========================
+
+## 13. Discusión
+
+Agregar una discusión científica.
+
+Comparar:
+
+Ruleta
+
+Torneo
+
+Elitismo
+
+Explicar ventajas y desventajas.
+
+========================
+
+## 14. Conclusiones
+
+Crear conclusiones relacionadas directamente con los objetivos.
+
+========================
+
+## 15. Referencias
+
+Revisar todas las referencias.
+
+Homogeneizar formato.
+
+========================
+
+## 16. HTML
+
+No romper:
+
+- CSS
+- JavaScript
+- gráficos
+- navegación
+- responsive
+- animaciones
+
+Mantener el estilo actual.
+
+========================
+
+## 17. Calidad
+
+Todo el contenido debe parecer un artículo universitario listo para ser presentado en un congreso o jornada científica.
+
+No generar texto genérico.
+
+No inventar resultados.
+
+No modificar valores experimentales.
+
+Solo reorganizar, mejorar y completar el informe existente utilizando la información ya disponible.
