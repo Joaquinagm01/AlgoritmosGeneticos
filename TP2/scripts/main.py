@@ -1,144 +1,165 @@
-"""Trabajo Práctico 2 - Problema de la mochila.
+"""Trabajo Práctico 2 - Problema de la mochila. Punto de entrada único.
 
-Este script implementa dos estrategias:
-- búsqueda exhaustiva
-- algoritmo greedy por relación valor/peso
+Sin argumentos, `main.py` levanta un menú interactivo por consola:
+- Opción 1: resuelve los puntos 1 y 2 del enunciado (lista completa, mochila
+  de 4200 cm3).
+- Opción 2: resuelve el punto 3 (3 elementos, mochila de 3000 grs.).
+- Opción 3: pide por teclado una instancia propia (capacidad, cantidad de
+  objetos, y nombre/peso/valor de cada uno), indicando en cada paso qué
+  ingresar.
+- Opción 4: salir.
 
-Además resuelve el caso de ejemplo del enunciado con 3 elementos y una
-capacidad de 3000 grs.
-
-Para el punto 1 y 2 del enunciado completo, basta con reemplazar la lista de
-elementos de ejemplo por la lista real de la consigna.
+También se puede pasar una instancia en JSON como argumento para correrla
+una sola vez sin pasar por el menú.
 """
 
 from __future__ import annotations
 
 import argparse
-import json
-from dataclasses import dataclass
-from itertools import combinations
 from pathlib import Path
 from typing import List, Sequence, Tuple
 
-
-@dataclass(frozen=True)
-class Item:
-    nombre: str
-    peso: int
-    valor: int
-
-
-def valor_total(items: Sequence[Item]) -> int:
-    return sum(item.valor for item in items)
+from mochila import (
+    Item,
+    cargar_instancia_desde_json,
+    calcular_reporte,
+    instancia_ejercicio_3,
+    instancia_ejercicios_1_y_2,
+)
 
 
-def peso_total(items: Sequence[Item]) -> int:
-    return sum(item.peso for item in items)
+def imprimir_espacio_busqueda(items: Sequence[Item], capacidad: int, unidad: str) -> None:
+    print("Espacio de búsqueda")
+    print(f"  Capacidad máxima de la mochila: {capacidad} {unidad}")
+    print(f"  Objetos disponibles ({len(items)}):")
+    print(f"  {'ID':<4}{'Nombre':<14}{'Peso/Volumen':>14}{'Valor':>10}{'Valor/Peso':>13}")
+    for idx, item in enumerate(items, start=1):
+        print(f"  {idx:<4}{item.nombre:<14}{item.peso:>14}{item.valor:>10}{item.ratio:>13.4f}")
 
 
-def resolver_exhaustivo(items: Sequence[Item], capacidad: int) -> Tuple[List[Item], int, int]:
-    """Evalúa todos los subconjuntos y devuelve la mejor combinación factible."""
-    mejor_subconjunto: List[Item] = []
-    mejor_valor = 0
-    mejor_peso = 0
+def imprimir_reporte_metodo(reporte_metodo: dict) -> None:
+    unidad = reporte_metodo["unidad"]
+    nombres = ", ".join(reporte_metodo["seleccion"]) if reporte_metodo["seleccion"] else "ninguno"
 
-    for cantidad in range(len(items) + 1):
-        for subconjunto in combinations(items, cantidad):
-            peso = peso_total(subconjunto)
-            if peso > capacidad:
-                continue
-
-            valor = valor_total(subconjunto)
-            if valor > mejor_valor or (valor == mejor_valor and peso < mejor_peso):
-                mejor_subconjunto = list(subconjunto)
-                mejor_valor = valor
-                mejor_peso = peso
-
-    return mejor_subconjunto, mejor_peso, mejor_valor
-
-
-def resolver_greedy(items: Sequence[Item], capacidad: int) -> Tuple[List[Item], int, int]:
-    """Selecciona items por mayor relación valor/peso hasta completar la capacidad."""
-    seleccionados: List[Item] = []
-    peso_acumulado = 0
-
-    for item in sorted(items, key=lambda item: (item.valor / item.peso), reverse=True):
-        if peso_acumulado + item.peso <= capacidad:
-            seleccionados.append(item)
-            peso_acumulado += item.peso
-
-    return seleccionados, peso_acumulado, valor_total(seleccionados)
+    print("-" * 72)
+    print(f"Método: {reporte_metodo['metodo'].upper()}")
+    print("-" * 72)
+    print("  [Métricas de rendimiento]")
+    print(f"    Tiempo exacto de ejecución: {reporte_metodo['tiempo_s']:.9f} s")
+    print(f"    Combinaciones/candidatos evaluados: {reporte_metodo['combinaciones_evaluadas']}")
+    print("  [Inventario final]")
+    print(f"    Objetos seleccionados: {nombres}")
+    print("  [Validación de restricciones]")
+    print(
+        f"    {'Peso' if unidad == 'grs.' else 'Peso/volumen'} ocupado: {reporte_metodo['peso']} {unidad} de "
+        f"{reporte_metodo['capacidad']} {unidad} ({reporte_metodo['porcentaje_ocupado']:.2%})"
+    )
+    print(f"    Espacio libre/desperdiciado: {reporte_metodo['espacio_libre']} {unidad}")
+    print(f"    ¿Respeta la capacidad máxima?: {'Sí' if reporte_metodo['respeta_capacidad'] else 'No'}")
+    print("  [Función objetivo]")
+    print(f"    Valor económico total acumulado: ${reporte_metodo['valor']}")
 
 
-def formatear_solucion(items: Sequence[Item], peso: int, valor: int) -> str:
-    nombres = ", ".join(item.nombre for item in items) if items else "ninguno"
-    return f"Items: {nombres}\nPeso total: {peso} grs.\nValor total: ${valor}"
+def imprimir_auditoria(auditoria: dict) -> None:
+    print("-" * 72)
+    print("Auditoría crítica: exhaustivo vs. greedy")
+    print("-" * 72)
+    if auditoria["tiempo"]:
+        print(f"  Tiempo: {auditoria['tiempo']}")
+    if auditoria["combinaciones"]:
+        print(f"  Combinaciones evaluadas: {auditoria['combinaciones']}")
+    print(f"  Conclusión: {auditoria['conclusion']}")
 
 
-def imprimir_comparacion(items: Sequence[Item], capacidad: int, titulo: str) -> None:
+def imprimir_comparacion(items: Sequence[Item], capacidad: int, titulo: str, unidad: str = "grs.") -> None:
     print("=" * 72)
     print(titulo)
-    print(f"Capacidad de la mochila: {capacidad} grs.")
-    print("Items disponibles:")
-    for item in items:
-        ratio = item.valor / item.peso
-        print(f"- {item.nombre}: peso={item.peso} grs., valor=${item.valor}, valor/peso={ratio:.4f}")
+    print("=" * 72)
+    imprimir_espacio_busqueda(items, capacidad, unidad)
+    print()
 
-    solucion_exhaustiva, peso_exhaustivo, valor_exhaustivo = resolver_exhaustivo(items, capacidad)
-    solucion_greedy, peso_greedy, valor_greedy = resolver_greedy(items, capacidad)
-
-    print("\nSolución exhaustiva:")
-    print(formatear_solucion(solucion_exhaustiva, peso_exhaustivo, valor_exhaustivo))
-
-    print("\nSolución greedy:")
-    print(formatear_solucion(solucion_greedy, peso_greedy, valor_greedy))
-
-    if valor_greedy == valor_exhaustivo and peso_greedy == peso_exhaustivo:
-        comentario = "Ambos métodos coinciden en la solución óptima para este conjunto."
-    elif valor_greedy == valor_exhaustivo:
-        comentario = (
-            "El greedy alcanzó el mismo valor óptimo que el exhaustivo, "
-            "aunque puede elegir una combinación distinta."
-        )
-    else:
-        comentario = (
-            "El greedy no garantiza optimalidad: en este caso obtuvo un valor menor "
-            "que la búsqueda exhaustiva."
-        )
-
-    print("\nConclusión:")
-    print(comentario)
+    reporte = calcular_reporte(items, capacidad, unidad)
+    imprimir_reporte_metodo(reporte["exhaustivo"])
+    imprimir_reporte_metodo(reporte["greedy"])
+    imprimir_auditoria(reporte["auditoria"])
+    print()
 
 
-def resolver_caso_ejercicio_3() -> None:
-    items = [
-        Item("Elemento 1", peso=1800, valor=72),
-        Item("Elemento 2", peso=600, valor=36),
-        Item("Elemento 3", peso=1200, valor=60),
-    ]
-    capacidad = 3000
-    imprimir_comparacion(items, capacidad, "Ejercicio 3 - Mochila por peso")
-
-    print("\nRespuesta esperada para el análisis del punto 3:")
-    print("- Exhaustivo: el mejor subconjunto es {Elemento 1, Elemento 3} con valor $132 y peso 3000 grs.")
-    print("- Greedy por valor/peso: elige {Elemento 2, Elemento 3} con valor $96 y peso 1800 grs.")
-    print("- Conclusión: el greedy es más simple y rápido, pero no siempre encuentra el óptimo global.")
+def resolver_ejercicios_1_y_2() -> None:
+    items, capacidad, unidad = instancia_ejercicios_1_y_2()
+    imprimir_comparacion(
+        items, capacidad, "Ejercicios 1 y 2 - Mochila por volumen (lista completa del enunciado)", unidad=unidad
+    )
 
 
-def cargar_instancia_desde_json(ruta: Path) -> Tuple[List[Item], int]:
-    with ruta.open("r", encoding="utf-8") as archivo:
-        data = json.load(archivo)
+def resolver_ejercicio_3() -> None:
+    items, capacidad, unidad = instancia_ejercicio_3()
+    imprimir_comparacion(items, capacidad, "Ejercicio 3 - Mochila por peso", unidad=unidad)
 
-    capacidad = int(data["capacidad"])
-    items = [
-        Item(
-            nombre=str(item["nombre"]),
-            peso=int(item["peso"]),
-            valor=int(item["valor"]),
-        )
-        for item in data["items"]
-    ]
-    return items, capacidad
+
+def leer_entrada(mensaje: str) -> str:
+    """input() que además descarta un BOM UTF-8 inicial, por si la entrada
+    viene redirigida desde un archivo guardado como 'UTF-8 con BOM'."""
+    return input(mensaje).strip().lstrip("﻿")
+
+
+def pedir_entero(mensaje: str, minimo: int) -> int:
+    """Pide un entero por teclado, reintentando hasta que sea válido."""
+    while True:
+        crudo = leer_entrada(mensaje)
+        try:
+            valor = int(crudo)
+        except ValueError:
+            print(f"  -> Ingresá un número entero (te pedimos un valor >= {minimo}). Probá de nuevo.")
+            continue
+        if valor < minimo:
+            print(f"  -> Tiene que ser mayor o igual a {minimo}. Probá de nuevo.")
+            continue
+        return valor
+
+
+def pedir_instancia_por_teclado() -> Tuple[List[Item], int, str]:
+    print()
+    print("Vas a cargar una instancia propia. Te vamos a pedir cada dato uno por uno.")
+    unidad = leer_entrada("  Unidad de peso/volumen a usar (ej: grs., cm3, kg) [u.]: ") or "u."
+    capacidad = pedir_entero(f"  Capacidad máxima de la mochila (en {unidad}, número entero): ", minimo=1)
+    cantidad = pedir_entero("  ¿Cuántos objetos vas a cargar? (número entero >= 1): ", minimo=1)
+
+    items: List[Item] = []
+    for i in range(1, cantidad + 1):
+        print(f"\n  Objeto {i} de {cantidad}:")
+        nombre = leer_entrada(f"    Nombre del objeto {i} [Objeto {i}]: ") or f"Objeto {i}"
+        peso = pedir_entero(f"    Peso/Volumen de '{nombre}' (en {unidad}, entero > 0): ", minimo=1)
+        valor = pedir_entero(f"    Valor económico de '{nombre}' (en $, entero >= 0): ", minimo=0)
+        items.append(Item(nombre=nombre, peso=peso, valor=valor))
+
+    return items, capacidad, unidad
+
+
+def menu_interactivo() -> None:
+    while True:
+        print()
+        print("=" * 72)
+        print("TP2 - Problema de la mochila: exhaustivo vs. greedy")
+        print("=" * 72)
+        print("  1) Puntos 1 y 2 del enunciado (10 objetos, mochila de 4200 cm3)")
+        print("  2) Punto 3 del enunciado (3 elementos, mochila de 3000 grs.)")
+        print("  3) Cargar una instancia propia (ingresar objetos por teclado)")
+        print("  4) Salir")
+        opcion = leer_entrada("Elegí una opción escribiendo 1, 2, 3 o 4: ")
+
+        if opcion == "1":
+            resolver_ejercicios_1_y_2()
+        elif opcion == "2":
+            resolver_ejercicio_3()
+        elif opcion == "3":
+            items, capacidad, unidad = pedir_instancia_por_teclado()
+            imprimir_comparacion(items, capacidad, "Mochila - instancia cargada por teclado", unidad=unidad)
+        elif opcion == "4":
+            print("Listo, ¡hasta la próxima!")
+            return
+        else:
+            print(f"  -> Opción inválida: '{opcion}'. Escribí 1, 2, 3 o 4.")
 
 
 def main() -> None:
@@ -146,17 +167,22 @@ def main() -> None:
     parser.add_argument(
         "archivo",
         nargs="?",
-        help="Ruta a un JSON con la instancia. Si no se indica, se usa el caso del punto 3.",
+        help="Ruta a un JSON con una instancia propia. Si no se indica, se abre el menú interactivo.",
+    )
+    parser.add_argument(
+        "--unidad",
+        default="u.",
+        help="Unidad de peso/volumen a mostrar cuando se pasa un archivo propio (default: u.)",
     )
     args = parser.parse_args()
 
     if args.archivo:
         ruta = Path(args.archivo)
         items, capacidad = cargar_instancia_desde_json(ruta)
-        imprimir_comparacion(items, capacidad, f"Mochila - instancia desde {ruta.name}")
+        imprimir_comparacion(items, capacidad, f"Mochila - instancia desde {ruta.name}", unidad=args.unidad)
         return
 
-    resolver_caso_ejercicio_3()
+    menu_interactivo()
 
 
 if __name__ == "__main__":

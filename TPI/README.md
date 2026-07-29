@@ -50,11 +50,7 @@ Cuanto menor es el tiempo total y menores son las penalizaciones, mayor es el fi
 
 ## Operadores implementados
 
-- Selección por ruleta.
-- Selección por torneo.
-- Elitismo con preservación de individuos de mayor fitness.
-- Crossover de 1 punto.
-- Mutación por reasignación (cambia el analista de una alerta aleatoria).
+Algoritmo genético canónico: selección de padres por ruleta, crossover de 1 punto y mutación por reasignación (cambia el analista de una alerta aleatoria). No implementa mecanismos adicionales de selección ni elitismo.
 
 ## Estructura del programa
 
@@ -64,7 +60,6 @@ El archivo principal es `main.py` y contiene las funciones pedidas para el TP:
 - `generar_poblacion()`
 - `calcular_fitness()`
 - `seleccion_ruleta()`
-- `seleccion_torneo()`
 - `crossover()`
 - `mutacion()`
 - `evolucionar()`
@@ -109,7 +104,7 @@ Y se imprimen por consola:
 
 ## Lectura académica
 
-El problema modela una decisión de scheduling donde cada alerta debe asignarse a un recurso humano limitado. El algoritmo genético explora soluciones distribuyendo la carga entre analistas y privilegiando las alertas críticas. El elitismo protege soluciones prometedoras, mientras que ruleta y torneo permiten comparar presión selectiva y diversidad.
+El problema modela una decisión de scheduling donde cada alerta debe asignarse a un recurso humano limitado. El algoritmo genético canónico explora soluciones mediante selección por ruleta, distribuyendo la carga entre analistas y privilegiando las alertas críticas a través de la función de fitness.
 
 La salida gráfica incluye:
 
@@ -117,7 +112,7 @@ La salida gráfica incluye:
 - promedio por generación,
 - mínimo por generación,
 - desviación estándar por generación,
-- comparación entre ruleta, torneo y elitismo.
+- carga final por analista.
 
 ## Documentación de cátedra
 

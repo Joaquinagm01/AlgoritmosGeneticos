@@ -123,7 +123,7 @@
       <ol>
         <li>Diseñar una representación cromosómica que codifique una asignación completa de alertas a analistas, donde cada gen indique el analista responsable de resolver la alerta correspondiente.</li>
         <li>Formular una función de fitness que combine el tiempo total estimado de resolución con penalizaciones verificables por espera, incumplimiento de SLA y desbalance de carga, de modo que dos asignaciones distintas puedan compararse de forma medible.</li>
-        <li>Implementar y comparar los operadores de selección de padres (ruleta y torneo) y el mecanismo de elitismo, registrando en cada caso el fitness obtenido para determinar cuál favorece una convergencia más estable.</li>
+        <li>Implementar el operador de selección de padres por ruleta propio del algoritmo genético canónico, registrando el fitness obtenido generación a generación para verificar la convergencia del modelo.</li>
         <li>Registrar la evolución del fitness máximo, mínimo y promedio a lo largo de las generaciones, con el fin de verificar de forma comprobable la mejora progresiva del algoritmo.</li>
         <li>Cuantificar, a partir del mejor cromosoma hallado en cada corrida, la distribución final de alertas y de carga horaria entre analistas, para comprobar el grado de equilibrio efectivamente alcanzado por el modelo.</li>
         <li>Medir el tiempo de ejecución del procedimiento evolutivo, a fin de contrastar de forma realizable la calidad de la solución obtenida con su costo computacional.</li>
@@ -132,6 +132,9 @@
 
     <section class="card" id="marco-teorico">
       <h2>7. Marco teórico</h2>
+      <p>
+        Este apartado asienta los conceptos teóricos relacionados con el proyecto de investigación. Sirven para la justificación de las decisiones de diseño que se toman en la representación del problema y en la elección de operadores, para dar soporte a la implementación desarrollada, para comprender claramente el aporte teórico del trabajo y para sostener la discusión de los resultados obtenidos. El marco teórico desarrollado a continuación servirá además como base para la exposición teórica sobre el tema en la instancia oral.
+      </p>
 
       <h3>7.1. Optimización, metaheurísticas y algoritmos genéticos</h3>
       <p>
@@ -158,15 +161,14 @@
             <tbody>
               <tr><td>Individuo / cromosoma</td><td>Codificación de una solución candidata completa</td><td>Vector con un gen por alerta; el gen en la posición <em>i</em> indica el analista asignado a la alerta <em>i</em></td></tr>
               <tr><td>Función de fitness</td><td>Medida numérica de la calidad de una solución</td><td>fitness = 1 / (1 + tiempo total estimado + penalización), donde la penalización combina espera, alertas críticas fuera de SLA, backlog y desbalance de carga</td></tr>
-              <tr><td>Selección</td><td>Mecanismo que favorece a los individuos más aptos para reproducirse</td><td>Selección por ruleta (proporcional al fitness) y selección por torneo (mejor individuo de un subconjunto aleatorio)</td></tr>
+              <tr><td>Selección</td><td>Mecanismo que favorece a los individuos más aptos para reproducirse</td><td>Selección por ruleta (probabilidad de reproducción proporcional al fitness)</td></tr>
               <tr><td>Cruza (<em>crossover</em>)</td><td>Combina el material genético de dos padres para generar descendencia</td><td>Cruza de un punto sobre el vector de asignaciones alerta–analista</td></tr>
               <tr><td>Mutación</td><td>Introduce variabilidad aleatoria para evitar la convergencia prematura</td><td>Reasignación del analista correspondiente a una alerta elegida al azar</td></tr>
-              <tr><td>Elitismo</td><td>Preserva a los mejores individuos de una generación en la siguiente</td><td>Copia directa de los cromosomas de mayor fitness, evitando perder soluciones prometedoras</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-      <p class="nota">Fuente: elaboración propia a partir de la estructura de funciones documentada en <span class="mono">TPI/README.md</span> (<span class="mono">generar_poblacion()</span>, <span class="mono">calcular_fitness()</span>, <span class="mono">seleccion_ruleta()</span>, <span class="mono">seleccion_torneo()</span>, <span class="mono">crossover()</span>, <span class="mono">mutacion()</span>).</p>
+      <p class="nota">Fuente: elaboración propia a partir de la estructura de funciones documentada en <span class="mono">TPI/README.md</span> (<span class="mono">generar_poblacion()</span>, <span class="mono">calcular_fitness()</span>, <span class="mono">seleccion_ruleta()</span>, <span class="mono">crossover()</span>, <span class="mono">mutacion()</span>).</p>
 
       <h3>7.3. Scheduling, Job Shop Scheduling y balanceo de carga</h3>
       <p>
@@ -199,12 +201,11 @@
         El prototipo (<span class="mono">TPI/main.py</span>) ya está corriendo sobre datos reales. Las 500 alertas del modelo se derivaron por muestreo aleatorio de <strong>CICIDS2017</strong> <a href="#ref6">[6]</a>, un dataset público de tráfico de red (225.745 flujos, captura del viernes con ataque DDoS, columna <span class="mono">Label</span> en {DDoS, BENIGN}). Como el dataset no trae campos operativos de SOC, la prioridad y la severidad de cada alerta se derivaron del <span class="mono">Label</span> combinado con la intensidad del tráfico (<span class="mono">Flow Bytes/s</span>, <span class="mono">Flow Packets/s</span>); el SLA y el tiempo estimado de resolución se calcularon con la misma política y fórmula ya documentadas en la Tabla 1 del marco teórico; y la llegada de cada alerta se derivó del orden real de captura de los flujos, reescalado al horizonte de 8 horas. La muestra resultante quedó compuesta por 85 alertas Críticas, 207 Altas, 111 Medias y 97 Bajas.
       </p>
 
-      <div class="table-block" data-title="Resumen comparativo final por método de selección (dataset real CICIDS2017)">
+      <div class="table-block" data-title="Resumen del mejor resultado obtenido (dataset real CICIDS2017)">
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Método</th>
                 <th>Mejor fitness global</th>
                 <th>Tiempo total estimado (min)</th>
                 <th>Backlog (alertas)</th>
@@ -213,9 +214,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>Ruleta</td><td>5,9584 × 10⁻⁵</td><td>2377</td><td>386</td><td>0,0873</td><td>0,0706</td></tr>
-              <tr><td>Torneo</td><td>5,9105 × 10⁻⁵</td><td>2388</td><td>387</td><td>0,0854</td><td>0,0742</td></tr>
-              <tr class="row-highlight"><td>Elitismo</td><td><strong>5,9748 × 10⁻⁵</strong></td><td><strong>2354</strong></td><td>387</td><td>0,0946</td><td>0,0742</td></tr>
+              <tr><td>5,9584 × 10⁻⁵</td><td>2377</td><td>386</td><td>0,0873</td><td>0,0587</td></tr>
             </tbody>
           </table>
         </div>
@@ -223,10 +222,10 @@
       <p class="nota">Fuente: <span class="mono">TPI/outputs/resumen_resultados_soc.csv</span>, corrida con semilla 42 sobre la muestra derivada de CICIDS2017.</p>
 
       <p>
-        Sobre datos reales, <strong>Elitismo</strong> ganó por el mismo mecanismo que en la corrida con datos sintéticos: combina el menor tiempo total estimado (2354 min) con la menor penalización total, aun cuando su desbalance de carga (0,0946) fue el más alto de los tres métodos —Torneo, con 0,0854, balanceó mejor la carga pero a costa de un tiempo total y una penalización algo mayores—. Esto confirma, con datos reales, el compromiso ya discutido en el artículo científico entre velocidad de convergencia y diversidad de la búsqueda: preservar siempre a los mejores individuos (elitismo) no garantiza el mejor balance de carga, pero sí el mejor puntaje agregado de la función de fitness.
+        La mejor solución encontrada por el algoritmo alcanza un fitness de 5,9584 × 10⁻⁵, con un tiempo total estimado de 2377 minutos y un desbalance de carga de 0,0873 entre los 10 analistas. El fitness promedio de la población mejora de forma irregular a lo largo de las 20 generaciones (Figura 1), reflejo típico de la selección por ruleta: al ser proporcional al fitness, su presión selectiva es más suave que la de otros mecanismos y admite retrocesos puntuales en el promedio poblacional sin perder al mejor individuo encontrado hasta el momento.
       </p>
 
-      <div class="table-block" data-title="Carga final por analista en la mejor solución (método Elitismo)">
+      <div class="table-block" data-title="Carga final por analista en la mejor solución encontrada">
         <div class="table-wrap">
           <table>
             <thead>
@@ -239,16 +238,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>1</td><td>51</td><td>1866</td><td>6</td><td>48,3</td></tr>
-              <tr><td>2</td><td>50</td><td>2224</td><td>12</td><td>56,9</td></tr>
-              <tr><td>3</td><td>47</td><td>2060</td><td>10</td><td>57,0</td></tr>
-              <tr><td>4</td><td>52</td><td>2047</td><td>5</td><td>49,9</td></tr>
-              <tr><td>5</td><td>54</td><td>2022</td><td>6</td><td>47,6</td></tr>
-              <tr><td>6</td><td>43</td><td>1983</td><td>8</td><td>60,9</td></tr>
-              <tr><td>7</td><td>54</td><td>2352</td><td>9</td><td>57,2</td></tr>
-              <tr><td>8</td><td>59</td><td>2209</td><td>9</td><td>48,2</td></tr>
-              <tr><td>9</td><td>42</td><td>1636</td><td>7</td><td>51,7</td></tr>
-              <tr><td>10</td><td>48</td><td>2202</td><td>13</td><td>59,7</td></tr>
+              <tr><td>1</td><td>49</td><td>1881</td><td>6</td><td>50,5</td></tr>
+              <tr><td>2</td><td>41</td><td>1750</td><td>8</td><td>54,5</td></tr>
+              <tr><td>3</td><td>49</td><td>2048</td><td>7</td><td>54,4</td></tr>
+              <tr><td>4</td><td>49</td><td>2030</td><td>8</td><td>54,0</td></tr>
+              <tr><td>5</td><td>47</td><td>2139</td><td>11</td><td>59,0</td></tr>
+              <tr><td>6</td><td>47</td><td>1887</td><td>9</td><td>52,3</td></tr>
+              <tr><td>7</td><td>53</td><td>2231</td><td>9</td><td>54,8</td></tr>
+              <tr><td>8</td><td>61</td><td>2367</td><td>7</td><td>49,6</td></tr>
+              <tr><td>9</td><td>52</td><td>2242</td><td>10</td><td>56,0</td></tr>
+              <tr><td>10</td><td>52</td><td>2026</td><td>10</td><td>50,9</td></tr>
             </tbody>
           </table>
         </div>
@@ -256,26 +255,31 @@
       <p class="nota">Fuente: <span class="mono">TPI/outputs/distribucion_final_alertas_soc.csv</span>.</p>
 
       <p>
-        La carga total osciló entre 1636 y 2352 minutos (media de 2060 minutos): un rango más amplio que en la corrida sintética, coherente con que el tráfico DDoS real concentra picos de intensidad más marcados que una generación aleatoria uniforme. Con 500 alertas para 10 analistas en un horizonte de 8 horas, la carga total demandada (≈20.600 minutos) excede ampliamente la capacidad disponible (4800 minutos), lo que explica el backlog elevado (≈387 de 500 alertas) en los tres métodos: es una limitación estructural de la dotación de analistas frente al volumen de alertas, no un defecto del algoritmo, y es precisamente el tipo de diagnóstico cuantitativo que este modelo permite obtener.
+        La carga total osciló entre 1750 y 2367 minutos (media de 2060 minutos), un rango amplio coherente con que el tráfico DDoS real concentra picos de intensidad más marcados que una distribución uniforme. Con 500 alertas para 10 analistas en un horizonte de 8 horas, la carga total demandada (≈20.600 minutos) excede ampliamente la capacidad disponible (4800 minutos), lo que explica el backlog observado (386 de 500 alertas): es una limitación estructural de la dotación de analistas frente al volumen de alertas, no un defecto del algoritmo, y es precisamente el tipo de diagnóstico cuantitativo que este modelo permite obtener.
       </p>
 
       <h3>Figuras</h3>
       <figure>
         <img src="../outputs/figures/maximos_por_generacion.png" alt="Fitness máximo por generación" />
-        <figcaption>Fitness máximo por generación para los tres métodos, sobre la muestra real de CICIDS2017.</figcaption>
+        <figcaption>Fitness máximo por generación, sobre la muestra real de CICIDS2017.</figcaption>
       </figure>
       <figure>
-        <img src="../outputs/figures/comparacion_metodos.png" alt="Comparación global de métodos" />
-        <figcaption>Comparación entre Ruleta, Torneo y Elitismo (fitness promedio por generación). Torneo converge más rápido y se estabiliza primero; Elitismo lo alcanza y supera recién hacia la generación 19; Ruleta queda sistemáticamente por debajo y con más ruido.</figcaption>
+        <img src="../outputs/figures/promedios_por_generacion.png" alt="Fitness promedio por generación" />
+        <figcaption>Fitness promedio por generación. Muestra la evolución irregular típica de la selección por ruleta, sin retrocesos en el mejor individuo global.</figcaption>
       </figure>
       <figure>
         <img src="../outputs/figures/desviacion_estandar_por_generacion.png" alt="Desviación estándar por generación" />
-        <figcaption>Desviación estándar del fitness por generación para los tres métodos.</figcaption>
+        <figcaption>Desviación estándar del fitness por generación.</figcaption>
       </figure>
       <figure>
         <img src="../outputs/figures/carga_final_por_analista.png" alt="Carga final por analista" />
-        <figcaption>Carga final por analista en la mejor solución encontrada (método Elitismo). Se aprecia el rango 1636–2352 minutos alrededor de la media de 2060.</figcaption>
+        <figcaption>Carga final por analista en la mejor solución encontrada. Se aprecia el rango 1750–2367 minutos alrededor de la media de 2060.</figcaption>
       </figure>
+
+      <h3>Hipótesis puesta a prueba y trabajo futuro</h3>
+      <p>
+        Con este software se puso a prueba la hipótesis de que la asignación de alertas de un SOC puede formularse y resolverse como un problema de optimización combinatoria mediante un Algoritmo Genético Canónico, obteniendo una asignación medible y verificable. Los resultados sobre datos reales de CICIDS2017 confirman esa hipótesis: el algoritmo produjo una asignación válida, con fitness, tiempo total y desbalance de carga cuantificados generación a generación. Algunos objetivos de este proyecto son a largo plazo y quedan abiertos para continuar la investigación tomando este software como base: comparar el resultado obtenido contra una asignación manual o basada en reglas fijas como línea de base explícita, evaluar el modelo sobre alertas provenientes de un SIEM en producción, y ajustar el tamaño de población y el número de generaciones para estudiar el compromiso entre calidad de la solución y costo computacional.
+      </p>
 
       <h3>Especificación técnica (hardware, software e infraestructura)</h3>
       <div class="table-block" data-title="Especificación técnica del entorno de ejecución">
@@ -291,7 +295,7 @@
               <tr><td>Lenguaje</td><td>Python 3.13.3 (64 bits)</td></tr>
               <tr><td>Bibliotecas</td><td>pandas 3.0.3, numpy 2.2.6, matplotlib 3.10.9 (versiones mínimas fijadas en <span class="mono">requirements.txt</span>: pandas&nbsp;≥2.0, numpy&nbsp;≥1.24, matplotlib&nbsp;≥3.7)</td></tr>
               <tr><td>Sistema operativo</td><td>Windows 11 Pro (build 10.0.26200)</td></tr>
-              <tr><td>Infraestructura</td><td>Ejecución local, sin GPU ni cómputo distribuido: una notebook/PC de escritorio estándar es suficiente. Cada corrida completa (3 métodos × 20 generaciones × 500 alertas) toma menos de 1 segundo de cómputo puro por método.</td></tr>
+              <tr><td>Infraestructura</td><td>Ejecución local, sin GPU ni cómputo distribuido: una notebook/PC de escritorio estándar es suficiente. Una corrida completa (20 generaciones × 500 alertas) toma menos de 1 segundo de cómputo puro.</td></tr>
               <tr><td>Almacenamiento</td><td>Dataset fuente ≈77&nbsp;MB (<span class="mono">TPI/dataset/</span>); salidas generadas ≈1&nbsp;MB de CSV y figuras (<span class="mono">TPI/outputs/</span>)</td></tr>
               <tr><td>Control de versiones</td><td>Git, repositorio compartido por el equipo</td></tr>
             </tbody>

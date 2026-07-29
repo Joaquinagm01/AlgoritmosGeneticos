@@ -1,3 +1,3 @@
-metodo,seleccion,peso,valor,reps,mean_s,median_s,std_s,mean_iters
-exhaustivo,"Objeto 1, Objeto 2, Objeto 3, Objeto 5, Objeto 6, Objeto 7, Objeto 8, Objeto 10",3888,299,100,0.000711124,0.000707412,0.000026281,32
-greedy,"Objeto 8, Objeto 1, Objeto 2, Objeto 3, Objeto 10, Objeto 7, Objeto 5, Objeto 6",3888,299,100,0.000002149,0.000002067,0.000000213,15810
+metodo,seleccion,peso,capacidad,espacio_libre,valor,combinaciones_evaluadas,reps,mean_s,median_s,std_s
+exhaustivo,"Objeto 1, Objeto 2, Objeto 3, Objeto 5, Objeto 6, Objeto 7, Objeto 8, Objeto 10",3888,4200,312,299,1024,100,0.000762389,0.000747700,0.000056843
+greedy,"Objeto 8, Objeto 1, Objeto 2, Objeto 3, Objeto 10, Objeto 7, Objeto 5, Objeto 6",3888,4200,312,299,10,100,0.000002522,0.000002451,0.000000324

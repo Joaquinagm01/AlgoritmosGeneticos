@@ -2,6 +2,11 @@
 
 Carga una instancia JSON, ejecuta `resolver_exhaustivo` y `resolver_greedy`, mide tiempos
 y guarda los resultados en `outputs/` en formato TXT y CSV.
+
+La cantidad de "combinaciones/candidatos evaluados" que reporta cada método es determinista
+(depende solo de la instancia, no de la corrida), así que se toma directamente del resultado
+del algoritmo. El promedio de tiempo se calcula repitiendo la medición `--reps` veces, con un
+escalado interno por medición para reducir el ruido del reloj en instancias muy chicas.
 """
 from __future__ import annotations
 
@@ -12,7 +17,7 @@ import time
 from pathlib import Path
 from typing import List
 
-from TP2.scripts.main import Item, resolver_exhaustivo, resolver_greedy
+from TP2.scripts.mochila import Item, resolver_exhaustivo, resolver_greedy
 
 
 def cargar_instancia(path: Path):
@@ -35,8 +40,8 @@ def main():
     parser.add_argument("--reps", type=int, default=1, help="Número de repeticiones por método (default=1)")
     args = parser.parse_args()
 
-    base = Path(__file__).parent
-    instancia = base / "instancia_enunciado.json"
+    base = Path(__file__).parent.parent
+    instancia = base / "Enunciado" / "instancia_enunciado.json"
     out_dir = base / "outputs"
     out_dir.mkdir(exist_ok=True)
 
@@ -68,24 +73,22 @@ def main():
         sol_final = None
         peso_final = None
         valor_final = None
-        iters_used = []
+        combinaciones_final = None
 
         for i in range(args.reps):
             per_call, last_res, iterations, total = measure_with_scaling(funcion, items, capacidad)
-            # per_call en segundos
             tiempos.append(per_call)
-            iters_used.append(iterations)
 
-            # last_res es la última tupla (sol, peso, valor)
-            sol, peso, valor = last_res
+            # last_res es la última tupla (sol, peso, valor, combinaciones_evaluadas)
+            sol, peso, valor, combinaciones = last_res
             sol_final = sol
             peso_final = peso
             valor_final = valor
+            combinaciones_final = combinaciones
 
         mean_t = statistics.mean(tiempos)
         median_t = statistics.median(tiempos)
         stdev_t = statistics.pstdev(tiempos) if args.reps > 1 else 0.0
-        mean_iters = int(statistics.mean(iters_used))
 
         results.append(
             {
@@ -93,11 +96,13 @@ def main():
                 "seleccion": nombres(sol_final),
                 "peso": peso_final,
                 "valor": valor_final,
+                "combinaciones_evaluadas": combinaciones_final,
+                "capacidad": capacidad,
+                "espacio_libre": capacidad - peso_final,
                 "reps": args.reps,
                 "mean_s": mean_t,
                 "median_s": median_t,
                 "std_s": stdev_t,
-                "mean_iters": mean_iters,
             }
         )
 
@@ -109,18 +114,33 @@ def main():
     for r in results:
         txt.append(f"{r['metodo'].capitalize()}:")
         txt.append(f"  Selección: {r['seleccion']}")
-        txt.append(f"  Peso: {r['peso']} | Valor: ${r['valor']}")
-        txt.append(f"  Repeticiones: {r['reps']} | Iteraciones internas (media): {r.get('mean_iters',1)}")
+        txt.append(f"  Peso: {r['peso']} / {r['capacidad']} | Espacio libre: {r['espacio_libre']} | Valor: ${r['valor']}")
+        txt.append(f"  Combinaciones/candidatos evaluados: {r['combinaciones_evaluadas']}")
+        txt.append(f"  Repeticiones: {r['reps']}")
         txt.append(f"  Tiempo medio por llamada: {r['mean_s']:.9f} s | mediana: {r['median_s']:.9f} s | std: {r['std_s']:.9f} s")
         txt.append("")
 
+    exh = next(r for r in results if r["metodo"] == "exhaustivo")
+    gre = next(r for r in results if r["metodo"] == "greedy")
+    txt.append("Auditoría crítica:")
+    if gre["mean_s"] > 0:
+        txt.append(f"  Tiempo: exhaustivo {exh['mean_s'] / gre['mean_s']:.1f}x más lento que greedy.")
+    txt.append(
+        f"  Combinaciones evaluadas: exhaustivo {exh['combinaciones_evaluadas'] / gre['combinaciones_evaluadas']:.1f}x "
+        f"más que greedy ({exh['combinaciones_evaluadas']} vs. {gre['combinaciones_evaluadas']})."
+    )
+    txt.append(f"  Valor: exhaustivo ${exh['valor']} vs. greedy ${gre['valor']}.")
+
     (out_dir / "instancia_enunciado_bench.txt").write_text("\n".join(txt), encoding="utf-8")
 
-    # Guardar CSV resumen (campos: metodo,seleccion,peso,valor,reps,mean_s,median_s,std_s,mean_iters)
-    csv_lines = ["metodo,seleccion,peso,valor,reps,mean_s,median_s,std_s,mean_iters"]
+    # Guardar CSV resumen
+    csv_lines = [
+        "metodo,seleccion,peso,capacidad,espacio_libre,valor,combinaciones_evaluadas,reps,mean_s,median_s,std_s"
+    ]
     for r in results:
         csv_lines.append(
-            f"{r['metodo']},\"{r['seleccion']}\",{r['peso']},{r['valor']},{r['reps']},{r['mean_s']:.9f},{r['median_s']:.9f},{r['std_s']:.9f},{r.get('mean_iters',1)}"
+            f"{r['metodo']},\"{r['seleccion']}\",{r['peso']},{r['capacidad']},{r['espacio_libre']},"
+            f"{r['valor']},{r['combinaciones_evaluadas']},{r['reps']},{r['mean_s']:.9f},{r['median_s']:.9f},{r['std_s']:.9f}"
         )
     (out_dir / "instancia_enunciado_bench.csv").write_text("\n".join(csv_lines), encoding="utf-8")
 

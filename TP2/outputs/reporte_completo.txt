@@ -1,0 +1,99 @@
+﻿========================================================================
+Ejercicios 1 y 2 - Mochila por volumen (lista completa del enunciado)
+========================================================================
+Espacio de búsqueda
+  Capacidad máxima de la mochila: 4200 cm3
+  Objetos disponibles (10):
+  ID  Nombre          Peso/Volumen     Valor   Valor/Peso
+  1   Objeto 1                 150        20       0.1333
+  2   Objeto 2                 325        40       0.1231
+  3   Objeto 3                 600        50       0.0833
+  4   Objeto 4                 805        36       0.0447
+  5   Objeto 5                 430        25       0.0581
+  6   Objeto 6                1200        64       0.0533
+  7   Objeto 7                 770        54       0.0701
+  8   Objeto 8                  60        18       0.3000
+  9   Objeto 9                 930        46       0.0495
+  10  Objeto 10                353        28       0.0793
+
+------------------------------------------------------------------------
+Método: EXHAUSTIVO
+------------------------------------------------------------------------
+  [Métricas de rendimiento]
+    Tiempo exacto de ejecución: 0.000817300 s
+    Combinaciones/candidatos evaluados: 1024
+  [Inventario final]
+    Objetos seleccionados: Objeto 1, Objeto 2, Objeto 3, Objeto 5, Objeto 6, Objeto 7, Objeto 8, Objeto 10
+  [Validación de restricciones]
+    Peso/volumen ocupado: 3888 cm3 de 4200 cm3 (92.57%)
+    Espacio libre/desperdiciado: 312 cm3
+    ¿Respeta la capacidad máxima?: Sí
+  [Función objetivo]
+    Valor económico total acumulado: $299
+------------------------------------------------------------------------
+Método: GREEDY
+------------------------------------------------------------------------
+  [Métricas de rendimiento]
+    Tiempo exacto de ejecución: 0.000010500 s
+    Combinaciones/candidatos evaluados: 10
+  [Inventario final]
+    Objetos seleccionados: Objeto 8, Objeto 1, Objeto 2, Objeto 3, Objeto 10, Objeto 7, Objeto 5, Objeto 6
+  [Validación de restricciones]
+    Peso/volumen ocupado: 3888 cm3 de 4200 cm3 (92.57%)
+    Espacio libre/desperdiciado: 312 cm3
+    ¿Respeta la capacidad máxima?: Sí
+  [Función objetivo]
+    Valor económico total acumulado: $299
+------------------------------------------------------------------------
+Auditoría crítica: exhaustivo vs. greedy
+------------------------------------------------------------------------
+  Tiempo: el exhaustivo tardó 77.8x más que el greedy (0.000817300 s vs. 0.000010500 s).
+  Combinaciones evaluadas: el exhaustivo evaluó 102.4x más candidatos que el greedy (1024 vs. 10).
+  Conclusión: El greedy coincidió exactamente con la solución óptima (mismo valor y mismo peso). No es garantía general: en esta instancia particular la heurística no perdió valor.
+
+========================================================================
+Ejercicio 3 - Mochila por peso
+========================================================================
+Espacio de búsqueda
+  Capacidad máxima de la mochila: 3000 grs.
+  Objetos disponibles (3):
+  ID  Nombre          Peso/Volumen     Valor   Valor/Peso
+  1   Elemento 1              1800        72       0.0400
+  2   Elemento 2               600        36       0.0600
+  3   Elemento 3              1200        60       0.0500
+
+------------------------------------------------------------------------
+Método: EXHAUSTIVO
+------------------------------------------------------------------------
+  [Métricas de rendimiento]
+    Tiempo exacto de ejecución: 0.000011400 s
+    Combinaciones/candidatos evaluados: 8
+  [Inventario final]
+    Objetos seleccionados: Elemento 1, Elemento 3
+  [Validación de restricciones]
+    Peso ocupado: 3000 grs. de 3000 grs. (100.00%)
+    Espacio libre/desperdiciado: 0 grs.
+    ¿Respeta la capacidad máxima?: Sí
+  [Función objetivo]
+    Valor económico total acumulado: $132
+------------------------------------------------------------------------
+Método: GREEDY
+------------------------------------------------------------------------
+  [Métricas de rendimiento]
+    Tiempo exacto de ejecución: 0.000003600 s
+    Combinaciones/candidatos evaluados: 3
+  [Inventario final]
+    Objetos seleccionados: Elemento 2, Elemento 3
+  [Validación de restricciones]
+    Peso ocupado: 1800 grs. de 3000 grs. (60.00%)
+    Espacio libre/desperdiciado: 1200 grs.
+    ¿Respeta la capacidad máxima?: Sí
+  [Función objetivo]
+    Valor económico total acumulado: $96
+------------------------------------------------------------------------
+Auditoría crítica: exhaustivo vs. greedy
+------------------------------------------------------------------------
+  Tiempo: el exhaustivo tardó 3.2x más que el greedy (0.000011400 s vs. 0.000003600 s).
+  Combinaciones evaluadas: el exhaustivo evaluó 2.7x más candidatos que el greedy (8 vs. 3).
+  Conclusión: El greedy NO alcanzó el óptimo: obtuvo $96 contra $132 del exhaustivo (diferencia de $36). Es una solución factible, pero no la óptima absoluta.
+

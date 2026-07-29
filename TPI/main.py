@@ -1,13 +1,15 @@
 """Algoritmo Genético Canónico aplicado a Scheduling de Alertas SOC.
 
-Las alertas ya no son sintéticas: se derivan de una muestra real del dataset
-CICIDS2017 (flujos de red de un ataque DDoS, columna `Label` en {DDoS, BENIGN}).
-El dataset no contiene campos operativos de SOC (prioridad, severidad, SLA,
-tiempo de resolución, analista, timestamp), por lo que esos campos se derivan
-de las columnas de intensidad de tráfico y del `Label`, con una regla explícita
-documentada en `derivar_alertas_desde_dataset()`. El resto del algoritmo genético
-(representación, fitness, selección, cruza, mutación, elitismo) es el mismo que
-el usado con el dataset sintético.
+Las alertas se derivan de una muestra real del dataset CICIDS2017 (flujos de red
+de un ataque DDoS, columna `Label` en {DDoS, BENIGN}). El dataset no contiene
+campos operativos de SOC (prioridad, severidad, SLA, tiempo de resolución,
+analista, timestamp), por lo que esos campos se derivan de las columnas de
+intensidad de tráfico y del `Label`, con una regla explícita documentada en
+`derivar_alertas_desde_dataset()`.
+
+El algoritmo genético implementa la forma canónica simple: selección de padres
+por ruleta (proporcional al fitness), cruza de un punto y mutación por
+reasignación, sin mecanismos adicionales de selección ni de elitismo.
 """
 
 from __future__ import annotations
@@ -38,16 +40,12 @@ TAM_POBLACION = 10
 N_GENERACIONES = 20
 P_CROSSOVER = 0.75
 P_MUTACION = 0.05
-TORNEO_K = 3
-ELITE_SIZE = 2
 HORIZONTE_MINUTOS = 8 * 60
 
 PRIORIDADES = ("Baja", "Media", "Alta", "Critica")
 PRIORIDAD_RANK = {"Baja": 0, "Media": 1, "Alta": 2, "Critica": 3}
 SLA_POR_PRIORIDAD = {"Baja": 240, "Media": 120, "Alta": 60, "Critica": 30}
 BASE_RESOLUCION = {"Baja": 8, "Media": 15, "Alta": 25, "Critica": 40}
-
-METODOS = ("ruleta", "torneo", "elitismo")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATASET_CSV = BASE_DIR / "dataset" / "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv"
@@ -261,7 +259,7 @@ def calcular_fitness(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> flo
 
 
 def seleccion_ruleta(poblacion: Sequence[Sequence[int]], fitnesses: Sequence[float]) -> List[int]:
-    """Seleccion por ruleta proporcional al fitness."""
+    """Seleccion de padres por ruleta, proporcional al fitness (AG canonico)."""
     total = float(sum(fitnesses))
     if total <= 0:
         return list(random.choice(poblacion))
@@ -273,18 +271,6 @@ def seleccion_ruleta(poblacion: Sequence[Sequence[int]], fitnesses: Sequence[flo
         if acumulado >= objetivo:
             return list(individuo)
     return list(poblacion[-1])
-
-
-def seleccion_torneo(
-    poblacion: Sequence[Sequence[int]],
-    fitnesses: Sequence[float],
-    k: int = TORNEO_K,
-) -> List[int]:
-    """Seleccion por torneo de tamaño k."""
-    cantidad = min(k, len(poblacion))
-    indices = random.sample(range(len(poblacion)), cantidad)
-    mejor_indice = max(indices, key=lambda idx: fitnesses[idx])
-    return list(poblacion[mejor_indice])
 
 
 def crossover(padre1: Sequence[int], padre2: Sequence[int]) -> Tuple[List[int], List[int]]:
@@ -321,13 +307,6 @@ def calcular_estadisticas(fitnesses: Sequence[float], tiempo_seg: float) -> Dict
     }
 
 
-def _seleccionar_padre(metodo: str, poblacion: Sequence[Sequence[int]], fitnesses: Sequence[float]) -> List[int]:
-    """Encapsula la estrategia de seleccion de padres."""
-    if metodo == "torneo":
-        return seleccion_torneo(poblacion, fitnesses)
-    return seleccion_ruleta(poblacion, fitnesses)
-
-
 def _formatear_cromosoma(cromosoma: Sequence[int], ancho: int = 32) -> str:
     """Devuelve una version compacta de un cromosoma largo para consola."""
     if len(cromosoma) <= ancho:
@@ -361,17 +340,14 @@ def _resumen_distribucion(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -
 
 def evolucionar(
     alertas: Sequence[Alerta],
-    metodo: str = "ruleta",
     n_generaciones: int = N_GENERACIONES,
     tam_poblacion: int = TAM_POBLACION,
     p_crossover: float = P_CROSSOVER,
     p_mutacion: float = P_MUTACION,
     seed: int = SEED,
 ) -> Tuple[pd.DataFrame, Dict[str, object]]:
-    """Ejecuta la evolucion genetica para un metodo de seleccion concreto."""
-    if metodo not in METODOS:
-        raise ValueError(f"Metodo no soportado: {metodo}")
-
+    """Ejecuta el algoritmo genetico canonico: seleccion por ruleta, cruza de un
+    punto y mutacion por reasignacion, sin operadores adicionales."""
     random.seed(seed)
     np.random.seed(seed)
 
@@ -398,13 +374,9 @@ def evolucionar(
 
         if generacion < n_generaciones:
             nueva_poblacion: List[List[int]] = []
-            if metodo == "elitismo":
-                elite_indices = list(np.argsort(fitnesses)[::-1][:ELITE_SIZE])
-                nueva_poblacion.extend(list(poblacion[idx]) for idx in elite_indices)
-
             while len(nueva_poblacion) < tam_poblacion:
-                padre1 = _seleccionar_padre(metodo, poblacion, fitnesses)
-                padre2 = _seleccionar_padre(metodo, poblacion, fitnesses)
+                padre1 = seleccion_ruleta(poblacion, fitnesses)
+                padre2 = seleccion_ruleta(poblacion, fitnesses)
 
                 if random.random() < p_crossover:
                     hijo1, hijo2 = crossover(padre1, padre2)
@@ -424,7 +396,6 @@ def evolucionar(
         estadisticas.update(
             {
                 "generacion": generacion,
-                "metodo": metodo,
                 "fitness_mejor_gen": float(evaluacion_mejor["fitness"]),
                 "tiempo_total_estimado_min": int(evaluacion_mejor["tiempo_total_estimado_min"]),
                 "espera_promedio_min": float(evaluacion_mejor["espera_promedio_min"]),
@@ -440,7 +411,6 @@ def evolucionar(
         raise RuntimeError("No se pudo determinar una mejor solucion global")
 
     resumen = {
-        "metodo": metodo,
         "mejor_cromosoma": mejor_global,
         "mejor_cromosoma_texto": json.dumps(mejor_global),
         "mejor_fitness_global": float(mejor_global_eval["fitness"]),
@@ -460,7 +430,7 @@ def evolucionar(
 
 
 def graficar_metricas(df_metricas: pd.DataFrame) -> None:
-    """Genera graficos de maximo, minimo, promedio, desvio y comparacion entre metodos."""
+    """Genera graficos de maximo, minimo, promedio y desvio estandar por generacion."""
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
     configuraciones = [
@@ -470,36 +440,21 @@ def graficar_metricas(df_metricas: pd.DataFrame) -> None:
         ("desv_std", "Desviacion estandar por generacion", "Desviacion estandar", "desviacion_estandar_por_generacion.png"),
     ]
 
+    df_ordenado = df_metricas.sort_values("generacion")
     for metrica, titulo, etiqueta_y, archivo in configuraciones:
         plt.figure(figsize=(11, 6))
-        for metodo, grupo in df_metricas.groupby("metodo"):
-            grupo = grupo.sort_values("generacion")
-            plt.plot(grupo["generacion"], grupo[metrica], marker="o", linewidth=2, label=metodo.capitalize())
+        plt.plot(df_ordenado["generacion"], df_ordenado[metrica], marker="o", linewidth=2, color="#2a78d6")
         plt.title(titulo)
         plt.xlabel("Generacion")
         plt.ylabel(etiqueta_y)
         plt.grid(True, linestyle="--", alpha=0.35)
-        plt.legend()
         plt.tight_layout()
         plt.savefig(FIGURES_DIR / archivo, dpi=200)
         plt.close()
 
-    plt.figure(figsize=(11, 6))
-    for metodo, grupo in df_metricas.groupby("metodo"):
-        grupo = grupo.sort_values("generacion")
-        plt.plot(grupo["generacion"], grupo["fitness_prom"], marker="o", linewidth=2, label=metodo.capitalize())
-    plt.title("Comparacion entre Ruleta, Torneo y Elitismo")
-    plt.xlabel("Generacion")
-    plt.ylabel("Fitness promedio")
-    plt.grid(True, linestyle="--", alpha=0.35)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(FIGURES_DIR / "comparacion_metodos.png", dpi=200)
-    plt.close()
 
-
-def graficar_carga_final(distribucion_final: pd.DataFrame, metodo_ganador: str) -> None:
-    """Genera la figura de carga final por analista para la mejor solucion global."""
+def graficar_carga_final(distribucion_final: pd.DataFrame) -> None:
+    """Genera la figura de carga final por analista para la mejor solucion encontrada."""
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     df = distribucion_final.sort_values("analista")
 
@@ -521,7 +476,7 @@ def graficar_carga_final(distribucion_final: pd.DataFrame, metodo_ganador: str) 
         ax.text(barra.get_x() + barra.get_width() / 2, altura + df["carga_total_min"].max() * 0.012, f"{int(altura)}",
                  ha="center", va="bottom", fontsize=9, color="#0b0b0b")
 
-    ax.set_title(f"Carga final por analista en la mejor solución encontrada (método {metodo_ganador.capitalize()})", fontsize=13)
+    ax.set_title("Carga final por analista en la mejor solución encontrada", fontsize=13)
     ax.set_xlabel("Analista SOC")
     ax.set_ylabel("Carga total asignada (minutos)")
     ax.set_ylim(0, df["carga_total_min"].max() * 1.15)
@@ -533,9 +488,7 @@ def graficar_carga_final(distribucion_final: pd.DataFrame, metodo_ganador: str) 
     plt.close()
 
 
-def _imprimir_encabezado(metodo: str) -> None:
-    print("=" * 126)
-    print(f"METODO: {metodo.upper()}")
+def _imprimir_encabezado() -> None:
     print("=" * 126)
     print(
         f"{'Gen':>4} | {'Fitness max':>12} | {'Fitness min':>12} | {'Fitness prom':>12} | "
@@ -552,9 +505,9 @@ def _imprimir_fila(stats: Dict[str, object]) -> None:
     )
 
 
-def _imprimir_resumen_metodo(resumen: Dict[str, object]) -> None:
+def _imprimir_resumen(resumen: Dict[str, object]) -> None:
     print("-" * 126)
-    print("RESUMEN FINAL DEL METODO")
+    print("RESUMEN FINAL")
     print(f"Mejor fitness global          : {resumen['mejor_fitness_global']:.10f}")
     print(f"Tiempo total estimado (min)   : {resumen['tiempo_total_estimado_min']}")
     print(f"Penalizacion total            : {resumen['penalizacion_total']:.4f}")
@@ -564,36 +517,8 @@ def _imprimir_resumen_metodo(resumen: Dict[str, object]) -> None:
     print(f"Backlog acumulado (min)       : {resumen['backlog_minutos']:.4f}")
     print(f"Desbalance de carga           : {resumen['desbalance_carga']:.6f}")
     print(f"Sobrecarga relativa           : {resumen['sobrecarga_relativa']:.6f}")
+    print(f"Tiempo de ejecucion (s)       : {resumen['tiempo_ejecucion_seg']:.6f}")
     print(f"Cromosoma ganador (compacto)  : {_formatear_cromosoma(resumen['mejor_cromosoma'])}")
-
-
-def _imprimir_resumen_global(df_resumen: pd.DataFrame, mejor_indice: int) -> None:
-    print("\n" + "=" * 126)
-    print("TABLA RESUMEN FINAL POR METODO")
-    print("=" * 126)
-    columnas = [
-        "metodo",
-        "mejor_fitness_global",
-        "tiempo_total_estimado_min",
-        "penalizacion_total",
-        "espera_promedio_min",
-        "espera_critica_promedio_min",
-        "backlog_alertas",
-        "backlog_minutos",
-        "desbalance_carga",
-        "tiempo_ejecucion_seg",
-    ]
-    print(df_resumen[columnas].to_string(index=False))
-
-    ganador = df_resumen.iloc[mejor_indice]
-    print("\n" + "=" * 126)
-    print("MEJOR SOLUCION GLOBAL")
-    print("=" * 126)
-    print(f"Metodo ganador                 : {ganador['metodo']}")
-    print(f"Mejor fitness global           : {ganador['mejor_fitness_global']:.10f}")
-    print(f"Tiempo total estimado (min)    : {int(ganador['tiempo_total_estimado_min'])}")
-    print(f"Penalizacion total             : {ganador['penalizacion_total']:.4f}")
-    print(f"Cromosoma ganador (texto)      : {ganador['mejor_cromosoma_texto'][:180]}...")
 
 
 def main() -> None:
@@ -615,49 +540,35 @@ def main() -> None:
     print(f"Alertas muestreadas            : {N_ALERTAS}")
     print(f"Poblacion inicial              : {TAM_POBLACION}")
     print(f"Generaciones                   : {N_GENERACIONES}")
+    print(f"Seleccion de padres            : ruleta (proporcional al fitness)")
     print(f"Probabilidad de crossover      : {P_CROSSOVER}")
     print(f"Probabilidad de mutacion       : {P_MUTACION}")
     print(f"Horizonte de trabajo (min)     : {HORIZONTE_MINUTOS}")
     print("=" * 126)
 
-    metricas_totales = []
-    resueltas = []
+    _imprimir_encabezado()
+    df_historial, resumen = evolucionar(alertas, seed=SEED)
 
-    for metodo in METODOS:
-        _imprimir_encabezado(metodo)
-        df_historial, resumen = evolucionar(alertas, metodo=metodo, seed=SEED)
+    for _, fila in df_historial.iterrows():
+        _imprimir_fila(fila.to_dict())
 
-        for _, fila in df_historial.iterrows():
-            _imprimir_fila(fila.to_dict())
+    _imprimir_resumen(resumen)
 
-        _imprimir_resumen_metodo(resumen)
-
-        df_historial = df_historial.copy()
-        df_historial["metodo"] = metodo
-        metricas_totales.append(df_historial)
-        resueltas.append(resumen)
-
-    df_metricas = pd.concat(metricas_totales, ignore_index=True)
-    df_resumen = pd.DataFrame(resueltas)
-
-    df_metricas.to_csv(METRICAS_CSV, index=False)
+    df_historial.to_csv(METRICAS_CSV, index=False)
+    df_resumen = pd.DataFrame([resumen])
     df_resumen.to_csv(RESUMEN_CSV, index=False)
 
-    mejor_indice = int(df_resumen["mejor_fitness_global"].idxmax())
-    mejor = df_resumen.iloc[mejor_indice]
-    distribucion_final = _resumen_distribucion(mejor["mejor_cromosoma"], alertas)
+    distribucion_final = _resumen_distribucion(resumen["mejor_cromosoma"], alertas)
     distribucion_final.to_csv(DISTRIBUCION_FINAL_CSV, index=False)
 
     resumen_cargas = distribucion_final[["analista", "alertas_asignadas", "carga_total_min", "criticidad_critica"]].copy()
     resumen_cargas.to_csv(ASIGNACION_FINAL_CSV, index=False)
 
-    graficar_metricas(df_metricas)
-    graficar_carga_final(distribucion_final, str(mejor["metodo"]))
-
-    _imprimir_resumen_global(df_resumen, mejor_indice)
+    graficar_metricas(df_historial)
+    graficar_carga_final(distribucion_final)
 
     print("\n" + "=" * 126)
-    print("DISTRIBUCION FINAL DE ALERTAS EN EL MEJOR ESCENARIO")
+    print("DISTRIBUCION FINAL DE ALERTAS EN LA MEJOR SOLUCION ENCONTRADA")
     print("=" * 126)
     print(distribucion_final.to_string(index=False))
 
