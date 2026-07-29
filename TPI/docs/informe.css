@@ -305,6 +305,44 @@ li { margin-bottom: 0.35rem; }
   text-decoration: none;
 }
 
+.indice-complementario {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.indice-complementario li {
+  counter-increment: none;
+  margin: 0.45rem 0;
+  padding-left: 0.5rem;
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.indice-complementario li:hover {
+  border-left-color: var(--border-medium);
+}
+
+.indice-complementario li a {
+  display: block;
+  padding: 0.35rem 0.6rem;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+}
+
+.indice-complementario li a::before {
+  content: "– ";
+  font-weight: 700;
+  color: var(--ink-muted);
+  margin-right: 0.3rem;
+}
+
+.indice-complementario li a:hover {
+  background: #f4f6fa;
+  border-radius: var(--radius-small);
+  text-decoration: none;
+}
+
 /* ---------------------------------------------------------
    Contenedor principal y tarjetas de sección
    --------------------------------------------------------- */

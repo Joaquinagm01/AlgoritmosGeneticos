@@ -1,0 +1,209 @@
+% =========================================================
+% Artículo Científico - TPI Algoritmos Genéticos
+% Algoritmos Genéticos aplicados al Scheduling de Alertas en un SOC
+% Universidad Tecnológica Nacional - Facultad Regional Rosario
+%
+% Formato ajustado a "Formato para la presentación de Documentos"
+% de la cátedra: Times New Roman, A4, márgenes 2.5cm, dos columnas
+% con 1cm de separación, sin numeración de página.
+%
+% Compilar con XeLaTeX (usa fontspec para Times New Roman):
+%   xelatex articulo.tex
+% =========================================================
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage{hyperref}
+
+\setlength{\columnsep}{1cm}
+\pagestyle{empty}
+\tolerance=1200
+\emergencystretch=3em
+\hbadness=10000
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=black,
+  citecolor=black
+}
+
+\renewcommand{\refname}{Referencias}
+
+% ---------------------------------------------------------
+% Comandos de estilo según el formato de la cátedra
+% ---------------------------------------------------------
+\newcommand{\artTitle}[1]{{\fontsize{16}{19}\selectfont\bfseries #1\par}}
+\newcommand{\artAuthors}[1]{{\fontsize{14}{17}\selectfont\bfseries #1\par}}
+\newcommand{\artInstitution}[1]{{\fontsize{12}{15}\selectfont\bfseries\itshape #1\par}}
+\newcommand{\artLabel}[1]{{\fontsize{10}{12}\selectfont\bfseries #1}}
+\newcommand{\artSmall}{\fontsize{10}{12}\selectfont}
+
+\newcommand{\artSection}[1]{%
+  \par\vspace{0.7em}
+  {\fontsize{12}{15}\selectfont\bfseries #1\par}
+  \vspace{0.3em}
+}
+
+\newcounter{tabla}
+\newcommand{\artTablaCaption}[1]{%
+  \refstepcounter{tabla}%
+  \par\noindent{\artSmall\itshape Tabla \thetabla. #1\par}\vspace{0.3em}
+}
+
+\newcounter{figuraart}
+\newcommand{\artFiguraCaption}[1]{%
+  \refstepcounter{figuraart}%
+  \par\noindent{\artSmall\itshape Figura \thefiguraart. #1\par}\vspace{0.3em}
+}
+
+\begin{document}
+
+% ---------------------------------------------------------
+% Bloque de título a ancho completo (título, autores,
+% institución, abstract, palabras clave)
+% ---------------------------------------------------------
+\twocolumn[
+  \begin{center}
+    \artTitle{Algoritmos Genéticos aplicados al Scheduling de Alertas\\en un Centro de Operaciones de Seguridad (SOC)}
+    \vspace{0.6em}
+    \artAuthors{Chacón, A.\ ; Gomez Manna, J.\ ; Tabini, A.\ ; Carloni, N. I.\ ; Mierez, J.}
+    \vspace{0.2em}
+    \artInstitution{Universidad Tecnológica Nacional, Facultad Regional Rosario}
+  \end{center}
+  \vspace{1em}
+
+  \noindent\artLabel{Abstract}\ {\artSmall\itshape
+  Los Centros de Operaciones de Seguridad (SOC) reciben un volumen de alertas que crece más rápido que la disponibilidad de analistas capacitados para atenderlas, lo que produce sobrecarga, fatiga de alertas y desbalance de carga cuando la asignación se realiza de forma manual o con reglas fijas. Este trabajo propone modelar la asignación de alertas a analistas como un problema de optimización combinatoria y resolverlo mediante un Algoritmo Genético Canónico. Cada cromosoma codifica una asignación completa de alertas a analistas, y su aptitud se evalúa con una función de fitness que combina el tiempo total estimado de resolución con penalizaciones por espera, incumplimiento de SLA en alertas críticas, backlog y desbalance de carga. Se evaluó el modelo sobre 500 alertas derivadas de una muestra real del dataset público CICIDS2017 (flujos de red de un ataque DDoS), comparando tres estrategias de selección de padres --ruleta, torneo y elitismo-- bajo idénticas condiciones iniciales. El elitismo obtuvo el mejor fitness global (tiempo total estimado de 2354 minutos, la penalización más baja de los tres métodos), aunque con un desbalance de carga levemente mayor que torneo; ambos superaron de forma sostenida a la ruleta pura, en línea con la teoría de algoritmos genéticos. Los resultados confirman que el modelo propuesto constituye una alternativa formal, medible y reproducible frente a las heurísticas manuales de asignación actualmente en uso en los SOC.
+  \par}
+
+  \vspace{0.6em}
+  \noindent\artLabel{Palabras Clave}\ {\artSmall Algoritmos genéticos; scheduling; balanceo de carga; Centro de Operaciones de Seguridad; metaheurísticas; optimización combinatoria; selección genética; alert fatigue.\par}
+  \vspace{1.2em}
+]
+
+% ---------------------------------------------------------
+% 1. Introducción
+% ---------------------------------------------------------
+\artSection{Introducción}
+
+Un Centro de Operaciones de Seguridad (SOC) es el equipo y la infraestructura responsables de monitorear, detectar y responder a incidentes de ciberseguridad en una organización, a partir de las alertas centralizadas por plataformas de gestión de eventos e información de seguridad (SIEM). Cuando el volumen de alertas supera la capacidad de análisis manual se produce sobrecarga de alertas (\textit{alert overload}) (Jalalvand et al., 2025) \cite{ref1}, y cuando esa sobrecarga se sostiene en el tiempo degrada la calidad de las decisiones de triaje, fenómeno conocido como fatiga de alertas (\textit{alert fatigue}) (Tariq et al., 2025) \cite{ref2}. A esta escasez estructural se suma un problema de coordinación: las prácticas habituales de asignación --turnos fijos, reglas estáticas o asignación manual-- no consideran de forma simultánea la prioridad de cada alerta, el plazo comprometido (SLA), el tiempo estimado de resolución y la carga ya acumulada por cada analista, lo que produce desbalance de carga y riesgo de incumplimiento en alertas críticas.
+
+Frente a este panorama, el presente trabajo formula la asignación de alertas como un problema de optimización combinatoria y propone resolverlo mediante un Algoritmo Genético Canónico, una metaheurística poblacional capaz de explorar de manera eficiente espacios de soluciones demasiado grandes para enumerarse exhaustivamente. El objetivo general del trabajo es diseñar, implementar y evaluar un modelo de este tipo que minimice de forma conjunta el tiempo total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga entre analistas de un SOC.
+
+% ---------------------------------------------------------
+% 2. Elementos del trabajo y metodología
+% ---------------------------------------------------------
+\artSection{Elementos del trabajo y metodología}
+
+El modelo representa el estado de un SOC compuesto por un conjunto fijo de analistas y un conjunto de alertas, cada una caracterizada por su prioridad, severidad, tiempo estimado de resolución y SLA asociado. Las 500 alertas evaluadas se derivaron de una muestra aleatoria de \textbf{CICIDS2017} \cite{ref6}, un dataset público de 225.745 flujos de red correspondientes a una captura con ataque DDoS, etiquetados como \texttt{DDoS} o \texttt{BENIGN}. Como el dataset no incluye campos operativos de SOC, la prioridad y la severidad de cada alerta se derivaron del \texttt{Label} combinado con la intensidad del tráfico (\texttt{Flow Bytes/s}, \texttt{Flow Packets/s}); el SLA se asignó según una tabla de política por prioridad y el tiempo estimado de resolución se calculó con una fórmula que combina esa prioridad con la severidad; la llegada de cada alerta se derivó del orden real de captura de los flujos, reescalado al horizonte de trabajo. La muestra resultante quedó compuesta por 85 alertas Críticas, 207 Altas, 111 Medias y 97 Bajas. Un cromosoma codifica una solución candidata completa: es un vector con un gen por alerta, donde el gen en la posición $i$ indica el analista responsable de resolver la alerta $i$. Esta representación permite que cualquier permutación de valores sea una asignación válida, sin restricciones estructurales adicionales sobre el cromosoma.
+
+La aptitud de cada cromosoma se calcula con una función de fitness de la forma:
+
+\begin{center}
+\textit{fitness} $= \dfrac{1}{1 + t_{total} + P}$
+\end{center}
+
+donde $t_{total}$ es el tiempo total estimado de resolución y $P$ es la penalización, que combina de forma ponderada la espera promedio de las alertas, la espera y el retraso de las alertas críticas respecto de su SLA, la cantidad de alertas en backlog y el desbalance de carga entre analistas. Esta formulación asegura que un fitness mayor corresponda siempre a una asignación operativamente mejor, y permite comparar cromosomas de forma puramente numérica.
+
+El algoritmo parte de una \textbf{población} inicial de cromosomas generados aleatoriamente, de tamaño configurable como parámetro del modelo. Sobre esa población se aplican los operadores genéticos canónicos: selección de padres por \textbf{ruleta} (probabilidad proporcional al fitness) y por \textbf{torneo} (se selecciona el mejor individuo de un subconjunto elegido al azar); \textbf{cruza} de un punto sobre el vector de asignaciones; \textbf{mutación} por reasignación del analista correspondiente a una alerta elegida al azar; y \textbf{elitismo}, que preserva sin alterar a los cromosomas de mayor fitness de una generación en la siguiente para evitar perder soluciones prometedoras. La población evoluciona durante un número configurable de \textbf{generaciones}, registrando en cada una el fitness máximo, mínimo y promedio, lo que permite estudiar tanto la calidad de la solución final como la estabilidad de la convergencia. El tamaño de población, el número de generaciones y las probabilidades de cruza y mutación son parámetros del modelo, ajustables según el compromiso deseado entre calidad de la solución y costo computacional.
+
+La implementación se desarrolló en \textbf{Python 3}, utilizando las bibliotecas estándar del lenguaje para la lógica del algoritmo genético (representación, operadores y evaluación), y las bibliotecas \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib} para la tabulación de resultados y la generación de gráficos comparativos entre estrategias de selección. El código fuente completo y el detalle de ejecución están documentados en el repositorio del proyecto, en el archivo \texttt{TPI/main.py} y en \texttt{TPI/README.md}.
+
+% ---------------------------------------------------------
+% 3. Resultados
+% ---------------------------------------------------------
+\artSection{Resultados}
+
+El protocolo de evaluación comparó, bajo idénticas condiciones iniciales (semilla fija, misma población inicial de partida), las tres estrategias de selección implementadas sobre las 500 alertas derivadas de CICIDS2017. La Tabla~\ref{tab:resumen} resume, para cada método, el mejor fitness global alcanzado, el tiempo total estimado de la mejor solución, la cantidad de alertas en backlog, el desbalance de carga y el tiempo de ejecución.
+
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}lrrrr@{}}
+\hline
+\textbf{Método} & \textbf{Fitness} & \textbf{T.tot.} & \textbf{Back.} & \textbf{Desb.} \\
+ & \textbf{($\times10^{-5}$)} & \textbf{(min)} & & \\
+\hline
+Ruleta    & 5,9584 & 2377 & 386 & 0,0873 \\
+Torneo    & 5,9105 & 2388 & 387 & 0,0854 \\
+\textbf{Elitismo} & \textbf{5,9748} & \textbf{2354} & 387 & 0,0946 \\
+\hline
+\end{tabular}
+\end{center}
+\artTablaCaption{Resumen comparativo final por método de selección, sobre la muestra real de CICIDS2017 (semilla 42). Fuente: \texttt{outputs/resumen\_resultados\_soc.csv}.\label{tab:resumen}}
+
+El método \textbf{Elitismo} obtuvo el mejor fitness global de los tres, con el menor tiempo total estimado (2354 minutos) y la menor penalización total, pese a tener el desbalance de carga más alto de los tres (0,0946 contra 0,0854 de Torneo). A partir de su mejor cromosoma, la carga final osciló entre 1636 y 2352 minutos por analista (media de 2060 minutos). Con 500 alertas para 10 analistas en un horizonte de 8 horas, la carga total demandada (\textasciitilde20.600 minutos) excede ampliamente la capacidad disponible (4800 minutos), lo que explica el backlog elevado (\textasciitilde387 de 500 alertas) en los tres métodos: es una limitación estructural de la dotación de analistas frente al volumen de alertas del ataque DDoS, no un defecto del algoritmo.
+
+\begin{center}
+\includegraphics[width=\linewidth]{assets/figures/comparacion_metodos_bn.png}
+\end{center}
+\artFiguraCaption{Fitness promedio por generación para ruleta, torneo y elitismo, sobre la muestra real de CICIDS2017. Torneo converge más rápido y se estabiliza primero; Elitismo lo alcanza y supera recién hacia la generación 19; Ruleta queda sistemáticamente por debajo, con más ruido.\label{fig:comparacion}}
+
+Como se observa en la Figura~\ref{fig:comparacion}, la ventaja final de Elitismo no es inmediata: durante la mayor parte de la evolución, Torneo domina en fitness promedio, y Elitismo recién lo supera en las últimas generaciones gracias a que nunca pierde a sus mejores individuos. Las tablas y figuras completas --incluyendo la evolución generacional del fitness máximo, mínimo y desvío estándar, y la distribución final de carga por analista-- se documentan en la carpeta \texttt{outputs/} del repositorio y en el Documento Guía de Investigación (\texttt{informe.html}).
+
+% ---------------------------------------------------------
+% 4. Discusión
+% ---------------------------------------------------------
+\artSection{Discusión}
+
+Desde el punto de vista teórico, los tres mecanismos comparados presentan compromisos conocidos entre presión selectiva, diversidad y estabilidad. La \textbf{selección por ruleta} asigna probabilidad de reproducción proporcional al fitness, lo que la vuelve sensible a la escala y a la dispersión de los valores de aptitud de la población: cuando los fitness son muy parecidos entre sí, la presión selectiva se diluye y la búsqueda pierde capacidad de discriminar buenas soluciones, además de no garantizar por sí sola la preservación del mejor individuo encontrado. La \textbf{selección por torneo} resuelve parcialmente esta limitación al comparar directamente subconjuntos aleatorios de individuos, lo que permite ajustar la presión selectiva mediante el tamaño del torneo y suele ofrecer un mejor equilibrio entre explotación de buenas soluciones y diversidad de la población. El \textbf{elitismo}, por su parte, no es un mecanismo de selección de padres sino un complemento que preserva explícitamente a los individuos de mayor fitness entre generaciones: acelera la convergencia y evita retrocesos, pero si se aplica con una élite demasiado grande puede reducir la diversidad genética y favorecer la convergencia prematura a óptimos locales.
+
+Aplicado al problema de asignación de alertas en un SOC, este compromiso se traduce en una decisión de diseño relevante: una estrategia que privilegie exclusivamente la velocidad de convergencia (elitismo agresivo) puede estabilizarse en una asignación que optimiza bien el puntaje agregado pero no necesariamente el mejor balance de carga, mientras que una estrategia con mayor diversidad (ruleta) puede tardar más generaciones en estabilizar una asignación operativamente aceptable.
+
+La corrida sobre datos reales de CICIDS2017 confirma este compromiso: Elitismo ganó por tener el menor tiempo total y la menor penalización, pero fue precisamente Torneo el que logró el mejor balance de carga (0,0854 contra 0,0946 de Elitismo), a costa de un tiempo total y una penalización levemente mayores. Ruleta quedó sistemáticamente por debajo de ambos en fitness promedio a lo largo de las 20 generaciones, consistente con su menor presión selectiva. Este resultado es relevante para un SOC real: si la prioridad organizacional es minimizar el tiempo total de resolución, Elitismo es la mejor opción; si en cambio se prioriza que ningún analista quede sistemáticamente sobrecargado respecto de sus pares, Torneo ofrece un mejor compromiso, aun sin ser la estrategia de mayor fitness agregado.
+
+Este hallazgo se relaciona con la literatura revisada: el backlog elevado observado (\textasciitilde387 de 500 alertas) es una manifestación cuantitativa del fenómeno de \textit{alert overload} descripto por Jalalvand et al. \cite{ref1}, y el desbalance de carga entre analistas es precisamente el tipo de causa estructural de \textit{alert fatigue} señalada por Tariq et al. \cite{ref2}: un modelo de asignación que ignore la carga acumulada tiende a perpetuar ambos problemas. A diferencia de los enfoques de priorización adaptativa basados en aprendizaje automático \cite{ref3}, que requieren datos históricos etiquetados y reentrenamiento periódico, el enfoque evolutivo aquí propuesto no necesita entrenamiento previo y es directamente auditable, en la misma línea que los antecedentes de algoritmos genéticos aplicados a \textit{Job Shop Scheduling} \cite{ref4} y a balanceo de carga en sistemas distribuidos \cite{ref5}: el mismo esquema de representación cromosómica y operadores canónicos resultó igualmente aplicable al pasar de tráfico de red sintético a tráfico real de un ataque DDoS, lo que sugiere que el modelo es extensible a otras fuentes de alertas (por ejemplo, eventos de un SIEM en producción) sin cambios estructurales, reemplazando únicamente la etapa de derivación de prioridad y severidad.
+
+% ---------------------------------------------------------
+% 5. Conclusiones
+% ---------------------------------------------------------
+\artSection{Conclusiones}
+
+El modelo propuesto cumple el objetivo general planteado: ofrece una formulación completa y verificable de la asignación de alertas de un SOC como un problema de optimización combinatoria, con una representación cromosómica, una función de fitness multiobjetivo y un conjunto de operadores genéticos plenamente especificados. Cada uno de los objetivos específicos --representación cromosómica, función de fitness, comparación de operadores de selección, registro de la evolución del fitness, cuantificación de la distribución final de carga y medición del tiempo de ejecución-- quedó verificado cuantitativamente sobre datos reales de CICIDS2017: Elitismo resultó el método con mejor fitness global, Torneo con el mejor balance de carga, y Ruleta consistentemente por debajo de ambos, replicando sobre tráfico de red real el comportamiento esperado por la teoría de algoritmos genéticos.
+
+Desde el punto de vista conceptual, el trabajo confirma que la asignación de alertas en un SOC no es un problema trivial de reparto uniforme, sino un problema de \textit{scheduling} con restricciones de prioridad y balance de carga, para el cual los algoritmos genéticos ofrecen una alternativa formal frente a las heurísticas manuales: permiten declarar explícitamente qué se está optimizando --a través de la función de fitness-- y comparar de manera objetiva distintas estrategias de búsqueda sobre el mismo espacio de soluciones.
+
+% ---------------------------------------------------------
+% Referencias
+% ---------------------------------------------------------
+\begin{thebibliography}{99}
+\setlength{\itemsep}{0.4em}
+\small
+
+\bibitem{ref1} Jalalvand, F.; Baruwal Chhetri, M.; Nepal, S.; Paris, C. (2025). «Alert Prioritisation in Security Operations Centres: A Systematic Survey on Criteria and Methods». \textit{ACM Computing Surveys}, 57(2). \url{https://dl.acm.org/doi/10.1145/3695462}
+
+\bibitem{ref2} Tariq, S.; Baruwal Chhetri, M.; Nepal, S.; Paris, C. (2025). «Alert Fatigue in Security Operations Centres: Research Challenges and Opportunities». \textit{ACM Computing Surveys}, 57(9), art.\ 224. \url{https://dl.acm.org/doi/10.1145/3723158}
+
+\bibitem{ref3} «Adaptive Alert Prioritisation in Security Operations Centres via Learning to Defer with Human Feedback» (2025). arXiv:2506.18462. \url{https://arxiv.org/abs/2506.18462}
+
+\bibitem{ref4} «Algoritmo Genético Simple para Resolver el Problema de Programación de la Tienda de Trabajo (Job Shop Scheduling)» (2018). SciELO Chile. \url{https://www.scielo.cl/scielo.php?script=sci_arttext&pid=S0718-07642018000500299}
+
+\bibitem{ref5} Luna Rosas, F. J.; Tristán Ávila, R.; Martínez Pedroza, J. de J. (2003). «Aplicando un algoritmo genético para balancear carga dinámicamente en ambientes distribuidos orientados a objetos (CORBA)». \textit{ConCiencia Tecnológica}, N.\textdegree{} 23. \url{https://dialnet.unirioja.es/servlet/articulo?codigo=6482681}
+
+\bibitem{ref6} Sharafaldin, I.; Lashkari, A. H.; Ghorbani, A. A. (2018). «Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization». \textit{Proceedings of the 4th International Conference on Information Systems Security and Privacy (ICISSP)}, pp.\ 108--116. \url{https://www.unb.ca/cic/datasets/ids-2017.html}
+
+\end{thebibliography}
+
+% ---------------------------------------------------------
+% Datos de contacto
+% ---------------------------------------------------------
+\artSection{Datos de Contacto}
+{\artSmall\itshape
+\noindent Chacón, Agustina. Universidad Tecnológica Nacional, Facultad Regional Rosario, Zeballos 1341, S2000BQA, Rosario, Santa Fe, Argentina. aguscchacon@gmail.com\par
+\vspace{0.3em}
+\noindent Gomez Manna, Joaquina. Universidad Tecnológica Nacional, Facultad Regional Rosario, Zeballos 1341, S2000BQA, Rosario, Santa Fe, Argentina. gomezmannajoaquina@gmail.com\par
+\vspace{0.3em}
+\noindent Tabini, Azul. Universidad Tecnológica Nacional, Facultad Regional Rosario, Zeballos 1341, S2000BQA, Rosario, Santa Fe, Argentina. azultabini@gmail.com\par
+\vspace{0.3em}
+\noindent Carloni, Nahuel Iván. Universidad Tecnológica Nacional, Facultad Regional Rosario, Zeballos 1341, S2000BQA, Rosario, Santa Fe, Argentina. nahuelcarloni25@gmail.com\par
+\vspace{0.3em}
+\noindent Mierez, Joaquin. Universidad Tecnológica Nacional, Facultad Regional Rosario, Zeballos 1341, S2000BQA, Rosario, Santa Fe, Argentina. joakomierez1@hotmail.com\par
+}
+
+\end{document}
