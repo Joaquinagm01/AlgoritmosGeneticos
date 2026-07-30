@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Documento Guía de Investigación - TPI Algoritmos Genéticos para Scheduling de Alertas SOC</title>
   <link rel="stylesheet" href="informe.css" />
 </head>
+
 <body>
-  <section class="caratula">
+  <section class="page caratula">
     <div class="caratula-logo-wrap">
       <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="UTN Facultad Regional Rosario" />
     </div>
 
     <p class="caratula-kicker">Universidad Tecnológica Nacional - Facultad Regional Rosario</p>
 
-    <h1 class="caratula-titulo">Trabajo Práctico Integrador<br />Algoritmos Genéticos aplicados al Scheduling de Alertas en un SOC</h1>
+    <h1 class="caratula-titulo">Trabajo Práctico Integrador<br />Algoritmos Genéticos aplicados al Scheduling de Alertas
+      en un SOC</h1>
 
-    <p class="caratula-subtitulo">
-      Documento guía de investigación: carátula, índice, denominación, situación problemática, problema, objetivos, marco teórico y referencias
     </p>
 
     <div class="caratula-ficha">
       <div class="caratula-meta">
         <p><span class="label">Materia:</span> Algoritmo Genético</p>
-        <p><span class="label">Cátedra:</span> Algoritmos Genéticos</p>
         <p><span class="label">Docentes:</span> Daniela Díaz y Víctor Lombardo</p>
         <p><span class="label">Ciclo lectivo:</span> 2026</p>
-        <p><span class="label">Temática abordada:</span> Algoritmos Genéticos aplicados a la asignación y al balance de carga de alertas en un Centro de Operaciones de Seguridad (SOC)</p>
       </div>
 
       <div class="caratula-equipo">
@@ -54,260 +53,128 @@
         </div>
       </div>
 
-      <p class="fecha-entrega">Rosario, julio de 2026</p>
     </div>
   </section>
 
-  <nav class="indice" aria-label="Tabla de contenidos">
+  <nav class="page indice" aria-label="Tabla de contenidos">
     <h2>Índice de contenidos</h2>
-    <ol>
-      <li><a href="#top">Carátula</a></li>
-      <li><a href="#top">Índice de contenidos</a></li>
-      <li><a href="#denominacion">Denominación del futuro proyecto de investigación</a></li>
-      <li><a href="#situacion">Situación problemática</a></li>
-      <li><a href="#problema">Problema</a></li>
-      <li><a href="#objetivos">Objetivos de la investigación</a></li>
-      <li><a href="#marco-teorico">Marco teórico</a></li>
-    </ol>
-    <p style="margin-top:1rem; font-size:0.82rem; color:var(--ink-muted);">Los 7 puntos de arriba son los exigidos por la guía de cátedra para esta entrega. Debajo, referencias y material complementario que <strong>no</strong> forman parte de esos 7 puntos (sin numerar, para no dar a entender que la guía pide más de 7):</p>
-    <ul class="indice-complementario">
-      <li><a href="#referencias">Referencias bibliográficas <em>(soporte del punto 7)</em></a></li>
-      <li><a href="#evidencia">Evidencia del modelo implementado <em>(Segunda Parte — Concreción del Modelo, incluida acá como material complementario)</em></a></li>
-    </ul>
-    <p style="margin-top:1rem; font-size:0.82rem; color:var(--ink-muted);">El segundo documento exigido por la cátedra —el Artículo Científico— es <span class="mono">articulo.tex</span> / <span class="mono">articulo.pdf</span>, en esta misma carpeta.</p>
+    <div class="indice-container">
+      <ol>
+        <li><a href="#denominacion">Denominación del futuro proyecto de investigación</a></li>
+        <li><a href="#situacion">Situación problemática</a></li>
+        <li><a href="#problema">Problema</a></li>
+        <li><a href="#objetivos">Objetivos de la investigación</a></li>
+      </ol>
+    </div>
   </nav>
 
-  <main class="container" id="top">
-    <p style="text-align:center; color:var(--ink-muted); font-size:0.82rem; margin: -0.5rem 0 1.25rem;">
-      Los puntos 1 (Carátula) y 2 (Índice) corresponden a las secciones anteriores de este documento.
-    </p>
+  <main class="page content-body" id="top">
 
-    <section class="card" id="denominacion">
-      <h2>3. Denominación del futuro proyecto de investigación</h2>
-      <p class="formula">Optimización mediante Algoritmos Genéticos de la asignación y el balance de carga de alertas de seguridad en Centros de Operaciones de Seguridad (SOC)</p>
+    <section id="denominacion">
+      <h2>Denominación del futuro proyecto de investigación</h2>
       <p>
-        La denominación delimita el proyecto en tres dimensiones complementarias: la técnica empleada —los algoritmos genéticos, dentro de la familia de las metaheurísticas evolutivas—, el problema de optimización combinatoria abordado —la asignación de tareas (<em>scheduling</em>) y el balance de carga entre recursos humanos limitados— y el dominio de aplicación —la operación de un Centro de Operaciones de Seguridad—. El enfoque se centra en distribuir alertas entre analistas humanos con el propósito de reducir los tiempos de resolución, evitar la sobrecarga puntual de cada analista y mejorar el cumplimiento de los plazos de atención comprometidos.
+        El proyecto de investigación propuesto se orienta a la <strong>optimización mediante Algoritmos Genéticos de la
+          asignación y el balance de carga de alertas de seguridad en Centros de Operaciones de Seguridad
+          (SOC)</strong>.
+      </p>
+      <p>
+        Esta denominación delimita el alcance del trabajo en tres dimensiones complementarias. En primer lugar, define
+        la técnica fundamental a emplear: los algoritmos genéticos, pertenecientes a la familia de las metaheurísticas
+        evolutivas. En segundo lugar, especifica el problema de optimización combinatoria a resolver: la asignación de
+        tareas (<em>scheduling</em>) y el balance equitativo de carga entre recursos humanos finitos. Finalmente,
+        enmarca el dominio de aplicación práctico: la operación diaria de un Centro de Operaciones de Seguridad. El
+        enfoque central radica en distribuir el flujo de alertas entre analistas humanos, con el propósito primario de
+        minimizar los tiempos de resolución, prevenir la sobrecarga puntual del personal y garantizar el cumplimiento
+        estricto de los plazos de atención comprometidos.
       </p>
     </section>
 
-    <section class="card" id="situacion">
-      <h2>4. Situación problemática</h2>
+    <section id="situacion">
+      <h2>Situación problemática</h2>
       <p>
-        Los Centros de Operaciones de Seguridad (SOC) reciben un volumen de alertas que crece con mayor velocidad que la disponibilidad de analistas capacitados para atenderlas. Jalalvand et al. (2025) <a href="#ref1">[1]</a> sistematizan los criterios y métodos empleados en la última década para priorizar alertas y señalan que la sobrecarga (<em>alert overload</em>) es uno de los problemas estructurales más persistentes de la operación de un SOC, ya que obliga a decidir con información incompleta y bajo presión de tiempo qué atender primero.
+        Los Centros de Operaciones de Seguridad (SOC) reciben un volumen de alertas que crece con mayor velocidad que la
+        disponibilidad de analistas capacitados para atenderlas. La experiencia y la literatura especializada coinciden
+        en que la sobrecarga (<em>alert overload</em>) es uno de los problemas estructurales más persistentes de la
+        operación de un SOC, ya que obliga a decidir con información incompleta y bajo presión de tiempo qué atender
+        primero.
       </p>
       <p>
-        Esa sobrecarga tiene un correlato humano documentado: la fatiga de alertas (<em>alert fatigue</em>). Tariq et al. (2025) <a href="#ref2">[2]</a> identifican como causas principales el volumen de eventos, la proporción de falsos positivos, la falta de contexto en cada alerta y el diseño de las herramientas, y advierten que esta fatiga degrada la calidad de las decisiones de triaje, incrementa el tiempo de respuesta y favorece la rotación del personal capacitado. El resultado es un ciclo que se retroalimenta: más alertas, analistas menos efectivos y tiempos de respuesta más largos, con el agravante de que la demora en atender una alerta de alta severidad incrementa el riesgo de que una intrusión progrese sin ser contenida.
+        Esa sobrecarga tiene un correlato humano bien documentado en la industria: la fatiga de alertas (<em>alert
+          fatigue</em>). Las causas principales radican en el inmenso volumen de eventos, la alta proporción de falsos
+        positivos y la falta de contexto en cada alerta. Esta fatiga degrada invariablemente la calidad de las
+        decisiones de triaje, incrementa el tiempo de respuesta y favorece la rotación del personal capacitado. El
+        resultado es un ciclo que se retroalimenta: más alertas, analistas menos efectivos y tiempos de respuesta más
+        largos, con el agravante de que la demora en atender una alerta de alta severidad incrementa el riesgo de que
+        una intrusión progrese sin ser contenida.
       </p>
       <p>
-        A esta escasez estructural se suma un problema de coordinación: aun cuando el equipo de analistas es suficiente en promedio, la forma en que las alertas se reparten entre ellos rara vez es óptima. Las prácticas habituales de asignación —turnos fijos, reglas estáticas por tipo de alerta o asignación manual según disponibilidad aparente— no consideran de forma simultánea la prioridad de cada alerta, el plazo de resolución comprometido (SLA), el tiempo estimado que insumirá resolverla y la carga ya acumulada por cada analista. El resultado observado en la práctica es un desbalance de carga: algunos analistas acumulan backlog mientras otros permanecen subutilizados, y las alertas críticas no siempre son atendidas por quien está en condiciones de resolverlas dentro del plazo comprometido. Las investigaciones sobre priorización adaptativa de alertas confirman que se trata de un problema de optimización bajo restricciones y no de una tarea resoluble con reglas fijas <a href="#ref3">[3]</a>.
+        A esta escasez estructural se suma un problema de coordinación: aun cuando el equipo de analistas es suficiente
+        en promedio, la forma en que las alertas se reparten entre ellos rara vez es óptima. Las prácticas habituales de
+        asignación —turnos fijos, reglas estáticas por tipo de alerta o asignación manual según disponibilidad aparente—
+        no consideran de forma simultánea la prioridad de cada alerta, el plazo de resolución comprometido (SLA), el
+        tiempo estimado que insumirá resolverla y la carga ya acumulada por cada analista. El resultado observado en la
+        práctica es un desbalance de carga: algunos analistas acumulan backlog mientras otros permanecen subutilizados,
+        y las alertas críticas no siempre son atendidas por quien está en condiciones de resolverlas dentro del plazo
+        comprometido.
       </p>
       <p>
-        En síntesis, la situación problemática combina tres factores que se retroalimentan: un volumen de alertas que excede la capacidad de análisis manual eficiente, el riesgo de incumplir los plazos de atención en alertas críticas cuando la asignación no prioriza correctamente, y la ausencia de mecanismos de asignación que balanceen la carga entre analistas de forma sistemática y verificable. Investigar este problema es relevante porque afecta directamente la capacidad de un SOC de contener incidentes a tiempo, y porque, como se desarrolla en el marco teórico, admite ser formulado como un problema de optimización combinatoria abordable con algoritmos genéticos.
+        En síntesis, la situación problemática combina tres factores que se retroalimentan: un volumen de alertas que
+        excede la capacidad de análisis manual eficiente, el riesgo de incumplir los plazos de atención en alertas
+        críticas cuando la asignación no prioriza correctamente, y la ausencia de mecanismos de asignación que balanceen
+        la carga entre analistas de forma sistemática y verificable.
       </p>
     </section>
 
-    <section class="card" id="problema">
-      <h2>5. Problema</h2>
+    <section id="problema">
+      <h2>Problema</h2>
       <p>
-        La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad no logra, de manera consistente, minimizar simultáneamente el tiempo total de resolución, el incumplimiento de los SLA de las alertas críticas y el desbalance de carga entre analistas; por ello, resulta necesario investigar una estrategia de asignación basada en Algoritmos Genéticos que distribuya las alertas, caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA, entre un número limitado de analistas de forma óptima y verificable.
+        La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un Centro de
+        Operaciones de Seguridad no logra, de manera consistente, minimizar simultáneamente el tiempo total de
+        resolución, los tiempos de espera de las alertas críticas y el desbalance de carga entre analistas. Por ello,
+        resulta necesario investigar una estrategia de asignación basada en Algoritmos Genéticos que distribuya las
+        alertas —caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA— entre un número
+        limitado de analistas de forma óptima, evaluando su desempeño mediante métricas cuantitativas generacionales y
+        operativas.
       </p>
     </section>
 
-    <section class="card" id="objetivos">
-      <h2>6. Objetivos de la investigación</h2>
-      <h3>6.a. Objetivo general</h3>
+    <section id="objetivos">
+      <h2>Objetivos de la investigación</h2>
+      <h3>Objetivo general</h3>
       <p>
-        Diseñar, implementar y evaluar un modelo de Algoritmo Genético Canónico que optimice la asignación de alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad, minimizando de forma conjunta el tiempo total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga entre analistas.
+        Diseñar, implementar y evaluar un modelo de Algoritmo Genético Canónico que optimice la asignación de alertas de
+        seguridad a los analistas de un Centro de Operaciones de Seguridad, minimizando de forma conjunta el tiempo
+        total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga entre
+        analistas.
       </p>
-      <h3>6.b. Objetivos específicos</h3>
+      <h3>Objetivos específicos</h3>
       <ol>
-        <li>Diseñar una representación cromosómica que codifique una asignación completa de alertas a analistas, donde cada gen indique el analista responsable de resolver la alerta correspondiente.</li>
-        <li>Formular una función de fitness que combine el tiempo total estimado de resolución con penalizaciones verificables por espera, incumplimiento de SLA y desbalance de carga, de modo que dos asignaciones distintas puedan compararse de forma medible.</li>
-        <li>Implementar el operador de selección de padres por ruleta propio del algoritmo genético canónico, registrando el fitness obtenido generación a generación para verificar la convergencia del modelo.</li>
-        <li>Registrar la evolución del fitness máximo, mínimo y promedio a lo largo de las generaciones, con el fin de verificar de forma comprobable la mejora progresiva del algoritmo.</li>
-        <li>Cuantificar, a partir del mejor cromosoma hallado en cada corrida, la distribución final de alertas y de carga horaria entre analistas, para comprobar el grado de equilibrio efectivamente alcanzado por el modelo.</li>
-        <li>Medir el tiempo de ejecución del procedimiento evolutivo, a fin de contrastar de forma realizable la calidad de la solución obtenida con su costo computacional.</li>
+        <li>Diseñar una representación cromosómica que codifique una asignación completa de alertas a analistas, donde
+          cada gen indique el analista responsable de resolver la alerta correspondiente.</li>
+        <li>Formular una función de fitness que combine el tiempo total estimado de resolución con penalizaciones
+          verificables por espera, incumplimiento de SLA y desbalance de carga, de modo que dos asignaciones distintas
+          puedan compararse de forma medible.</li>
+        <li>Implementar un operador de selección de padres propio del algoritmo genético canónico, registrando el
+          fitness obtenido generación a generación para verificar la convergencia del modelo.</li>
+        <li>Registrar la evolución generacional de las métricas de aptitud poblacional —incluyendo el fitness máximo,
+          mínimo, promedio y su desviación estándar— con el fin de verificar empíricamente la convergencia y la mejora
+          progresiva del algoritmo.</li>
+        <li>Cuantificar, a partir del mejor cromosoma hallado en cada corrida, indicadores operativos clave como el
+          tiempo total estimado, la disminución de los tiempos de espera (generales y críticos), el volumen de backlog
+          remanente y el grado de desbalance de carga, para comprobar la eficacia de la asignación.</li>
+        <li>Medir el tiempo de ejecución (en segundos) del procedimiento evolutivo, a fin de contrastar de forma
+          realizable la calidad de la solución obtenida con su costo computacional.</li>
+        <li>Validar empíricamente el modelo utilizando una base de datos representativa, derivando alertas de una
+          muestra del dataset público CICIDS2017, a las cuales se les asignará prioridad, severidad, SLA y tiempo
+          estimado de resolución para simular de forma realista el entorno de un SOC.</li>
       </ol>
-    </section>
-
-    <section class="card" id="marco-teorico">
-      <h2>7. Marco teórico</h2>
-      <p>
-        Este apartado asienta los conceptos teóricos relacionados con el proyecto de investigación. Sirven para la justificación de las decisiones de diseño que se toman en la representación del problema y en la elección de operadores, para dar soporte a la implementación desarrollada, para comprender claramente el aporte teórico del trabajo y para sostener la discusión de los resultados obtenidos. El marco teórico desarrollado a continuación servirá además como base para la exposición teórica sobre el tema en la instancia oral.
-      </p>
-
-      <h3>7.1. Optimización, metaheurísticas y algoritmos genéticos</h3>
-      <p>
-        Un problema de <strong>optimización</strong> consiste en encontrar, dentro de un conjunto de soluciones factibles delimitado por un conjunto de restricciones, aquella solución que minimiza o maximiza una función objetivo. Cuando ese conjunto de soluciones factibles es finito pero de tamaño exponencial respecto de las variables de decisión —como ocurre al repartir un conjunto de tareas entre un conjunto de recursos—, se habla de optimización combinatoria; en estos casos, los métodos exactos, que garantizan el óptimo, suelen volverse computacionalmente intratables a medida que crece el tamaño de la instancia.
-      </p>
-      <p>
-        Las <strong>metaheurísticas</strong> son procedimientos de búsqueda de propósito general que renuncian a la garantía de optimalidad a cambio de explorar de manera eficiente espacios de soluciones demasiado grandes para enumerarse exhaustivamente. Los <strong>algoritmos genéticos</strong> (AG) son metaheurísticas poblacionales inspiradas en la selección natural: mantienen un conjunto de soluciones candidatas —la población— y las hacen evolucionar generación a generación mediante operadores estocásticos de selección, cruza y mutación, guiados por una función de aptitud (<em>fitness</em>) que mide qué tan buena es cada solución respecto de la función objetivo del problema. Esta capacidad de explorar espacios combinatorios sin enumerarlos exhaustivamente los vuelve apropiados para problemas de optimización con restricciones, como el <em>scheduling</em> de tareas entre recursos limitados.
-      </p>
-
-      <h3>7.2. Componentes de un algoritmo genético canónico</h3>
-      <p>
-        Un algoritmo genético canónico se define por un conjunto fijo de componentes que se instancian de manera particular en cada problema. La Tabla 1 resume su definición general y su correspondencia concreta con el problema de asignación de alertas en un SOC, tal como está documentado en la estructura del programa desarrollado para este trabajo.
-      </p>
-      <div class="table-block" data-title="Correspondencia entre los componentes canónicos del AG y el problema de scheduling de alertas SOC">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Componente</th>
-                <th>Definición general</th>
-                <th>Instanciación en el problema SOC</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Individuo / cromosoma</td><td>Codificación de una solución candidata completa</td><td>Vector con un gen por alerta; el gen en la posición <em>i</em> indica el analista asignado a la alerta <em>i</em></td></tr>
-              <tr><td>Función de fitness</td><td>Medida numérica de la calidad de una solución</td><td>fitness = 1 / (1 + tiempo total estimado + penalización), donde la penalización combina espera, alertas críticas fuera de SLA, backlog y desbalance de carga</td></tr>
-              <tr><td>Selección</td><td>Mecanismo que favorece a los individuos más aptos para reproducirse</td><td>Selección por ruleta (probabilidad de reproducción proporcional al fitness)</td></tr>
-              <tr><td>Cruza (<em>crossover</em>)</td><td>Combina el material genético de dos padres para generar descendencia</td><td>Cruza de un punto sobre el vector de asignaciones alerta–analista</td></tr>
-              <tr><td>Mutación</td><td>Introduce variabilidad aleatoria para evitar la convergencia prematura</td><td>Reasignación del analista correspondiente a una alerta elegida al azar</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <p class="nota">Fuente: elaboración propia a partir de la estructura de funciones documentada en <span class="mono">TPI/README.md</span> (<span class="mono">generar_poblacion()</span>, <span class="mono">calcular_fitness()</span>, <span class="mono">seleccion_ruleta()</span>, <span class="mono">crossover()</span>, <span class="mono">mutacion()</span>).</p>
-
-      <h3>7.3. Scheduling, Job Shop Scheduling y balanceo de carga</h3>
-      <p>
-        El <em>scheduling</em> es el problema de asignar un conjunto de tareas a un conjunto de recursos a lo largo del tiempo, optimizando algún criterio (tiempo total, cumplimiento de plazos, uso equilibrado de los recursos). Una de sus variantes clásicas es el <em>Job Shop Scheduling</em>, donde un conjunto de trabajos debe programarse sobre máquinas con restricciones de precedencia y capacidad; existen antecedentes concretos de algoritmos genéticos aplicados a esta variante en entornos de manufactura <a href="#ref4">[4]</a>. Un problema estrechamente relacionado es el balanceo de carga (<em>load balancing</em>), que busca repartir unidades de trabajo entre recursos de manera que ninguno quede sobrecargado ni ocioso; también existen antecedentes de algoritmos genéticos aplicados al balanceo dinámico de carga entre recursos computacionales en sistemas distribuidos <a href="#ref5">[5]</a>. El problema de asignación de alertas a analistas de un SOC comparte la estructura de fondo de ambas variantes: unidades de trabajo heterogéneas —las alertas, con distinta prioridad y tiempo estimado— que deben repartirse entre recursos limitados —los analistas— minimizando el tiempo total y el desbalance de carga, lo que respalda la pertinencia de adaptar un algoritmo genético canónico a este dominio.
-      </p>
-
-      <h3>7.4. Centros de Operaciones de Seguridad: SIEM, sobrecarga y fatiga de alertas</h3>
-      <p>
-        Un Centro de Operaciones de Seguridad (SOC) es el equipo y la infraestructura responsables de monitorear, detectar y responder a incidentes de ciberseguridad en una organización. Su principal fuente de trabajo son las alertas generadas por plataformas de gestión de eventos e información de seguridad (SIEM, por sus siglas en inglés), que centralizan y correlacionan los eventos reportados por sistemas de detección de intrusiones, antivirus y firewalls. Cuando el volumen de alertas generado supera la capacidad de análisis manual, se produce la sobrecarga de alertas (<em>alert overload</em>) <a href="#ref1">[1]</a>; cuando esa sobrecarga se sostiene en el tiempo y degrada la capacidad de decisión de los analistas, se habla de fatiga de alertas (<em>alert fatigue</em>) <a href="#ref2">[2]</a>. Ambos conceptos son la base teórica que justifica modelar la asignación de alertas como un problema de optimización explícito, en lugar de dejarlo librado a criterios manuales.
-      </p>
-    </section>
-
-    <section class="card" id="referencias">
-      <h2>Referencias bibliográficas</h2>
-      <p class="nota" style="margin-top:-0.6rem;">Referencias que respaldan el punto 7 (Marco Teórico) — la guía pide que el marco teórico "sea rico en referencias bibliográficas", no una sección numerada aparte.</p>
-      <ol class="referencias-lista">
-        <li id="ref1">Jalalvand, F.; Baruwal Chhetri, M.; Nepal, S.; Paris, C. (2025). «Alert Prioritisation in Security Operations Centres: A Systematic Survey on Criteria and Methods». <em>ACM Computing Surveys</em>, 57(2). <a href="https://dl.acm.org/doi/10.1145/3695462" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3695462</a></li>
-        <li id="ref2">Tariq, S.; Baruwal Chhetri, M.; Nepal, S.; Paris, C. (2025). «Alert Fatigue in Security Operations Centres: Research Challenges and Opportunities». <em>ACM Computing Surveys</em>, 57(9), art. 224. <a href="https://dl.acm.org/doi/10.1145/3723158" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3723158</a></li>
-        <li id="ref3">«Adaptive Alert Prioritisation in Security Operations Centres via Learning to Defer with Human Feedback» (2025). arXiv:2506.18462. <a href="https://arxiv.org/abs/2506.18462" target="_blank" rel="noopener">https://arxiv.org/abs/2506.18462</a></li>
-        <li id="ref4">«Algoritmo Genético Simple para Resolver el Problema de Programación de la Tienda de Trabajo (Job Shop Scheduling)» (2018). SciELO Chile. <a href="https://www.scielo.cl/scielo.php?script=sci_arttext&amp;pid=S0718-07642018000500299" target="_blank" rel="noopener">https://www.scielo.cl/scielo.php?script=sci_arttext&amp;pid=S0718-07642018000500299</a></li>
-        <li id="ref5">Luna Rosas, F. J.; Tristán Ávila, R.; Martínez Pedroza, J. de J. (2003). «Aplicando un algoritmo genético para balancear carga dinámicamente en ambientes distribuidos orientados a objetos (CORBA)». <em>ConCiencia Tecnológica</em>, N.º 23. <a href="https://dialnet.unirioja.es/servlet/articulo?codigo=6482681" target="_blank" rel="noopener">https://dialnet.unirioja.es/servlet/articulo?codigo=6482681</a></li>
-        <li id="ref6">Sharafaldin, I.; Lashkari, A. H.; Ghorbani, A. A. (2018). «Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization». <em>Proceedings of the 4th International Conference on Information Systems Security and Privacy (ICISSP)</em>, pp. 108–116. <a href="https://www.unb.ca/cic/datasets/ids-2017.html" target="_blank" rel="noopener">https://www.unb.ca/cic/datasets/ids-2017.html</a></li>
-      </ol>
-    </section>
-
-    <section class="card" id="evidencia">
-      <h2>Material complementario — Evidencia del modelo implementado</h2>
-      <p class="nota" style="margin-top:-0.6rem;">Esta sección corresponde conceptualmente a la <strong>Segunda Parte (Concreción del Modelo)</strong> de la guía de cátedra, que la propia guía indica compartir aparte, en una carpeta de Google Drive con la cátedra. No es uno de los 7 puntos exigidos en esta entrega (Primera Parte); se incluye acá únicamente como evidencia complementaria de que el modelo ya corre sobre datos reales.</p>
-      <p>
-        El prototipo (<span class="mono">TPI/main.py</span>) ya está corriendo sobre datos reales. Las 500 alertas del modelo se derivaron por muestreo aleatorio de <strong>CICIDS2017</strong> <a href="#ref6">[6]</a>, un dataset público de tráfico de red (225.745 flujos, captura del viernes con ataque DDoS, columna <span class="mono">Label</span> en {DDoS, BENIGN}). Como el dataset no trae campos operativos de SOC, la prioridad y la severidad de cada alerta se derivaron del <span class="mono">Label</span> combinado con la intensidad del tráfico (<span class="mono">Flow Bytes/s</span>, <span class="mono">Flow Packets/s</span>); el SLA y el tiempo estimado de resolución se calcularon con la misma política y fórmula ya documentadas en la Tabla 1 del marco teórico; y la llegada de cada alerta se derivó del orden real de captura de los flujos, reescalado al horizonte de 8 horas. La muestra resultante quedó compuesta por 85 alertas Críticas, 207 Altas, 111 Medias y 97 Bajas.
-      </p>
-
-      <div class="table-block" data-title="Resumen del mejor resultado obtenido (dataset real CICIDS2017)">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Mejor fitness global</th>
-                <th>Tiempo total estimado (min)</th>
-                <th>Backlog (alertas)</th>
-                <th>Desbalance de carga</th>
-                <th>Tiempo de ejecución (s)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>5,9584 × 10⁻⁵</td><td>2377</td><td>386</td><td>0,0873</td><td>0,0587</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <p class="nota">Fuente: <span class="mono">TPI/outputs/resumen_resultados_soc.csv</span>, corrida con semilla 42 sobre la muestra derivada de CICIDS2017.</p>
-
-      <p>
-        La mejor solución encontrada por el algoritmo alcanza un fitness de 5,9584 × 10⁻⁵, con un tiempo total estimado de 2377 minutos y un desbalance de carga de 0,0873 entre los 10 analistas. El fitness promedio de la población mejora de forma irregular a lo largo de las 20 generaciones (Figura 1), reflejo típico de la selección por ruleta: al ser proporcional al fitness, su presión selectiva es más suave que la de otros mecanismos y admite retrocesos puntuales en el promedio poblacional sin perder al mejor individuo encontrado hasta el momento.
-      </p>
-
-      <div class="table-block" data-title="Carga final por analista en la mejor solución encontrada">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Analista</th>
-                <th>Alertas asignadas</th>
-                <th>Carga total (min)</th>
-                <th>Alertas críticas</th>
-                <th>Severidad promedio</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>1</td><td>49</td><td>1881</td><td>6</td><td>50,5</td></tr>
-              <tr><td>2</td><td>41</td><td>1750</td><td>8</td><td>54,5</td></tr>
-              <tr><td>3</td><td>49</td><td>2048</td><td>7</td><td>54,4</td></tr>
-              <tr><td>4</td><td>49</td><td>2030</td><td>8</td><td>54,0</td></tr>
-              <tr><td>5</td><td>47</td><td>2139</td><td>11</td><td>59,0</td></tr>
-              <tr><td>6</td><td>47</td><td>1887</td><td>9</td><td>52,3</td></tr>
-              <tr><td>7</td><td>53</td><td>2231</td><td>9</td><td>54,8</td></tr>
-              <tr><td>8</td><td>61</td><td>2367</td><td>7</td><td>49,6</td></tr>
-              <tr><td>9</td><td>52</td><td>2242</td><td>10</td><td>56,0</td></tr>
-              <tr><td>10</td><td>52</td><td>2026</td><td>10</td><td>50,9</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <p class="nota">Fuente: <span class="mono">TPI/outputs/distribucion_final_alertas_soc.csv</span>.</p>
-
-      <p>
-        La carga total osciló entre 1750 y 2367 minutos (media de 2060 minutos), un rango amplio coherente con que el tráfico DDoS real concentra picos de intensidad más marcados que una distribución uniforme. Con 500 alertas para 10 analistas en un horizonte de 8 horas, la carga total demandada (≈20.600 minutos) excede ampliamente la capacidad disponible (4800 minutos), lo que explica el backlog observado (386 de 500 alertas): es una limitación estructural de la dotación de analistas frente al volumen de alertas, no un defecto del algoritmo, y es precisamente el tipo de diagnóstico cuantitativo que este modelo permite obtener.
-      </p>
-
-      <h3>Figuras</h3>
-      <figure>
-        <img src="../outputs/figures/maximos_por_generacion.png" alt="Fitness máximo por generación" />
-        <figcaption>Fitness máximo por generación, sobre la muestra real de CICIDS2017.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/promedios_por_generacion.png" alt="Fitness promedio por generación" />
-        <figcaption>Fitness promedio por generación. Muestra la evolución irregular típica de la selección por ruleta, sin retrocesos en el mejor individuo global.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/desviacion_estandar_por_generacion.png" alt="Desviación estándar por generación" />
-        <figcaption>Desviación estándar del fitness por generación.</figcaption>
-      </figure>
-      <figure>
-        <img src="../outputs/figures/carga_final_por_analista.png" alt="Carga final por analista" />
-        <figcaption>Carga final por analista en la mejor solución encontrada. Se aprecia el rango 1750–2367 minutos alrededor de la media de 2060.</figcaption>
-      </figure>
-
-      <h3>Hipótesis puesta a prueba y trabajo futuro</h3>
-      <p>
-        Con este software se puso a prueba la hipótesis de que la asignación de alertas de un SOC puede formularse y resolverse como un problema de optimización combinatoria mediante un Algoritmo Genético Canónico, obteniendo una asignación medible y verificable. Los resultados sobre datos reales de CICIDS2017 confirman esa hipótesis: el algoritmo produjo una asignación válida, con fitness, tiempo total y desbalance de carga cuantificados generación a generación. Algunos objetivos de este proyecto son a largo plazo y quedan abiertos para continuar la investigación tomando este software como base: comparar el resultado obtenido contra una asignación manual o basada en reglas fijas como línea de base explícita, evaluar el modelo sobre alertas provenientes de un SIEM en producción, y ajustar el tamaño de población y el número de generaciones para estudiar el compromiso entre calidad de la solución y costo computacional.
-      </p>
-
-      <h3>Especificación técnica (hardware, software e infraestructura)</h3>
-      <div class="table-block" data-title="Especificación técnica del entorno de ejecución">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Componente</th>
-                <th>Detalle</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Lenguaje</td><td>Python 3.13.3 (64 bits)</td></tr>
-              <tr><td>Bibliotecas</td><td>pandas 3.0.3, numpy 2.2.6, matplotlib 3.10.9 (versiones mínimas fijadas en <span class="mono">requirements.txt</span>: pandas&nbsp;≥2.0, numpy&nbsp;≥1.24, matplotlib&nbsp;≥3.7)</td></tr>
-              <tr><td>Sistema operativo</td><td>Windows 11 Pro (build 10.0.26200)</td></tr>
-              <tr><td>Infraestructura</td><td>Ejecución local, sin GPU ni cómputo distribuido: una notebook/PC de escritorio estándar es suficiente. Una corrida completa (20 generaciones × 500 alertas) toma menos de 1 segundo de cómputo puro.</td></tr>
-              <tr><td>Almacenamiento</td><td>Dataset fuente ≈77&nbsp;MB (<span class="mono">TPI/dataset/</span>); salidas generadas ≈1&nbsp;MB de CSV y figuras (<span class="mono">TPI/outputs/</span>)</td></tr>
-              <tr><td>Control de versiones</td><td>Git, repositorio compartido por el equipo</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <p class="nota">
-        Reproducible ejecutando <span class="mono">cd TPI && python3 -m pip install -r requirements.txt && python3 main.py</span> desde la raíz del repositorio; regenera <span class="mono">outputs/</span> completo a partir del dataset en <span class="mono">TPI/dataset/</span>.
-      </p>
     </section>
   </main>
 
-  <p class="footer">Universidad Tecnológica Nacional — Facultad Regional Rosario · Cátedra Algoritmos Genéticos · Ciclo lectivo 2026 · El artículo científico (segundo documento exigido por la cátedra) está en <span class="mono">docs/articulo.tex</span> / <span class="mono">docs/articulo.pdf</span></p>
+
+  <p class="footer">Universidad Tecnológica Nacional — Facultad Regional Rosario · Cátedra Algoritmos Genéticos · Ciclo
+    lectivo 2026 · El artículo científico (segundo documento exigido por la cátedra) está en <span
+      class="mono">docs/articulo.tex</span> / <span class="mono">docs/articulo.pdf</span></p>
 </body>
+
 </html>
