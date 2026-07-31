@@ -1,126 +1,79 @@
-# TPI - Algoritmo Genético Canónico para Scheduling de Alertas SOC
+# 🧬 TPI - Optimización de Asignación de Alertas SOC con Algoritmos Genéticos
 
-Este trabajo práctico implementa un Algoritmo Genético Canónico aplicado a un problema realista de un SOC (Security Operations Center): asignar 500 alertas a 10 analistas minimizando tiempo total de resolución, backlog, espera de alertas críticas y desbalance de carga.
+Bienvenido al repositorio del Trabajo Práctico Integrador para la cátedra de Algoritmos Genéticos (UTN FRRo).
+Este proyecto aborda un problema crítico de ciberseguridad en el mundo real: el *Job Shop Scheduling* de alertas en un Centro de Operaciones de Seguridad (SOC), garantizando que las amenazas más severas se atiendan a tiempo sin sobrecargar a los analistas.
 
-## Dataset
+![Diagrama de Gantt](outputs/figures/gantt_asignacion_final.png)
 
-Las alertas ya no son sintéticas: se derivan de una muestra real de **CICIDS2017** (Sharafaldin, Lashkari y Ghorbani, 2018), un dataset público de 225.745 flujos de red de una captura con ataque DDoS, en `dataset/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv`. Ese dataset no trae campos operativos de SOC (prioridad, severidad, SLA, tiempo de resolución, analista, timestamp), así que `main.py` los deriva con una regla explícita, documentada en `derivar_alertas_desde_dataset()`:
+## 📌 Resumen del Proyecto
 
-- **Prioridad y severidad**: se derivan combinando la columna `Label` (`DDoS`/`BENIGN`) con la intensidad del tráfico (`Flow Bytes/s`, `Flow Packets/s`), normalizada a una escala 0-100.
-- **SLA**: tabla de política fija por prioridad (Baja=240, Media=120, Alta=60, Crítica=30 minutos).
-- **Tiempo estimado de resolución**: fórmula en función de la prioridad y la severidad, con ruido acotado.
-- **Llegada de la alerta**: se deriva del orden real de las filas en el archivo (que preserva el orden cronológico de la captura), reescalado al horizonte de trabajo de 8 horas.
+El proyecto modela la asignación de 500 alertas reales de red a un equipo de 10 analistas. A lo largo del desarrollo, hemos pasado desde un enfoque clásico hasta la integración de optimizaciones empíricas y arquitecturas modernas.
 
-## Modelo del problema
+**Características Principales:**
+- **Datos Reales:** Utiliza el dataset público **CICIDS2017** para las alertas (simulando ataques DDoS).
+- **Core Clásico:** Implementa un **Algoritmo Genético Canónico** con Selección por Ruleta, Crossover de 1 punto y Mutación por reasignación (`main.py`).
+- **Validación Empírica:** Cuenta con un Sintonizador de Hiperparámetros (Grid Search) y una comparación *Baseline* contra un asignador tradicional (Round-Robin).
+- **Visualización:** Incluye un Dashboard Interactivo construido en **Streamlit** para presentar los resultados de forma visual y profesional.
+- **Implementación Avanzada (Futuro):** Incluye un submódulo (`main_avanzado.py` y `api_server.py`) que eleva el proyecto utilizando **NSGA-II (Optimización Multiobjetivo)**, Scheduling Dinámico (simulación en tiempo real) y un servidor REST **FastAPI** para integración con herramientas SIEM.
 
-- 10 analistas SOC.
-- 500 alertas muestreadas del dataset real (semilla 42).
-- Cada alerta incluye prioridad, severidad, tiempo estimado de resolución y SLA asociado.
-- Cada cromosoma representa una solución completa: el gen en la posición i indica a qué analista se asigna la alerta i.
+---
 
-### Representación genética
+## 🏗️ Arquitectura del Repositorio
 
-Ejemplo:
+| Archivo / Carpeta | Descripción |
+|------------------|-------------|
+| `main.py` | Motor del Algoritmo Genético Canónico (Requisito Académico). |
+| `hyper_tuner.py` | Script de Grid Search para justificar empíricamente las tasas de mutación y crossover. |
+| `baseline_comparacion.py` | Script que compara nuestro AG contra un asignador tradicional (Round-Robin). |
+| `dashboard.py` | Interfaz gráfica interactiva hecha en Streamlit para exponer resultados. |
+| `main_avanzado.py` | **(Extra)** Módulo con optimización Multiobjetivo NSGA-II y Skill-based Routing. |
+| `api_server.py` | **(Extra)** API REST con FastAPI para emular integración con un SIEM real. |
+| `docs/` | Documentación académica: `informe.html`, `articulo.tex` y guía de defensa. |
+| `outputs/` | Archivos CSV generados y gráficos (`figures/`). |
 
-```text
-[3, 1, 5, 2, 2, 7, 8, 1, ...]
-```
+---
 
-- Índice: alerta.
-- Valor: analista asignado, numerado del 1 al 10.
+## 🚀 Guía de Instalación y Uso
 
-## Función fitness
-
-La evaluación combina el tiempo total estimado con penalizaciones por:
-
-- espera promedio,
-- espera de alertas críticas,
-- retrasos respecto del SLA,
-- backlog,
-- desbalance extremo de carga,
-- sobrecarga relativa.
-
-La forma general utilizada es:
-
-```text
-fitness = 1 / (1 + tiempo_total_estimado + penalizacion)
-```
-
-Cuanto menor es el tiempo total y menores son las penalizaciones, mayor es el fitness.
-
-## Operadores implementados
-
-Algoritmo genético canónico: selección de padres por ruleta, crossover de 1 punto y mutación por reasignación (cambia el analista de una alerta aleatoria). No implementa mecanismos adicionales de selección ni elitismo.
-
-## Estructura del programa
-
-El archivo principal es `main.py` y contiene las funciones pedidas para el TP:
-
-- `derivar_alertas_desde_dataset()`
-- `generar_poblacion()`
-- `calcular_fitness()`
-- `seleccion_ruleta()`
-- `crossover()`
-- `mutacion()`
-- `evolucionar()`
-- `calcular_estadisticas()`
-
-## Ejecución
-
-Desde la carpeta raíz del proyecto:
-
+### 1. Requisitos Previos
+Asegurate de tener Python 3 instalado. Posicionate en la carpeta del proyecto y ejecutá:
 ```bash
-cd TPI
 python3 -m pip install -r requirements.txt
-python3 main.py
 ```
 
-Si ya tenés las dependencias instaladas, alcanza con:
-
+### 2. Ejecutar el Algoritmo Principal
+Para generar la asignación óptima de alertas (Algoritmo Canónico):
 ```bash
-cd TPI
 python3 main.py
 ```
+*Esto generará los gráficos de aptitud y el Gantt en la carpeta `outputs/figures/`.*
 
-## Salidas generadas
+### 3. Visualizar el Dashboard Interactivo
+Para una exposición visual de los datos y la tabla de métricas:
+```bash
+python3 -m streamlit run dashboard.py
+```
 
-Al ejecutar el programa se crean:
+### 4. Modo Avanzado (NSGA-II y API REST)
+Si querés probar la versión de "Próxima Generación" (Scheduling Dinámico y Multiobjetivo):
+```bash
+# Simulación por consola
+python3 main_avanzado.py
 
-- `outputs/alertas_derivadas_dataset.csv` (trazabilidad: alertas derivadas del dataset real)
-- `outputs/metricas_generacionales_soc.csv`
-- `outputs/resumen_resultados_soc.csv`
-- `outputs/distribucion_final_alertas_soc.csv`
-- `outputs/carga_final_analistas_soc.csv`
-- `outputs/figures/` (incluye `carga_final_por_analista.png`)
+# Servidor API para recibir alertas externas en formato JSON
+uvicorn api_server:app --reload
+```
+Una vez levantada el API, podés ver la documentación Swagger en `http://localhost:8000/docs`.
 
-Y se imprimen por consola:
+---
 
-- fitness máximo, mínimo, promedio y desvío estándar por generación,
-- tiempo de ejecución por generación,
-- mejor cromosoma encontrado,
-- distribución final de alertas,
-- carga por analista,
-- fitness global final.
+## 🎓 Documentación Académica
 
-## Lectura académica
+La documentación requerida por la cátedra se encuentra en la carpeta `docs/`:
+1. **Documento Guía de Investigación**: Informe principal en HTML con la situación problemática, modelo y objetivos (`docs/informe.html`).
+2. **Artículo Científico**: Formato de paper IEEE (`docs/articulo.tex`).
+3. **Machete de Defensa**: Guía estructurada para estudiar de cara a la exposición oral (`docs/guia_estudio_defensa.md`).
 
-El problema modela una decisión de scheduling donde cada alerta debe asignarse a un recurso humano limitado. El algoritmo genético canónico explora soluciones mediante selección por ruleta, distribuyendo la carga entre analistas y privilegiando las alertas críticas a través de la función de fitness.
-
-La salida gráfica incluye:
-
-- máximo por generación,
-- promedio por generación,
-- mínimo por generación,
-- desviación estándar por generación,
-- carga final por analista.
-
-## Documentación de cátedra
-
-La cátedra exige dos documentos:
-
-1. **Documento Guía de Investigación** (carátula, índice, denominación, situación problemática, problema, objetivos y marco teórico): [docs/informe.html](docs/informe.html), con el mismo formato que los informes de TP1, TP2 y TP3.
-2. **Artículo científico** (máximo 8 páginas: abstract, palabras clave, introducción, metodología, resultados, discusión, conclusiones, referencias y datos de contacto): [docs/articulo.tex](docs/articulo.tex) / [docs/articulo.pdf](docs/articulo.pdf), en formato LaTeX (compilar con `xelatex articulo.tex`, dos veces, para resolver las referencias cruzadas).
-
-## Nota
-
-El directorio `TPI` también contiene PDFs y material de referencia que ya venía en el workspace. El programa nuevo convive con ese material sin modificarlo.
+---
+**Universidad Tecnológica Nacional — Facultad Regional Rosario**  
+Cátedra Algoritmos Genéticos · Ciclo lectivo 2026
