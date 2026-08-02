@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from PIL import Image
+import subprocess
+import sys
 
 # Configuración de página
 st.set_page_config(
@@ -13,6 +15,42 @@ st.set_page_config(
 # Constantes
 OUTPUTS_DIR = Path("outputs")
 FIGURES_DIR = OUTPUTS_DIR / "figures"
+
+# --- Sidebar para configurar parámetros ---
+st.sidebar.header("⚙️ Parámetros del Algoritmo")
+st.sidebar.markdown("Ajusta los parámetros y presiona **Ejecutar** para correr el algoritmo.")
+
+with st.sidebar.form("config_form"):
+    seed_val = st.number_input("SEED", value=42, step=1)
+    n_analistas = st.number_input("N_ANALISTAS", value=10, min_value=1, step=1)
+    n_alertas = st.number_input("N_ALERTAS", value=500, min_value=10, step=10)
+    tam_pob = st.number_input("TAM_POBLACION", value=10, min_value=2, step=2)
+    n_gen = st.number_input("N_GENERACIONES", value=20, min_value=1, step=1)
+    p_cross = st.slider("P_CROSSOVER", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
+    p_mut = st.slider("P_MUTACION", min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+    horiz = st.number_input("HORIZONTE_MINUTOS", value=480, min_value=60, step=60)
+    
+    submitted = st.form_submit_button("🚀 Ejecutar Algoritmo")
+
+if submitted:
+    with st.spinner("Ejecutando algoritmo genético... (esto puede tardar unos segundos)"):
+        cmd = [
+            sys.executable, "main.py",
+            "--seed", str(seed_val),
+            "--n-analistas", str(n_analistas),
+            "--n-alertas", str(n_alertas),
+            "--tam-poblacion", str(tam_pob),
+            "--n-generaciones", str(n_gen),
+            "--p-crossover", str(p_cross),
+            "--p-mutacion", str(p_mut),
+            "--horizonte-minutos", str(horiz)
+        ]
+        try:
+            subprocess.run(cmd, check=True)
+            st.cache_data.clear()
+            st.success("¡Algoritmo finalizado! Los gráficos y tablas han sido actualizados.")
+        except subprocess.CalledProcessError as e:
+            st.error(f"Error ejecutando main.py: {e}")
 
 # --- Funciones de carga de datos ---
 @st.cache_data
@@ -109,4 +147,22 @@ with tab4:
 
 # Footer
 st.markdown("---")
-st.markdown("*Dashboard interactivo desarrollado para la presentación oral.*")
+st.markdown("### 📊 Detalles Técnicos de la Última Ejecución del Algoritmo")
+
+col_f1, col_f2, col_f3 = st.columns(3)
+with col_f1:
+    st.markdown("**Desempeño y Penalizaciones**")
+    st.markdown(f"- **Penalización Total:** `{resumen.iloc[0]['penalizacion_total']:.2f}`")
+    st.markdown(f"- **Sobrecarga Relativa:** `{resumen.iloc[0]['sobrecarga_relativa']:.4f}`")
+    st.markdown(f"- **Retraso Crítico Promedio:** `{resumen.iloc[0]['retraso_critico_promedio_min']:.2f} min`")
+    
+with col_f2:
+    st.markdown("**Métricas de Backlog (Fuera del Horizonte)**")
+    st.markdown(f"- **Alertas en Backlog:** `{resumen.iloc[0]['backlog_alertas']}` alertas")
+    st.markdown(f"- **Backlog Acumulado:** `{resumen.iloc[0]['backlog_minutos']:.2f} min`")
+
+with col_f3:
+    st.markdown("**Tiempos y Eficiencia Computacional**")
+    st.markdown(f"- **Espera Promedio Global:** `{resumen.iloc[0]['espera_promedio_min']:.2f} min`")
+    st.markdown(f"- **Tiempo de Ejecución (CPU):** `{resumen.iloc[0]['tiempo_ejecucion_seg']:.4f} seg`")
+
