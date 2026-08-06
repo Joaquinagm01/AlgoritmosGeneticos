@@ -19,8 +19,6 @@
     <h1 class="caratula-titulo">Trabajo Práctico Integrador<br />Algoritmos Genéticos aplicados al Scheduling de Alertas
       en un SOC</h1>
 
-    </p>
-
     <div class="caratula-ficha">
       <div class="caratula-meta">
         <p><span class="label">Materia:</span> Algoritmo Genético</p>
@@ -128,47 +126,42 @@
     <section id="problema">
       <h2>Problema</h2>
       <p>
-        La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un Centro de
-        Operaciones de Seguridad no logra, de manera consistente, minimizar simultáneamente el tiempo total de
-        resolución, los tiempos de espera de las alertas críticas y el desbalance de carga entre analistas. Por ello,
-        resulta necesario investigar una estrategia de asignación basada en Algoritmos Genéticos que distribuya las
-        alertas —caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA— entre un número
-        limitado de analistas de forma óptima, evaluando su desempeño mediante métricas cuantitativas generacionales y
-        operativas.
+        La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un Centro de Operaciones
+        de Seguridad (SOC) no logra, de manera consistente, minimizar simultáneamente el tiempo total de resolución,
+        los tiempos de espera de las alertas críticas y el desbalance de carga entre analistas.
+        En este contexto, surge la siguiente pregunta de investigación: 
+        <strong>¿Puede un algoritmo genético optimizar la asignación de alertas en un SOC para reducir tiempos de respuesta
+        y mejorar la distribución de carga de trabajo entre analistas?</strong> A partir de este interrogante, resulta
+        necesario investigar una estrategia de asignación basada en Algoritmos Genéticos que distribuya las alertas,
+        caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA, entre un número limitado de
+        analistas de forma óptima, evaluando su desempeño mediante métricas cuantitativas generacionales y operativas.
+
       </p>
     </section>
 
     <section id="objetivos">
-      <h2>Objetivos de la investigación</h2>
-      <h3>Objetivo general</h3>
-      <p>
-        Diseñar, implementar y evaluar un modelo de Algoritmo Genético Canónico que optimice la asignación de alertas de
-        seguridad a los analistas de un Centro de Operaciones de Seguridad, minimizando de forma conjunta el tiempo
-        total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga entre
-        analistas.
-      </p>
-      <h3>Objetivos específicos</h3>
-      <ol>
-        <li>Diseñar una representación cromosómica que codifique una asignación completa de alertas a analistas, donde
-          cada gen indique el analista responsable de resolver la alerta correspondiente.</li>
-        <li>Formular una función de fitness que combine el tiempo total estimado de resolución con penalizaciones
-          verificables por espera, incumplimiento de SLA y desbalance de carga, de modo que dos asignaciones distintas
-          puedan compararse de forma medible.</li>
-        <li>Implementar un operador de selección de padres propio del algoritmo genético canónico, registrando el
-          fitness obtenido generación a generación para verificar la convergencia del modelo.</li>
-        <li>Registrar la evolución generacional de las métricas de aptitud poblacional —incluyendo el fitness máximo,
-          mínimo, promedio y su desviación estándar— con el fin de verificar empíricamente la convergencia y la mejora
-          progresiva del algoritmo.</li>
-        <li>Cuantificar, a partir del mejor cromosoma hallado en cada corrida, indicadores operativos clave como el
-          tiempo total estimado, la disminución de los tiempos de espera (generales y críticos), el volumen de backlog
-          remanente y el grado de desbalance de carga, para comprobar la eficacia de la asignación.</li>
-        <li>Medir el tiempo de ejecución (en segundos) del procedimiento evolutivo, a fin de contrastar de forma
-          realizable la calidad de la solución obtenida con su costo computacional.</li>
-        <li>Validar empíricamente el modelo utilizando una base de datos representativa, derivando alertas de una
-          muestra del dataset público CICIDS2017, a las cuales se les asignará prioridad, severidad, SLA y tiempo
-          estimado de resolución para simular de forma realista el entorno de un SOC.</li>
-      </ol>
-    </section>
+        <h2>Objetivos de la investigación</h2>
+
+        <h3>Objetivo general</h3>
+        <p>
+          Diseñar, implementar y evaluar un modelo basado en Algoritmos Genéticos para optimizar la asignación de
+          alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad mediante la minimización conjunta del
+          tiempo total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga
+          entre analistas.
+        </p>
+
+        <h3>Objetivos específicos</h3>
+        <ol>
+          <li>Analizar el proceso de asignación de alertas de seguridad y los factores que intervienen en su
+            distribución dentro de un Centro de Operaciones de Seguridad.</li>
+          <li>Desarrollar un modelo basado en Algoritmos Genéticos para optimizar la asignación de alertas entre los
+            analistas disponibles.</li>
+          <li>Evaluar el desempeño del modelo propuesto mediante métricas relacionadas con la convergencia del algoritmo, los
+            tiempos de resolución y la distribución de la carga de trabajo.</li>
+          <li>Validar la efectividad del modelo mediante experimentación con un conjunto de datos representativo del dominio
+            de la ciberseguridad.</li>
+        </ol>
+      </section>
   </main>
 
   <p class="footer">Universidad Tecnológica Nacional — Facultad Regional Rosario · Cátedra Algoritmos Genéticos · Ciclo
