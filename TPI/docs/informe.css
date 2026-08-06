@@ -57,6 +57,7 @@ main {
   counter-reset: figcaption tablecaption;
 }
 
+
 /* ---------------------------------------------------------
    Utilidades tipográficas
    --------------------------------------------------------- */
@@ -353,7 +354,6 @@ li { margin-bottom: 0.35rem; }
 
 .content-body section {
   margin-bottom: 2.5rem;
-  animation: fadeUp 0.5s ease both;
 }
 
 .content-body section:last-child {
@@ -623,7 +623,9 @@ figcaption::before {
 /* ---------------------------------------------------------
    Media queries: impresión A4
    --------------------------------------------------------- */
+
 @media print {
+
   @page {
     size: A4;
     margin: 18mm 16mm 22mm 16mm;
@@ -640,72 +642,177 @@ figcaption::before {
     print-color-adjust: exact;
   }
 
+
+  /* ---------------------------------------------
+     Control de saltos de página
+     --------------------------------------------- */
+
+  .content-body section {
+    animation: none !important;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+
+    page-break-before: auto;
+    break-before: auto;
+  }
+
+
+  p {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+
+  ol,
+  ul {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+
+
+  /* ---------------------------------------------
+     Configuración general del documento
+     --------------------------------------------- */
+
+.page {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+
+  margin: 0 !important;
+  padding: 12mm 10mm !important;
+
+  background: #ffffff !important;
+
+  border: none !important;
+  box-shadow: none !important;
+
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+
+
+  /* ---------------------------------------------
+     Carátula
+     --------------------------------------------- */
+
   .caratula {
-    box-shadow: none !important;
-    border: 1.5px solid #999 !important;
-    border-radius: 0 !important;
-    margin: 0 auto !important;
+
     width: 100% !important;
+
     min-height: 255mm !important;
+
+    margin: 0 !important;
+
+    border: 1px solid #999 !important;
+
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+
+    background: #ffffff !important;
+
+
     page-break-after: always !important;
     break-after: page !important;
-    background: #ffffff !important;
   }
+
+
+
+  /* ---------------------------------------------
+     Índice
+     --------------------------------------------- */
 
   .indice {
-    box-shadow: none !important;
+
     page-break-after: always !important;
     break-after: page !important;
-    border: 1px solid #ccc !important;
-  }
 
-  .card {
+    border: none !important;
     box-shadow: none !important;
-    border: 1px solid #ccc !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    margin-bottom: 1rem !important;
-    padding: 1.2rem 1.4rem !important;
-    background: #ffffff !important;
   }
 
-  .table-block,
-  figure {
+
+
+  /* ---------------------------------------------
+     Tablas y figuras
+     --------------------------------------------- */
+
+  figure,
+  .table-block {
+
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
+
 
   figure img {
+
     box-shadow: none !important;
+
     border: 1px solid #bbb !important;
   }
 
+
+
+  /* ---------------------------------------------
+     Elementos especiales
+     --------------------------------------------- */
+
   .container {
+
     width: 100% !important;
+
     margin: 0 auto !important;
   }
 
+
+
   h2 {
+
     color: #1a1a2e !important;
-    border-bottom-color: #ccc !important;
+
+    border-bottom-color: #cccccc !important;
   }
 
+
+
   .formula {
+
     border-left-color: #e94560 !important;
+
     background: #f8f8f8 !important;
   }
 
+
+
   a {
-    color: #0f3460 !important;
-    text-decoration: underline !important;
+
+    color: #000000 !important;
+
+    text-decoration: none !important;
   }
 
+
+
   thead tr {
+
     background: #e8e8ec !important;
   }
 
+
   tbody tr:nth-child(even) {
+
     background: #f4f4f8 !important;
   }
-}
 
+}
