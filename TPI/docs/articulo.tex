@@ -8,8 +8,6 @@
 \usepackage{mathptmx}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{caption}
 \PassOptionsToPackage{hyphens}{url}
 \usepackage{hyperref}
 
@@ -97,10 +95,10 @@ Para validar empíricamente el modelo, se utilizó una base de datos representat
 Las ejecuciones del algoritmo demostraron resultados operativos altamente satisfactorios, logrando optimizar la carga a lo largo de las generaciones. A partir del análisis del registro métrico generacional, se observaron las siguientes medidas:
 
 \begin{itemize}
-    \item \textbf{Mejora generacional:} El \textit{fitness} del mejor individuo (aptitud poblacional) inició en $5.82\times 10^{-5}$ y progresó de forma consistente a lo largo del proceso evolutivo, denotando una clara convergencia de las soluciones hacia asignaciones más óptimas y equitativas.
+    \item \textbf{Mejora generacional:} El \textit{fitness} del mejor individuo (aptitud poblacional) inició en $5.82\times 10^{-5}$ y progresó de forma consistente a lo largo del proceso evolutivo, denotando una clara convergencia de las soluciones hacia asignaciones más óptimas y equitativas. El fitness promedio de la población acompañó esta tendencia, pasando de $5.64\times 10^{-5}$ en la primera generación a $5.83\times 10^{-5}$ en la última, lo que evidencia que la mejora no se limitó al mejor individuo sino que se propagó al conjunto de la población.
     \item \textbf{Tiempos de espera y de resolución:} El tiempo total estimado de resolución logró estabilizarse, evidenciando disminuciones sistemáticas en los tiempos de espera promedio generales (convergiendo en torno a los 824 minutos) y de espera en alertas críticas (aprox. 741 minutos), lo que mitiga los riesgos de violaciones de SLA.
     \item \textbf{Desbalance y Backlog:} El índice de desbalance de carga entre analistas se redujo a márgenes estrechos (con mediciones tan bajas como $0.087$), logrando distribuir equitativamente el peso cognitivo del equipo humano. Asimismo, el \textit{backlog} se mantuvo altamente contenido frente a la demanda total.
-    \item \textbf{Eficiencia computacional:} El tiempo de ejecución del procedimiento evolutivo fue notablemente bajo, promediando $0.0026$ segundos por generación, lo cual comprueba empíricamente la viabilidad del modelo para generar y evaluar iteraciones a alta velocidad.
+    \item \textbf{Eficiencia computacional:} El tiempo de ejecución del procedimiento evolutivo fue notablemente bajo, promediando $0.0014$ segundos por generación, lo cual comprueba empíricamente la viabilidad del modelo para generar y evaluar iteraciones a alta velocidad.
 \end{itemize}
 
 % =========================================================
