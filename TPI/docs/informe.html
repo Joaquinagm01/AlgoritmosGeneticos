@@ -62,6 +62,11 @@
         <li><a href="#situacion">Situación problemática</a></li>
         <li><a href="#problema">Problema</a></li>
         <li><a href="#objetivos">Objetivos de la investigación</a></li>
+        <li><a href="#justificacion">Justificación</a></li>
+        <li><a href="#marco-teorico">Marco teórico y antecedentes</a></li>
+        <li><a href="#metodologia">Metodología</a></li>
+        <li><a href="#cronograma">Cronograma tentativo</a></li>
+        <li><a href="#bibliografia">Bibliografía</a></li>
       </ol>
     </div>
   </nav>
@@ -161,6 +166,159 @@
           <li>Validar la efectividad del modelo mediante experimentación con un conjunto de datos representativo del dominio
             de la ciberseguridad.</li>
         </ol>
+      </section>
+
+      <section id="justificacion">
+        <h2>Justificación</h2>
+        <p>
+          La presente investigación se justifica desde una perspectiva académica y desde una perspectiva de
+          aplicabilidad práctica. Desde lo académico, el problema de asignación de alertas en un SOC constituye una
+          instancia concreta y no trivial de optimización combinatoria de tipo <em>Job Shop Scheduling</em>, lo que
+          permite aplicar y evaluar empíricamente los fundamentos de los Algoritmos Genéticos Canónicos —
+          representación cromosómica, operadores de selección, cruzamiento, mutación y función de aptitud
+          multiobjetivo— sobre un caso de uso realista, en lugar de un problema de juguete.
+        </p>
+        <p>
+          Desde lo práctico, la literatura de ciberseguridad documenta que la fatiga de alertas y el desbalance de
+          carga entre analistas son problemas estructurales de los SOC, con impacto directo en el tiempo de
+          contención de incidentes y en la retención del personal capacitado. Un modelo de asignación que pueda
+          re-ejecutarse dinámicamente cada vez que ingresa un nuevo lote de eventos —tal como se plantea en este
+          trabajo— representa un aporte de bajo costo computacional y de aplicación directa a herramientas de
+          gestión de incidentes (SIEM) ya existentes en la industria.
+        </p>
+      </section>
+
+      <section id="marco-teorico">
+        <h2>Marco teórico y antecedentes</h2>
+        <p>
+          Los Algoritmos Genéticos (AG) son metaheurísticas de búsqueda estocástica inspiradas en los mecanismos de
+          la selección natural y la genética darwiniana, formalizados por Holland (1992) <span
+            class="mono">[2]</span>. Un AG mantiene una población de soluciones candidatas (individuos), codificadas
+          como cromosomas, que evoluciona a lo largo de generaciones sucesivas mediante tres operadores centrales:
+          <strong>selección</strong> (favorece a los individuos con mejor aptitud como padres de la siguiente
+          generación), <strong>cruzamiento</strong> (recombina el material genético de dos padres para generar
+          descendencia) y <strong>mutación</strong> (introduce variación aleatoria para evitar la convergencia
+          prematura a óptimos locales). La calidad de cada individuo se mide mediante una función de
+          <em>fitness</em>, definida en función del problema concreto a resolver.
+        </p>
+        <p>
+          En el dominio de la ciberseguridad, el conjunto de datos <strong>CICIDS2017</strong> (Sharafaldin,
+          Lashkari y Ghorbani, 2018) <span class="mono">[1]</span> es un antecedente de referencia ampliamente
+          utilizado en la literatura para la generación y caracterización de tráfico de red con fines de detección
+          de intrusiones. En este trabajo, dicho dataset no se utiliza para clasificación de tráfico sino como
+          fuente de eventos realista a partir de la cual se derivan sintéticamente los atributos operativos de cada
+          alerta (prioridad, severidad, tiempo estimado de resolución y SLA), de modo de simular con fidelidad el
+          flujo continuo de alertas que enfrenta un SOC.
+        </p>
+        <p>
+          El problema de asignar un conjunto de tareas (alertas) a un conjunto limitado de recursos (analistas)
+          respetando restricciones de tiempo y prioridad se enmarca dentro de los problemas clásicos de
+          <em>scheduling</em> combinatorio, de complejidad computacional NP-difícil en su formulación general, lo
+          que justifica el uso de metaheurísticas —como los AG— frente a métodos exactos, inviables en tiempo
+          razonable para instancias de cientos de alertas y decenas de analistas.
+        </p>
+      </section>
+
+      <section id="metodologia">
+        <h2>Metodología</h2>
+        <p>
+          La investigación se enmarca en un enfoque cuantitativo y experimental, con un diseño metodológico
+          estructurado en las siguientes etapas:
+        </p>
+        <h3>Representación del problema</h3>
+        <p>
+          Se diseñó una representación cromosómica donde cada individuo codifica una asignación completa de
+          alertas a analistas: cada gen representa una alerta y el alelo contenido en ese gen indica el analista
+          responsable de resolverla.
+        </p>
+        <div class="formula">
+          fitness(cromosoma) = 1 / (1 + tiempo_total_estimado + penalización)
+        </div>
+        <p>
+          donde la penalización combina, de forma ponderada, el tiempo de espera promedio, el tiempo de espera de
+          alertas críticas, el incumplimiento de SLA, el <em>backlog</em> acumulado y el desbalance de carga entre
+          analistas — favoreciendo así asignaciones que minimicen el impacto temporal y maximicen la equidad en la
+          distribución del trabajo.
+        </p>
+        <h3>Operadores genéticos</h3>
+        <p>
+          El algoritmo evoluciona la población generación tras generación mediante selección por ruleta
+          proporcional al <em>fitness</em>, cruzamiento de un punto para recombinar asignaciones exitosas entre dos
+          padres, y mutación por reasignación aleatoria de un gen, con el objetivo de introducir diversidad y
+          evitar la convergencia prematura a óptimos locales.
+        </p>
+        <h3>Validación empírica</h3>
+        <p>
+          Para validar el modelo se utiliza una muestra de eventos derivada del dataset CICIDS2017, sobre la cual
+          se inyectan sintéticamente los atributos operativos de cada alerta. El desempeño del Algoritmo Genético se
+          contrasta contra una estrategia de asignación tradicional de tipo <em>Round-Robin</em>, tomada como línea
+          de base (<span class="mono">baseline</span>), y se ajustan los hiperparámetros del algoritmo (tamaño de
+          población, tasa de mutación y tasa de cruzamiento) mediante una búsqueda en grilla (<em>Grid
+            Search</em>).
+        </p>
+      </section>
+
+      <section id="cronograma">
+        <h2>Cronograma tentativo</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Etapa</th>
+                <th>Actividad</th>
+                <th>Duración estimada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Relevamiento bibliográfico y definición del marco teórico</td>
+                <td>2 semanas</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Diseño de la representación cromosómica y de la función de <em>fitness</em></td>
+                <td>1 semana</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Implementación del Algoritmo Genético y de los operadores configurables</td>
+                <td>2 semanas</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Derivación del dataset de alertas a partir de CICIDS2017</td>
+                <td>1 semana</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Ajuste de hiperparámetros (<em>Grid Search</em>) y comparación contra <em>baseline</em></td>
+                <td>1 semana</td>
+              </tr>
+              <tr class="row-highlight">
+                <td>6</td>
+                <td>Análisis de resultados, redacción del informe y del artículo científico</td>
+                <td>2 semanas</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Preparación de la defensa oral y del material de exposición</td>
+                <td>1 semana</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="bibliografia">
+        <h2>Bibliografía</h2>
+        <p>
+          [1] Sharafaldin, I., Lashkari, A. H., y Ghorbani, A. A. (2018). <em>Toward Generating a New Intrusion
+            Detection Dataset and Intrusion Traffic Characterization</em>. CICIDS2017.
+        </p>
+        <p>
+          [2] Holland, J. H. (1992). <em>Adaptation in Natural and Artificial Systems</em>. MIT Press.
+        </p>
       </section>
   </main>
 
