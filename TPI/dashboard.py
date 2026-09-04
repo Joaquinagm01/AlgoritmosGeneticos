@@ -130,11 +130,17 @@ with tab3:
     st.header("Validación Empírica (AG vs Round-Robin)")
     st.markdown("Demostración de la mejora introducida por el Algoritmo Genético frente a una heurística de asignación secuencial clásica.")
     
-    img_path_comp = FIGURES_DIR / "comparativa_baseline_ag.png"
-    if img_path_comp.exists():
-        st.image(Image.open(img_path_comp), use_container_width=True)
-    else:
-        st.warning("Comparativa no encontrada. Ejecutá `baseline_comparacion.py`.")
+    nombres_comparativa = [
+        "espera_critica_comparativa.png",
+        "backlog_comparativa.png",
+        "desbalance_comparativa.png",
+    ]
+    for nombre in nombres_comparativa:
+        img_path_comp = FIGURES_DIR / nombre
+        if img_path_comp.exists():
+            st.image(Image.open(img_path_comp), use_container_width=True)
+        else:
+            st.warning(f"Comparativa no encontrada: {nombre}. Ejecutá `baseline_comparacion.py`.")
 
 with tab4:
     st.header("Sintonización de Parámetros (Grid Search)")

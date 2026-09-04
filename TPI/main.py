@@ -7,9 +7,9 @@ analista, timestamp), por lo que esos campos se derivan de las columnas de
 intensidad de tráfico y del `Label`, con una regla explícita documentada en
 `derivar_alertas_desde_dataset()`.
 
-El algoritmo genético implementa la forma canónica simple: selección de padres
-por ruleta (proporcional al fitness), cruza de un punto y mutación por
-reasignación, sin mecanismos adicionales de selección ni de elitismo.
+El algoritmo genético implementa selección por ranking, cruza de un punto,
+mutación por gen y elitismo, con una semilla inicial Round-Robin para disponer
+de una solución de referencia desde la primera generación.
 """
 
 from __future__ import annotations # Permite usar tipado moderno en versiones antiguas de Python
@@ -35,8 +35,8 @@ import pandas as pd # Librería para manejar tablas de datos (dataframes) estilo
 SEED = 42 # Semilla base para que siempre dé el mismo resultado si no la cambiamos
 N_ANALISTAS = 10 # Cuántas personas están trabajando en el SOC
 N_ALERTAS = 500 # Cuántas alertas vamos a procesar
-TAM_POBLACION = 10 # Cuántas soluciones posibles compiten por generación
-N_GENERACIONES = 20 # Cuántas veces va a evolucionar la población
+TAM_POBLACION = 50 # Cuántas soluciones posibles compiten por generación
+N_GENERACIONES = 200 # Cuántas veces va a evolucionar la población
 P_CROSSOVER = 0.75 # 75% de chances de que dos padres se crucen
 P_MUTACION = 0.05 # 5% de chances de que un gen (alerta) mute (cambie de analista) al azar
 HORIZONTE_MINUTOS = 8 * 60 # 480 minutos = 8 horas (un turno normal de trabajo)
@@ -46,6 +46,8 @@ PRIORIDADES = ("Baja", "Media", "Alta", "Critica") # Niveles de prioridad dispon
 PRIORIDAD_RANK = {"Baja": 0, "Media": 1, "Alta": 2, "Critica": 3} # Jerarquía numérica para ordenar las alertas
 SLA_POR_PRIORIDAD = {"Baja": 240, "Media": 120, "Alta": 60, "Critica": 30} # Tiempo MÁXIMO (minutos) que puede esperar antes de ser penalizada
 BASE_RESOLUCION = {"Baja": 8, "Media": 15, "Alta": 25, "Critica": 40} # Tiempo BASE (minutos) que demora resolver cada tipo
+PESO_BACKLOG_PRIORIDAD = {"Baja": 0.5, "Media": 1.0, "Alta": 2.0, "Critica": 4.0}
+COEF_BACKLOG_PONDERADO = 1.20
 
 BASE_DIR = Path(__file__).resolve().parent # Obtenemos la ruta absoluta de la carpeta donde está este archivo main.py
 DATASET_CSV = BASE_DIR / "dataset" / "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv" # Ruta al dataset original de CICIDS2017
@@ -165,13 +167,20 @@ def generar_poblacion(
 ) -> List[List[int]]:
     """Genera una poblacion inicial aleatoria de cromosomas. Cada gen = a qué analista va esa alerta."""
     # List comprehension que crea 'tam_poblacion' listas. Cada lista tiene 'n_alertas' números aleatorios (del 1 al 10)
-    return [
+    poblacion = [
         [random.randint(1, n_analistas) for _ in range(n_alertas)]
         for _ in range(tam_poblacion)
     ]
+    if poblacion:
+        poblacion[0] = [(indice % n_analistas) + 1 for indice in range(n_alertas)]
+    return poblacion
 
 
-def _evaluar_asignacion(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> Dict[str, float | int | List[int]]:
+def _evaluar_asignacion(
+    cromosoma: Sequence[int],
+    alertas: Sequence[Alerta],
+    peso_tiempo_objetivo: float = 0.10,
+) -> Dict[str, float | int | List[int]]:
     """Evalua una asignacion completa y devuelve metricas operativas del SOC y el fitness."""
     asignadas_por_analista: List[List[int]] = [[] for _ in range(N_ANALISTAS)] # Bandejas de entrada vacías para cada analista
     for idx_alerta, analista in enumerate(cromosoma): # Leemos el cromosoma
@@ -185,10 +194,25 @@ def _evaluar_asignacion(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> 
     retraso_critico = [] # Lista de cuánto se pasaron del SLA las alertas graves
 
     for idx_analista, indices_alertas in enumerate(asignadas_por_analista): # Iteramos por las bandejas de cada analista
-        # El analista ordena su propia bandeja: primero por llegada, y si llegan juntas, prioriza las más críticas
-        indices_alertas.sort(key=lambda idx: (alertas[idx].llegada_min, PRIORIDAD_RANK[alertas[idx].prioridad]))
-        
-        for idx_alerta in indices_alertas: # Procesa sus alertas una por una en orden
+        pendientes = list(indices_alertas)
+        while pendientes:
+            disponibles = [
+                idx for idx in pendientes
+                if alertas[idx].llegada_min <= disponibilidad[idx_analista]
+            ]
+            if disponibles:
+                idx_alerta = max(
+                    disponibles,
+                    key=lambda idx: (
+                        PRIORIDAD_RANK[alertas[idx].prioridad],
+                        alertas[idx].severidad,
+                        -(alertas[idx].sla_min - max(0, disponibilidad[idx_analista] - alertas[idx].llegada_min)),
+                    ),
+                )
+            else:
+                idx_alerta = min(pendientes, key=lambda idx: alertas[idx].llegada_min)
+            pendientes.remove(idx_alerta)
+
             alerta = alertas[idx_alerta]
             # Empieza cuando se desocupe O cuando llegue la alerta (lo que sea más tarde)
             inicio = max(disponibilidad[idx_analista], alerta.llegada_min) 
@@ -212,6 +236,19 @@ def _evaluar_asignacion(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> 
     # Backlog: Alertas que quedaron sin terminar cuando tocó la campana de las 8 horas (480 minutos)
     backlog_alertas = sum(1 for fin in finalizacion_por_alerta if fin > HORIZONTE_MINUTOS) # Cantidad
     backlog_minutos = sum(max(0, fin - HORIZONTE_MINUTOS) for fin in finalizacion_por_alerta) # Minutos totales extras
+    backlog_por_prioridad = {
+        prioridad.lower(): sum(
+            1
+            for indice, fin in enumerate(finalizacion_por_alerta)
+            if fin > HORIZONTE_MINUTOS and alertas[indice].prioridad == prioridad
+        )
+        for prioridad in PRIORIDADES
+    }
+    backlog_ponderado = sum(
+        PESO_BACKLOG_PRIORIDAD[alertas[indice].prioridad]
+        for indice, fin in enumerate(finalizacion_por_alerta)
+        if fin > HORIZONTE_MINUTOS
+    )
 
     carga_total = sum(cargas) # Suma de todos los minutos trabajados por todos
     carga_media = carga_total / N_ANALISTAS if N_ANALISTAS else 0.0 # Idealmente, cuánto debería trabajar cada uno
@@ -226,29 +263,54 @@ def _evaluar_asignacion(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> 
     # FUNCIÓN OBJETIVO (A MINIMIZAR)
     # Sumamos todos los males multiplicados por un peso. A mayor daño al negocio, mayor el multiplicador.
     # ==========================
-    penalizacion = (
-        0.60 * espera_promedio # Castigo leve por demora general
-        + 1.80 * espera_critica_promedio # Castigo fuerte si las críticas demoran en arrancar
-        + 8.00 * retraso_critico_promedio # Castigo MASIVO si las críticas rompen su SLA
-        + 1.20 * backlog_alertas # Castigo medio por dejar tickets para mañana
-        + 0.02 * backlog_minutos # Castigo ínfimo por los minutos fuera de horario
-        + 40.0 * desbalance_carga # Castigo ALTO por dejar que unos analistas trabajen mucho y otros nada
-        + 25.0 * sobrecarga_relativa # Castigo ALTO por sobrecargar a los analistas ocupados
-    )
+    contribuciones_penalizacion = {
+        "espera_general": 0.60 * espera_promedio,
+        "espera_critica": 1.80 * espera_critica_promedio,
+        "retraso_critico": 8.00 * retraso_critico_promedio,
+        "backlog_ponderado": COEF_BACKLOG_PONDERADO * backlog_ponderado,
+        "backlog_minutos": 0.02 * backlog_minutos,
+        "desbalance": 40.0 * desbalance_carga,
+        "sobrecarga": 25.0 * sobrecarga_relativa,
+    }
+    penalizacion = sum(contribuciones_penalizacion.values())
 
-    # Fitness (A MAXIMIZAR). Como el genético busca maximizar, invertimos la penalización usando 1 / (1 + x)
-    fitness = 1.0 / (1.0 + tiempo_total_estimado + penalizacion)
+    # Normalizamos los objetivos para evitar que los minutos dominen la selección.
+    horizonte = max(1, HORIZONTE_MINUTOS)
+    cantidad_alertas = max(1, len(alertas))
+    contribuciones_objetivo = {
+        "tiempo_total": peso_tiempo_objetivo * (tiempo_total_estimado / horizonte),
+        "espera_general": 0.10 * (espera_promedio / horizonte),
+        "espera_critica": 0.20 * (espera_critica_promedio / horizonte),
+        "retraso_critico": 0.25 * (retraso_critico_promedio / horizonte),
+        "backlog_ponderado": 0.10 * (backlog_ponderado / (4.0 * cantidad_alertas)),
+        "backlog_minutos": 0.05 * (backlog_minutos / (cantidad_alertas * horizonte)),
+        "desbalance": 0.15 * desbalance_carga,
+        "sobrecarga": 0.05 * sobrecarga_relativa,
+    }
+    objetivo_normalizado = sum(contribuciones_objetivo.values())
+
+    # Fitness (A MAXIMIZAR): la escala queda acotada y comparable entre individuos.
+    fitness = 1.0 / (1.0 + objetivo_normalizado)
 
     # Devolvemos un mega-diccionario con el fitness y todos los datos forenses
     return {
         "fitness": float(fitness),
         "tiempo_total_estimado_min": int(tiempo_total_estimado),
         "penalizacion": float(penalizacion),
+        "contribuciones_penalizacion": contribuciones_penalizacion,
+        "contribuciones_objetivo": contribuciones_objetivo,
+        "objetivo_normalizado": float(objetivo_normalizado),
         "espera_promedio_min": float(espera_promedio),
         "espera_critica_promedio_min": float(espera_critica_promedio),
         "retraso_critico_promedio_min": float(retraso_critico_promedio),
         "backlog_alertas": int(backlog_alertas),
         "backlog_minutos": float(backlog_minutos),
+        "backlog_ponderado": float(backlog_ponderado),
+        "backlog_alertas_por_prioridad": backlog_por_prioridad,
+        "backlog_baja": int(backlog_por_prioridad["baja"]),
+        "backlog_media": int(backlog_por_prioridad["media"]),
+        "backlog_alta": int(backlog_por_prioridad["alta"]),
+        "backlog_critica": int(backlog_por_prioridad["critica"]),
         "cargas_por_analista": cargas,
         "desbalance_carga": float(desbalance_carga),
         "sobrecarga_relativa": float(sobrecarga_relativa),
@@ -277,6 +339,44 @@ def seleccion_ruleta(poblacion: Sequence[Sequence[int]], fitnesses: Sequence[flo
     return list(poblacion[-1]) # Fallback de seguridad (devuelve el último si hay problema de redondeo)
 
 
+def seleccion_torneo(
+    poblacion: Sequence[Sequence[int]],
+    fitnesses: Sequence[float],
+    tam_torneo: int = 3,
+) -> List[int]:
+    """Selecciona el mejor individuo de una muestra aleatoria de la población."""
+    cantidad = min(max(2, tam_torneo), len(poblacion))
+    indices = random.sample(range(len(poblacion)), cantidad)
+    ganador = max(indices, key=lambda indice: fitnesses[indice])
+    return list(poblacion[ganador])
+
+
+def seleccion_ranking(
+    poblacion: Sequence[Sequence[int]],
+    fitnesses: Sequence[float],
+) -> List[int]:
+    """Selecciona por rango para evitar que la escala del fitness domine la presión selectiva."""
+    orden = sorted(range(len(poblacion)), key=lambda indice: fitnesses[indice])
+    pesos = list(range(1, len(orden) + 1))
+    indice_rango = random.choices(orden, weights=pesos, k=1)[0]
+    return list(poblacion[indice_rango])
+
+
+def seleccionar_padre(
+    poblacion: Sequence[Sequence[int]],
+    fitnesses: Sequence[float],
+    metodo: str,
+) -> List[int]:
+    """Despacha la estrategia de selección configurada."""
+    if metodo == "ruleta":
+        return seleccion_ruleta(poblacion, fitnesses)
+    if metodo == "torneo":
+        return seleccion_torneo(poblacion, fitnesses)
+    if metodo == "ranking":
+        return seleccion_ranking(poblacion, fitnesses)
+    raise ValueError("El metodo de seleccion debe ser 'ruleta', 'torneo' o 'ranking'")
+
+
 def crossover(padre1: Sequence[int], padre2: Sequence[int]) -> Tuple[List[int], List[int]]:
     """Crossover de un punto (Cruza clásica). Corta a la mitad y cruza el ADN."""
     if len(padre1) != len(padre2): # Medida de seguridad
@@ -292,11 +392,11 @@ def crossover(padre1: Sequence[int], padre2: Sequence[int]) -> Tuple[List[int], 
 
 
 def mutacion(cromosoma: Sequence[int], p_mutacion: float = P_MUTACION, n_analistas: int = N_ANALISTAS) -> List[int]:
-    """Mutacion: Cambia un gen (una alerta) de dueño."""
+    """Mutacion: reasigna cada gen con la probabilidad indicada."""
     hijo = list(cromosoma)
-    if random.random() < p_mutacion: # Tiramos un dado de 100 caras. Si saca menos que la prob. de mutación...
-        idx = random.randrange(len(hijo)) # Elegimos un gen (alerta) cualquiera
-        hijo[idx] = random.randint(1, n_analistas) # Le asignamos un analista cualquiera nuevo
+    for idx in range(len(hijo)):
+        if random.random() < p_mutacion:
+            hijo[idx] = random.randint(1, n_analistas)
     return hijo # Devolvemos el hijo (mutado o igual)
 
 
@@ -354,6 +454,8 @@ def evolucionar(
     p_crossover: float = P_CROSSOVER,
     p_mutacion: float = P_MUTACION,
     seed: int = SEED,
+    metodo_seleccion: str = "ranking",
+    peso_tiempo_objetivo: float = 0.10,
 ) -> Tuple[pd.DataFrame, Dict[str, object]]:
     """El motor principal: Ejecuta el bucle del algoritmo genetico canonico entero."""
     random.seed(seed) # Fijamos semilla de python
@@ -371,7 +473,10 @@ def evolucionar(
         inicio_gen = time.time()
 
         # 1. EVALUACIÓN (Calcula el fitness de los 10 individuos)
-        evaluaciones = [_evaluar_asignacion(individuo, alertas) for individuo in poblacion]
+        evaluaciones = [
+            _evaluar_asignacion(individuo, alertas, peso_tiempo_objetivo)
+            for individuo in poblacion
+        ]
         fitnesses = [evaluacion["fitness"] for evaluacion in evaluaciones]
         
         # Busca quién fue el ganador en ESTA generación
@@ -386,11 +491,17 @@ def evolucionar(
 
         # 3. REPRODUCCIÓN (Creamos la siguiente generación, excepto si estamos en la última)
         if generacion < n_generaciones:
-            nueva_poblacion: List[List[int]] = [] # La guardería vacía
+            elite_count = min(3, max(1, tam_poblacion // 10))
+            elite_indices = sorted(
+                range(len(poblacion)),
+                key=lambda indice: fitnesses[indice],
+                reverse=True,
+            )[:elite_count]
+            nueva_poblacion: List[List[int]] = [list(poblacion[indice]) for indice in elite_indices]
             
             while len(nueva_poblacion) < tam_poblacion: # Llenamos la guardería de a 2 bebés
-                padre1 = seleccion_ruleta(poblacion, fitnesses) # Elegimos a papá
-                padre2 = seleccion_ruleta(poblacion, fitnesses) # Elegimos a mamá
+                padre1 = seleccionar_padre(poblacion, fitnesses, metodo_seleccion)
+                padre2 = seleccionar_padre(poblacion, fitnesses, metodo_seleccion)
 
                 if random.random() < p_crossover: # Tiramos la ruleta del amor
                     hijo1, hijo2 = crossover(padre1, padre2) # Si toca, cruzan ADN
@@ -404,7 +515,7 @@ def evolucionar(
                 if len(nueva_poblacion) < tam_poblacion: 
                     nueva_poblacion.append(hijo2) # Metemos al H2 si queda lugar
 
-            poblacion = nueva_poblacion[:tam_poblacion] # Reemplazamos al mundo viejo por la nueva generación
+            poblacion = nueva_poblacion[:tam_poblacion] # Reemplazamos el resto por descendientes.
 
         # 4. REPORTES
         estadisticas = calcular_estadisticas(fitnesses, time.time() - inicio_gen)
@@ -430,6 +541,8 @@ def evolucionar(
         "mejor_cromosoma": mejor_global,
         "mejor_cromosoma_texto": json.dumps(mejor_global),
         "mejor_fitness_global": float(mejor_global_eval["fitness"]),
+        "n_analistas": N_ANALISTAS,  # Se guarda para que otros scripts (ej. baseline_comparacion.py)
+                          # sepan con qué escenario se corrió esta corrida
         "tiempo_total_estimado_min": int(mejor_global_eval["tiempo_total_estimado_min"]),
         "penalizacion_total": float(mejor_global_eval["penalizacion"]),
         "espera_promedio_min": float(mejor_global_eval["espera_promedio_min"]),
@@ -437,6 +550,11 @@ def evolucionar(
         "retraso_critico_promedio_min": float(mejor_global_eval["retraso_critico_promedio_min"]),
         "backlog_alertas": int(mejor_global_eval["backlog_alertas"]),
         "backlog_minutos": float(mejor_global_eval["backlog_minutos"]),
+        "backlog_ponderado": float(mejor_global_eval["backlog_ponderado"]),
+        "backlog_baja": int(mejor_global_eval["backlog_baja"]),
+        "backlog_media": int(mejor_global_eval["backlog_media"]),
+        "backlog_alta": int(mejor_global_eval["backlog_alta"]),
+        "backlog_critica": int(mejor_global_eval["backlog_critica"]),
         "desbalance_carga": float(mejor_global_eval["desbalance_carga"]),
         "sobrecarga_relativa": float(mejor_global_eval["sobrecarga_relativa"]),
         "tiempo_ejecucion_seg": float(tiempo_total_seg),
@@ -556,6 +674,7 @@ def main() -> None:
     parser.add_argument("--n-generaciones", type=int, default=N_GENERACIONES, help="Numero de generaciones")
     parser.add_argument("--p-crossover", type=float, default=P_CROSSOVER, help="Probabilidad de cruza")
     parser.add_argument("--p-mutacion", type=float, default=P_MUTACION, help="Probabilidad de mutacion")
+    parser.add_argument("--seleccion", choices=("ranking", "torneo", "ruleta"), default="ranking", help="Estrategia de seleccion de padres")
     parser.add_argument("--horizonte-minutos", type=int, default=HORIZONTE_MINUTOS, help="Horizonte de trabajo en minutos")
     args = parser.parse_args() # Procesa los argumentos
 
@@ -590,7 +709,7 @@ def main() -> None:
     print(f"Alertas muestreadas            : {N_ALERTAS}")
     print(f"Poblacion inicial              : {TAM_POBLACION}")
     print(f"Generaciones                   : {N_GENERACIONES}")
-    print(f"Seleccion de padres            : ruleta (proporcional al fitness)")
+    print(f"Seleccion de padres            : {args.seleccion}")
     print(f"Probabilidad de crossover      : {P_CROSSOVER}")
     print(f"Probabilidad de mutacion       : {P_MUTACION}")
     print(f"Horizonte de trabajo (min)     : {HORIZONTE_MINUTOS}")
@@ -604,7 +723,8 @@ def main() -> None:
         tam_poblacion=TAM_POBLACION,
         p_crossover=P_CROSSOVER,
         p_mutacion=P_MUTACION,
-        seed=SEED
+        seed=SEED,
+        metodo_seleccion=args.seleccion,
     )
 
     # Imprimimos los logs y el resumen final
