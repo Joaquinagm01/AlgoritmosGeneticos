@@ -63,11 +63,13 @@ Algoritmos Genéticos, Centro de Operaciones de Seguridad (SOC), Scheduling, Asi
 \section{Introducción}
 Los Centros de Operaciones de Seguridad (SOC) reciben un volumen de alertas que crece con mayor velocidad que la disponibilidad de analistas capacitados para atenderlas. La experiencia y la literatura especializada coinciden en que la sobrecarga (\textit{alert overload}) es uno de los problemas estructurales más persistentes de la operación de un SOC, ya que obliga a decidir con información incompleta y bajo presión de tiempo qué atender primero.
 
-Esa sobrecarga tiene un correlato humano bien documentado en la industria: la fatiga de alertas (\textit{alert fatigue}). Las causas principales radican en el inmenso volumen de eventos, la alta proporción de falsos positivos y la falta de contexto en cada alerta. Esta fatiga degrada invariablemente la calidad de las decisiones de triaje, incrementa el tiempo de respuesta y favorece la rotación del personal capacitado. El resultado es un ciclo que se retroalimenta: más alertas, analistas menos efectivos y tiempos de respuesta más largos, con el agravante de que la demora en atender una alerta de alta severidad incrementa el riesgo de que una intrusión progrese sin ser contenida.
+Esa sobrecarga tiene un correlato humano bien documentado en la industria: la fatiga de alertas (\textit{alert fatigue}). Un relevamiento sistemático reciente informa que la mayoría de las organizaciones recibe más de 10.000 alertas diarias y que más del 50\% son falsos positivos [3]. En este contexto, los analistas pueden llegar a ignorar alertas, desactivarlas o delegarlas a colegas, en lugar de investigarlas [3]. La fatiga degrada la calidad de las decisiones de triaje, incrementa el tiempo de respuesta y favorece la rotación del personal capacitado. El resultado es un ciclo que se retroalimenta: más alertas, analistas menos efectivos y tiempos de respuesta más largos, con el agravante de que la demora en atender una alerta de alta severidad incrementa el riesgo de que una intrusión progrese sin ser contenida.
 
 A esta escasez estructural se suma un problema de coordinación: aun cuando el equipo de analistas es suficiente en promedio, la forma en que las alertas se reparten entre ellos rara vez es óptima. Las prácticas habituales de asignación ---turnos fijos, reglas estáticas por tipo de alerta o asignación manual según disponibilidad aparente--- no consideran de forma simultánea la prioridad de cada alerta, el plazo de resolución comprometido (SLA), el tiempo estimado que insumirá resolverla y la carga ya acumulada por cada analista. El resultado observado en la práctica es un desbalance de carga: algunos analistas acumulan \textit{backlog} mientras otros permanecen subutilizados.
 
 El problema fundamental es que la asignación manual no logra minimizar simultáneamente el tiempo total de resolución, los tiempos de espera de las alertas críticas y el desbalance de carga. Por ello, la presente investigación propone diseñar, implementar y evaluar un modelo de Algoritmo Genético Canónico que distribuya las alertas ---caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA--- entre un número limitado de analistas de forma óptima.
+
+Este planteo se relaciona con la priorización de alertas estudiada por Jalalvand et al. [3], quienes organizan los criterios relevantes en dimensiones asociadas con la alerta, el analista, el activo, la organización y el entorno externo. En particular, su relevamiento destaca la necesidad de combinar criterios técnicos con restricciones de recursos humanos y de tiempo, en lugar de ordenar las alertas únicamente por severidad.
 
 % =========================================================
 % Elementos del Trabajo y metodología
@@ -75,7 +77,11 @@ El problema fundamental es que la asignación manual no logra minimizar simultá
 \section{Elementos del Trabajo y metodología}
 La metodología propuesta se enmarca en la resolución de problemas de optimización combinatoria (específicamente \textit{Job Shop Scheduling}) mediante el uso de Algoritmos Genéticos Canónicos.
 
+La asignación de tareas con tiempos de procesamiento y recursos limitados puede formalizarse como una variante de \textit{Job Shop Scheduling} (JSP), una clase de problemas NP-hard; cuando los tiempos efectivos presentan incertidumbre, el problema se aproxima al \textit{Stochastic Job Shop Scheduling} (SJSP) [4]. En este trabajo se utiliza una instancia determinista con tiempos estimados, por lo que la referencia al SJSP fundamenta una posible extensión de robustez y no implica que la implementación actual modele fallas o distribuciones estocásticas.
+
 Se diseñó una representación cromosómica específica donde cada individuo (cromosoma) codifica una asignación completa de alertas a analistas. Cada gen representa una alerta, y el alelo contenido indica el analista responsable de resolverla.
+
+Esta codificación directa resulta adecuada para representar la decisión principal del problema ---qué analista recibe cada alerta--- y evita introducir una capa de codificación indirecta. Boukedroun et al. [4] reportan que las codificaciones directas pueden representar el cronograma en la estructura de datos y reducir la necesidad de mecanismos complejos de reparación, criterio que se adopta aquí mediante alelos acotados al conjunto de analistas disponibles.
 
 La función de evaluación o \textit{fitness} fue formulada para buscar el menor impacto temporal y el mayor equilibrio, combinando el tiempo total estimado de resolución con penalizaciones estrictas por:
 \begin{itemize}
@@ -84,9 +90,23 @@ La función de evaluación o \textit{fitness} fue formulada para buscar el menor
     \item Desbalance de carga entre los analistas operativos.
 \end{itemize}
 
-El algoritmo evoluciona la población generación tras generación aplicando operadores de selección proporcional, cruzamiento para recombinar asignaciones exitosas y mutación para evitar óptimos locales.
+Formalmente, el algoritmo minimiza una penalización operativa $P$ y transforma su resultado en una aptitud positiva a maximizar:
+\begin{equation}
+\begin{aligned}
+P ={}& 0.60\,W + 1.80\,W_c + 8.00\,R_c + 1.20\,B \\
+  &+ 0.02\,B_m + 40.0\,D + 25.0\,O, \\
+f ={}& \frac{1}{1 + T + P}.
+\end{aligned}
+\end{equation}
+Aquí, $T$ es el tiempo total estimado de resolución, $W$ la espera promedio de todas las alertas, $W_c$ la espera promedio de las alertas críticas, $R_c$ el retraso promedio de las alertas críticas respecto de su SLA, $B$ la cantidad de alertas pendientes al finalizar el horizonte de 480 minutos, $B_m$ los minutos acumulados de ese atraso, $D$ el desbalance relativo de carga y $O$ la sobrecarga relativa de los analistas por encima de la carga media. Los coeficientes expresan la prioridad operativa asignada a cada penalización, con un peso mayor para el incumplimiento de SLA crítico y el desbalance de carga.
 
-Para validar empíricamente el modelo, se utilizó una base de datos representativa derivada del dataset público \textbf{CICIDS2017}. A partir de una muestra aleatoria de eventos, se inyectaron sintéticamente atributos operativos (prioridad, severidad, SLA y tiempo estimado de resolución) para simular de forma fiel y rigurosa el flujo de alertas continuo que enfrenta un SOC.
+El algoritmo evoluciona la población generación tras generación aplicando operadores de selección proporcional, cruzamiento para recombinar asignaciones exitosas y mutación para evitar óptimos locales. Estos operadores forman parte del marco clásico de planes reproductivos y operadores genéticos desarrollado por Holland, que también analiza la robustez de los planes evolutivos y el papel de las codificaciones en sistemas adaptativos [2].
+
+La configuración experimental utiliza una población de $N=10$ individuos y evoluciona durante $G=20$ generaciones. La probabilidad de cruzamiento de un punto es $P_c=0.75$, mientras que la probabilidad de mutación por gen es $P_m=0.05$. Estos valores corresponden a la configuración por defecto de la implementación principal.
+
+Para validar empíricamente el modelo, se utilizó una base de datos representativa derivada del dataset público \textbf{CICIDS2017} [1]. A partir de una muestra aleatoria de eventos, se inyectaron sintéticamente atributos operativos (prioridad, severidad, SLA y tiempo estimado de resolución) para simular de forma fiel y rigurosa el flujo de alertas continuo que enfrenta un SOC.
+
+La selección de estos atributos está alineada con la taxonomía de criterios de priorización de Jalalvand et al. [3]: prioridad y severidad representan propiedades de la alerta; el tiempo de resolución aproxima el tiempo disponible y la carga del analista; y el SLA expresa la dimensión organizacional de cumplimiento y oportunidad (\textit{timeliness}). Esta correspondencia ofrece una justificación metodológica para la función de aptitud, aunque los atributos hayan sido generados sintéticamente.
 
 % =========================================================
 % Resultados
@@ -107,13 +127,17 @@ Las ejecuciones del algoritmo demostraron resultados operativos altamente satisf
 \section{Discusión}
 Los resultados obtenidos confirman que la formulación de una función de aptitud multifactorial (que penalice simultáneamente tiempos muertos y desbalance de carga) es eficaz para superar las limitaciones de las heurísticas de asignación convencionales (tales como turnos fijos o reglas \textit{First-In-First-Out}). 
 
-A diferencia de los enfoques estáticos manuales, donde frecuentemente un porcentaje reducido de analistas acumula casi la totalidad del \textit{backlog}, el cromosoma óptimo resultante del Algoritmo Genético logra emparejar los horarios de resolución, reduciendo el riesgo sistémico asociado a la \textit{fatiga de alertas}. El bajo costo computacional (del orden de escasos milisegundos por generación) sugiere, además, implicancias teóricas e industriales sumamente relevantes: es factible implementar y re-ejecutar esta optimización genético-evolutiva de forma dinámica cada vez que ingresa un nuevo lote de eventos provenientes del sistema SIEM.
+A diferencia de los enfoques estáticos manuales, donde frecuentemente un porcentaje reducido de analistas acumula casi la totalidad del \textit{backlog}, el cromosoma óptimo resultante del Algoritmo Genético logra emparejar los horarios de resolución, reduciendo el riesgo sistémico asociado a la \textit{fatiga de alertas}. Esto es consistente con la observación de Jalalvand et al. [3] de que los métodos de optimización permiten incorporar explícitamente restricciones como la disponibilidad de analistas y el tiempo de investigación, aunque permanecen menos explorados que los enfoques basados en aprendizaje automático. En consecuencia, el modelo propuesto se interpreta como una forma de Alert Prioritisation (AP) automatizada para el triaje y la asignación inicial, no como un reemplazo de la validación experta ante incidentes nuevos o ambiguos.
+
+El bajo costo computacional (del orden de escasos milisegundos por generación) sugiere, además, implicancias teóricas e industriales sumamente relevantes: es factible implementar y re-ejecutar esta optimización genético-evolutiva de forma dinámica cada vez que ingresa un nuevo lote de eventos provenientes del sistema SIEM. La literatura de scheduling también vincula la reducción y estabilización del tiempo crítico de procesamiento con una mayor robustez frente a perturbaciones [4]. Por ello, el bajo desbalance observado debe interpretarse como una señal favorable de estabilidad operativa, aunque una evaluación formal de robustez requeriría experimentar con tiempos de resolución variables.
 
 % =========================================================
 % Conclusión
 % =========================================================
 \section{Conclusión}
 El presente trabajo demuestra empíricamente que el uso de Algoritmos Genéticos Canónicos es una estrategia sumamente robusta para abordar el problema de asignación de alertas en un SOC. Se logró modelar una representación cromosómica y una función de evaluación que reducen de manera integral el tiempo total de resolución, evitan cuellos de botella y aseguran un equilibrio justo de las tareas entre los recursos operativos. Al validar el modelo sobre una muestra adaptada del dataset CICIDS2017 y respaldar los resultados en métricas cuantitativas, la propuesta confirma no solo su convergencia teórica, sino su viabilidad directa para integrarse en herramientas de gestión de incidentes de seguridad reales.
+
+Como líneas de trabajo futuro, se propone avanzar desde la automatización hacia una colaboración Humano--IA: los analistas podrían revisar las asignaciones y ajustar dinámicamente los pesos de las penalizaciones mediante retroalimentación activa, actualizando la función de aptitud según el contexto operativo. También se incorporarán atributos de los activos afectados ---por ejemplo, criticidad, vulnerabilidad o dependencia--- dentro de la representación genética, y se evaluará la robustez del cronograma frente a variaciones estocásticas en los tiempos de resolución. Estas extensiones responden a las brechas identificadas por Jalalvand et al. [3] y a la perspectiva de robustez del SJSP estudiada por Boukedroun et al. [4].
 
 % =========================================================
 % Agradecimientos
@@ -131,6 +155,10 @@ A la cátedra de Algoritmos Genéticos por el marco metodológico, orientación 
 \noindent [1] Sharafaldin, I., Lashkari, A. H., y Ghorbani, A. A. (2018). \textit{Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization}. CICIDS2017.
 
 \noindent [2] Holland, J. H. (1992). \textit{Adaptation in Natural and Artificial Systems}. MIT Press.
+
+\noindent [3] Jalalvand, F., Chhetri, M. B., Nepal, S., y Paris, C. (2024). \textit{Alert Prioritisation in Security Operations Centres: A Systematic Survey on Criteria and Methods}. ACM Computing Surveys, 57(2), 1--36. https://doi.org/10.1145/3695462
+
+\noindent [4] Boukedroun, M., Duvivier, D., Ait-el-Cadi, A., Poirriez, V., y Abbas, M. (2023). \textit{A hybrid genetic algorithm for stochastic job-shop scheduling problems}. RAIRO--Operations Research, 57(4), 1617--1645. https://doi.org/10.1051/ro/2023067
 \par}
 
 \vspace{1.5em}

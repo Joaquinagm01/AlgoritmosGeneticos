@@ -1,120 +1,328 @@
 # Guía para la exposición del TP2 (mochila)
 
-Chuleta para la presentación: qué correr en vivo, qué mostrar del código
-cuando el profesor pregunte "¿dónde/cómo hacen tal cosa?", y respuestas
-cortas a las preguntas más probables. No es parte del informe académico
-(eso es [docs/informe.html](docs/informe.html)); esto es solo para
-ordenarnos antes de exponer.
+Esta guía está pensada para exponer el TP2 con una explicación simple, pero precisa. La idea es mostrar primero qué hace el programa, después cómo está separado el código, y por último cómo defender las decisiones delante del profesor. El informe académico está en [docs/informe.html](docs/informe.html); esto es solo la guía de exposición.
 
-## 1. Guion de demo en terminal (5-7 minutos)
+## 1. Qué hay en la carpeta TP2
 
-Correr desde `TP2/scripts`:
+El trabajo está dividido en 4 partes que se conectan entre sí:
 
-```bash
-python3 main.py
-```
+- [scripts/mochila.py](scripts/mochila.py): contiene toda la lógica del problema de la mochila.
+- [scripts/main.py](scripts/main.py): maneja el menú, la lectura por teclado y la impresión en consola.
+- [scripts/run_bench.py](scripts/run_bench.py): corre benchmarks y guarda resultados en `outputs/`.
+- [scripts/generate_plots.py](scripts/generate_plots.py): toma el CSV del benchmark y genera gráficos.
 
-Se abre el menú. Orden sugerido:
+Además, hay tres cosas de entrada/salida que conviene mencionar:
 
-1. **Opción 1** (puntos 1 y 2, 10 objetos, mochila de 4200 cm3).
-   - Mostrar la tabla de objetos (espacio de búsqueda) y remarcar que tiene
-     ID, peso/volumen y valor — eso responde el punto 1 del enunciado.
-   - Señalar que el exhaustivo evaluó **1024 combinaciones** (2¹⁰) y el
-     greedy solo **10 candidatos**, pero en esta instancia ambos llegan al
-     mismo valor ($299). Es el caso "lindo" donde coinciden.
+- [Enunciado/instancia_enunciado.json](Enunciado/instancia_enunciado.json): instancia usada en los puntos 1 y 2.
+- [Enunciado/enunciado_text.txt](Enunciado/enunciado_text.txt): texto original del enunciado.
+- `outputs/`: carpeta donde se guardan reportes, CSV y gráficos generados.
 
-2. **Opción 2** (punto 3, 3 elementos, mochila de 3000 grs.).
-   - Acá el greedy **no** llega al óptimo ($96 contra $132). Es el
-     contraejemplo que demuestra que el greedy no garantiza nada — conviene
-     mostrarlo después del caso 1 para que se note el contraste.
+## 2. Guion corto para mostrar en vivo
 
-3. **Opción 3** (cargar una instancia a mano, en vivo).
-   - Sirve para probar frente al profesor que el programa no tiene nada
-     "hardcodeado": funciona con cualquier instancia que se cargue por
-     teclado. Usar un ejemplo chico y fácil de verificar mentalmente, por
-     ejemplo:
-     - Unidad: `kg`
-     - Capacidad: `10`
-     - 2 objetos: `A` (peso `6`, valor `10`) y `B` (peso `5`, valor `9`)
-     - Óptimo a mano: A+B pesa 11 (no entra); solo A o solo B entran solos,
-       y A vale más → el exhaustivo debe elegir **solo A** ($10). El greedy
-       ordena por ratio (A=1.67, B=1.8) así que prueba B primero (entra,
-       pesa 5), después A (5+6=11, no entra) → greedy se queda con **solo
-       B** ($9). Buen ejemplo chico para mostrar que también acá el greedy
-       pierde por poco.
-
-4. **Opción 4** para salir prolijo.
-
-Si el profesor pide "corran de nuevo pero con un archivo", mostrar el modo
-sin menú:
+La demo más clara es correr el menú interactivo desde `TP2/scripts`:
 
 ```bash
-python3 main.py ../Enunciado/instancia_enunciado.json --unidad cm3
+python main.py
 ```
 
-## 2. Mapa enunciado → código (para cuando pregunten "¿dónde está X?")
+El orden que conviene mostrar es este:
 
-| Punto del enunciado | Qué hace | Dónde está |
+1. Opción 1: puntos 1 y 2 del enunciado.
+   - Muestra la tabla de objetos, que es el espacio de búsqueda.
+   - Explica que cada fila tiene ID, nombre, peso/volumen, valor y valor/peso.
+   - Acá se ve el caso donde exhaustivo y greedy dan el mismo valor final.
+
+2. Opción 2: punto 3 del enunciado.
+   - Acá aparece el contraejemplo importante.
+   - El exhaustivo llega al óptimo y el greedy queda abajo, así que sirve para justificar por qué no alcanza con una heurística codiciosa.
+
+3. Opción 3: cargar una instancia propia por teclado.
+   - Sirve para mostrar que no hay nada hardcodeado.
+   - El programa pide unidad, capacidad, cantidad de objetos y luego nombre, peso y valor de cada uno.
+   - Es útil para hacer una prueba chica en vivo y razonar el resultado a mano.
+
+4. Opción 4: salir.
+
+Si quieren correr una instancia desde un archivo sin menú, desde `TP2/scripts` pueden usar:
+
+```bash
+python main.py ../Enunciado/instancia_enunciado.json --unidad cm3
+```
+
+Si prefieren correr desde la raíz del repositorio, también funciona así:
+
+```bash
+python -m TP2.scripts.run_bench --reps 100
+python TP2/scripts/generate_plots.py
+```
+
+## 3. Cómo fluye el programa
+
+La lógica siempre sigue la misma secuencia:
+
+1. Se carga una instancia.
+2. Se imprimen los objetos disponibles y la capacidad de la mochila.
+3. Se ejecutan los dos métodos: exhaustivo y greedy.
+4. Se arma un reporte por método.
+5. Se imprime una auditoría comparando ambos.
+
+Ese flujo está centralizado para no duplicar lógica: `main.py` solo llama a la función que arma el reporte, y `mochila.py` devuelve los datos ya listos para imprimir.
+
+## 4. Paso a paso de cada parte del código
+
+### 4.1. `scripts/mochila.py`
+
+Este archivo es el motor del TP2. Acá están los datos, los algoritmos y el armado del reporte.
+
+#### `Item`
+
+`Item` es una clase de datos que representa un objeto de la mochila. Guarda:
+
+- `nombre`
+- `peso`
+- `valor`
+
+Además tiene la propiedad `ratio`, que calcula `valor / peso`. Ese cociente es el criterio que usa el greedy para ordenar los objetos.
+
+#### `valor_total()` y `peso_total()`
+
+Son funciones auxiliares muy simples:
+
+- `valor_total()` suma los valores de una lista de objetos.
+- `peso_total()` suma los pesos de una lista de objetos.
+
+Se usan para no repetir cuentas dentro de los algoritmos.
+
+#### `resolver_exhaustivo()`
+
+Este es el algoritmo exacto.
+
+Qué hace, paso a paso:
+
+1. Recorre todos los tamaños posibles de subconjuntos, desde 0 objetos hasta `n` objetos.
+2. Para cada tamaño, usa `itertools.combinations` para generar todos los subconjuntos posibles.
+3. Cuenta cuántas combinaciones evaluó.
+4. Calcula el peso del subconjunto.
+5. Si el peso supera la capacidad, lo descarta.
+6. Si entra, calcula el valor total.
+7. Se queda con el subconjunto de mayor valor.
+8. Si hay empate en valor, elige el de menor peso.
+
+Ese último criterio de desempate evita quedar con una solución que gaste más espacio sin necesidad.
+
+#### `resolver_greedy()`
+
+Este es el algoritmo heurístico.
+
+Qué hace:
+
+1. Ordena los objetos por `valor/peso`, de mayor a menor.
+2. Recorre esa lista ya ordenada.
+3. Si el objeto entra en la capacidad restante, lo agrega.
+4. Si no entra, lo salta y sigue con el siguiente.
+
+La idea es simple: elegir primero lo que parece más conveniente. El problema es que no mira combinaciones futuras, por eso puede fallar aunque sea rápido.
+
+#### `medir()`
+
+Esta función mide el tiempo de ejecución de un método usando `time.perf_counter()`.
+
+El resultado devuelve dos cosas:
+
+- la solución obtenida por el algoritmo,
+- el tiempo exacto que tardó esa llamada.
+
+#### `_reporte_metodo()`
+
+Toma el resultado de un método y lo transforma en un diccionario con todo lo que hace falta imprimir:
+
+- método usado,
+- objetos seleccionados,
+- peso total,
+- capacidad,
+- espacio libre,
+- porcentaje ocupado,
+- si respeta la capacidad,
+- valor total,
+- cantidad de combinaciones o candidatos evaluados,
+- tiempo de ejecución.
+
+#### `_auditoria()`
+
+Compara exhaustivo contra greedy y genera un texto de conclusión.
+
+Acá se arma la parte más importante de la defensa oral:
+
+- diferencia de tiempo,
+- diferencia de cantidad de evaluaciones,
+- si greedy igualó al óptimo o no.
+
+Si ambos dan el mismo valor y el mismo peso, la guía deja claro que fue coincidencia de esa instancia, no garantía del algoritmo.
+
+#### `calcular_reporte()`
+
+Es la función que une todo.
+
+Hace tres cosas:
+
+1. ejecuta exhaustivo,
+2. ejecuta greedy,
+3. arma un reporte único con la instancia, los objetos, los resultados y la auditoría.
+
+`main.py` usa esta función para imprimir en consola, y el benchmark también usa la misma lógica base.
+
+#### Carga de instancias
+
+- `cargar_instancia_desde_json()` lee una instancia desde un archivo JSON.
+- `instancia_ejercicios_1_y_2()` carga el JSON del enunciado.
+- `instancia_ejercicio_3()` arma a mano la instancia chica del punto 3.
+
+Esto muestra que el programa puede trabajar tanto con datos fijos como con instancias externas.
+
+### 4.2. `scripts/main.py`
+
+Este archivo no resuelve la mochila: solo se encarga de la interfaz con el usuario.
+
+#### `imprimir_espacio_busqueda()`
+
+Muestra la tabla de objetos con sus columnas:
+
+- ID,
+- nombre,
+- peso/volumen,
+- valor,
+- valor/peso.
+
+Esta tabla es la respuesta directa al punto del enunciado que pide describir el espacio de búsqueda.
+
+#### `imprimir_reporte_metodo()`
+
+Imprime el reporte de un método en secciones:
+
+- métricas de rendimiento,
+- inventario final,
+- validación de restricciones,
+- función objetivo.
+
+Es la salida que conviene mostrar en la demo porque deja todo ordenado y fácil de explicar.
+
+#### `imprimir_auditoria()`
+
+Imprime la comparación final entre exhaustivo y greedy.
+
+#### `imprimir_comparacion()`
+
+Es la función que junta todo lo anterior:
+
+1. imprime el título,
+2. muestra el espacio de búsqueda,
+3. ejecuta `calcular_reporte()`,
+4. imprime ambos métodos,
+5. imprime la auditoría.
+
+#### `pedir_entero()` y `pedir_instancia_por_teclado()`
+
+Estas funciones hacen la carga manual por teclado.
+
+`pedir_entero()` valida que el dato sea un entero y que cumpla un mínimo.
+`pedir_instancia_por_teclado()` va pidiendo uno por uno:
+
+- unidad,
+- capacidad,
+- cantidad de objetos,
+- nombre,
+- peso,
+- valor.
+
+Si el usuario escribe algo inválido, el programa vuelve a pedir el dato.
+
+#### `menu_interactivo()`
+
+Es el bucle principal del programa.
+
+Muestra las cuatro opciones del menú y llama a la función correcta según la elección.
+
+#### `main()`
+
+Hace dos modos de ejecución:
+
+- si recibe un archivo JSON por argumento, corre una sola instancia;
+- si no recibe archivo, abre el menú interactivo.
+
+Esto es importante para la exposición porque demuestra que el programa sirve tanto en modo interactivo como en modo archivo.
+
+### 4.3. `scripts/run_bench.py`
+
+Este script sirve para medir varias veces la misma instancia y sacar promedios.
+
+Qué hace:
+
+1. carga el JSON del enunciado,
+2. ejecuta exhaustivo y greedy varias veces,
+3. mide tiempos con repetición interna para reducir ruido,
+4. calcula media, mediana y desvío estándar,
+5. guarda un TXT y un CSV en `outputs/`.
+
+El benchmark es útil para justificar con números que el exhaustivo es más costoso, no solo más lento “a ojo”.
+
+Para regenerarlo desde cero, lo más claro es ir a la raíz de `AlgoritmosGeneticos/` y correr:
+
+```bash
+python -m TP2.scripts.run_bench --reps 100
+python TP2/scripts/generate_plots.py
+```
+
+### 4.4. `scripts/generate_plots.py`
+
+Este script lee el CSV del benchmark y genera gráficos.
+
+Genera cuatro imágenes:
+
+- comparación de valores,
+- comparación de tiempos en escala normal,
+- comparación de tiempos en escala logarítmica,
+- comparación de combinaciones evaluadas.
+
+Estos gráficos sirven para mostrar visualmente la diferencia entre ambos métodos.
+
+## 5. Qué decir de cada algoritmo
+
+### Exhaustivo
+
+Prueba todos los subconjuntos posibles de objetos. Como revisa todo, garantiza el óptimo. El problema es que su costo crece de forma exponencial: con `n` objetos hay `2^n` combinaciones.
+
+### Greedy
+
+Ordena por mejor relación valor/peso y mete objetos mientras entren. Es mucho más rápido, pero no garantiza el óptimo porque decide paso a paso sin revisar todas las combinaciones.
+
+## 6. Qué mostrar si el profesor pregunta “¿dónde está X?”
+
+| Lo que pregunta | Qué responder | Archivo |
 |---|---|---|
-| 1. Espacio de búsqueda (objetos, ID, peso/volumen, valor, capacidad) | Clase `Item` (nombre/peso/valor) + funciones que arman cada instancia | [scripts/mochila.py](scripts/mochila.py): clase `Item` (línea 20), `instancia_ejercicios_1_y_2()` (línea 184), `instancia_ejercicio_3()` (línea 190), `cargar_instancia_desde_json()` (línea 168) |
-| Carga interactiva de objetos (interfaz de entrada) | Pide unidad, capacidad, cantidad de objetos y nombre/peso/valor de cada uno, con reintento si el dato es inválido | [scripts/main.py](scripts/main.py): `pedir_instancia_por_teclado()` (línea 121), `pedir_entero()` (línea 106) |
-| 2. Búsqueda exhaustiva | Recorre `itertools.combinations` para cada tamaño de subconjunto (0..n), descarta los que superan la capacidad, se queda con el de mayor valor (y menor peso si hay empate) | [scripts/mochila.py](scripts/mochila.py): `resolver_exhaustivo()` (línea 43) |
-| 2. Algoritmo greedy | Ordena los objetos por `valor/peso` descendente y los va cargando mientras entren | [scripts/mochila.py](scripts/mochila.py): `resolver_greedy()` (línea 70) |
-| 3. Reporte operativo (métricas, inventario, validación, función objetivo) | Arma un diccionario único con los 4 bloques por método | [scripts/mochila.py](scripts/mochila.py): `_reporte_metodo()` (línea 95), `calcular_reporte()` (línea 149) — se imprime desde [scripts/main.py](scripts/main.py): `imprimir_reporte_metodo()` (línea 40) |
-| Tiempo exacto de ejecución | Mide con `time.perf_counter()` alrededor de la llamada al método | [scripts/mochila.py](scripts/mochila.py): `medir()` (línea 87) |
-| 4. Auditoría crítica / conclusión | Compara tiempo y combinaciones evaluadas, y arma el texto de conclusión (óptimo / factible) | [scripts/mochila.py](scripts/mochila.py): `_auditoria()` (línea 113) — se imprime desde [scripts/main.py](scripts/main.py): `imprimir_auditoria()` (línea 63) |
-| Benchmark con repeticiones y gráficos | Corre cada método 100 veces y promedia tiempos; genera los PNG | [scripts/run_bench.py](scripts/run_bench.py), [scripts/generate_plots.py](scripts/generate_plots.py) |
+| Dónde están los objetos y sus datos | En la clase `Item` y en las funciones que cargan instancias | [scripts/mochila.py](scripts/mochila.py) |
+| Dónde está el exhaustivo | En `resolver_exhaustivo()` | [scripts/mochila.py](scripts/mochila.py) |
+| Dónde está el greedy | En `resolver_greedy()` | [scripts/mochila.py](scripts/mochila.py) |
+| Dónde miden el tiempo | En `medir()` con `time.perf_counter()` | [scripts/mochila.py](scripts/mochila.py) |
+| Dónde arman el reporte | En `calcular_reporte()` y `_reporte_metodo()` | [scripts/mochila.py](scripts/mochila.py) |
+| Dónde se imprime por consola | En las funciones `imprimir_*` | [scripts/main.py](scripts/main.py) |
+| Dónde está la carga por teclado | En `pedir_instancia_por_teclado()` | [scripts/main.py](scripts/main.py) |
+| Dónde está el benchmark | En `run_bench.py` | [scripts/run_bench.py](scripts/run_bench.py) |
+| Dónde están los gráficos | En `generate_plots.py` | [scripts/generate_plots.py](scripts/generate_plots.py) |
 
-## 3. Cómo explicar cada algoritmo en una frase
+## 7. Respuestas cortas para preguntas típicas
 
-- **Exhaustivo**: prueba **todos** los subconjuntos posibles de objetos
-  (2ⁿ en total), descarta los que no entran en la mochila y se queda con
-  el de mayor valor. Por construcción, es imposible que exista una mejor
-  combinación que se le escape — por eso es óptimo. El costo es que crece
-  exponencialmente: con 10 objetos son 1024 combinaciones, con 30 objetos
-  serían más de mil millones.
+- ¿Por qué el exhaustivo es más lento? Porque evalúa todas las combinaciones posibles, y eso crece como `2^n`.
+- ¿El greedy siempre es peor? No. En la instancia de 10 objetos coincide con el óptimo, pero en el punto 3 no.
+- ¿Cómo eligen si hay empate en el exhaustivo? Se queda con el subconjunto de menor peso.
+- ¿Qué pasa si cargo un peso inválido? El programa lo rechaza y vuelve a pedirlo.
+- ¿Cómo miden el tiempo? Con `time.perf_counter()` alrededor de cada ejecución.
+- ¿Por qué separaron `main.py` de `mochila.py`? Para separar interfaz y lógica, y así reutilizar el mismo motor en el menú y en el benchmark.
 
-- **Greedy**: ordena los objetos de mejor a peor relación valor/peso y los
-  va metiendo en la mochila mientras entren, sin volver atrás. Es rápido
-  (crece proporcional a `n log n`, por el ordenamiento) pero es una
-  decisión "codiciosa": toma lo mejor en cada paso sin ver el panorama
-  completo, así que puede dejar afuera una combinación mejor (como pasa en
-  el punto 3).
+## 8. Orden recomendado para cerrar la exposición
 
-## 4. Preguntas típicas y respuesta corta
+Si querés cerrar con una idea clara, podés resumir así:
 
-- **¿Por qué el exhaustivo es tan lento comparado con el greedy?**
-  Porque evalúa 2ⁿ subconjuntos contra los n candidatos del greedy. Con 10
-  objetos ya es 1024 contra 10 (~100x); con más objetos la diferencia
-  crece exponencialmente, no linealmente.
-
-- **¿El greedy siempre da una solución peor?**
-  No necesariamente. En los puntos 1 y 2 (10 objetos) coincidió con el
-  óptimo. En el punto 3 (3 elementos) no. La coincidencia depende de si el
-  orden por ratio valor/peso "encaja" con la capacidad disponible; no es
-  algo que se pueda garantizar de antemano sin resolver el problema.
-
-- **¿Cómo se define qué gana si hay empate en valor?**
-  En el exhaustivo, ante empate de valor se elige el subconjunto de menor
-  peso (para dejar el menor espacio desperdiciado posible). Está en la
-  condición `valor == mejor_valor and peso < mejor_peso` de
-  `resolver_exhaustivo()`.
-
-- **¿Qué pasa si cargan un objeto con peso 0 o negativo?**
-  El programa lo rechaza y vuelve a pedirlo (`pedir_entero()` exige
-  `peso >= 1`), porque un peso 0 rompería el cálculo de la relación
-  valor/peso (división por cero).
-
-- **¿Cómo miden el tiempo?**
-  Con `time.perf_counter()` alrededor de la llamada a cada método
-  (`medir()` en `mochila.py`), que da el tiempo real transcurrido de esa
-  ejecución puntual. Para el informe también corrimos un benchmark de 100
-  repeticiones (`run_bench.py`) y promediamos, para que el número no
-  dependa de una sola corrida con ruido del sistema operativo.
-
-- **¿Por qué separaron `mochila.py` de `main.py`?**
-  `mochila.py` tiene solo el cálculo (los dos algoritmos y el armado del
-  reporte); `main.py` tiene el menú y la impresión en consola. Así el
-  mismo cálculo lo puede usar tanto el menú interactivo como el script de
-  benchmark (`run_bench.py`), sin duplicar código ni arriesgarse a que los
-  resultados diverjan entre uno y otro.
+1. La mochila se modela con objetos que tienen nombre, peso y valor.
+2. El exhaustivo prueba todo y por eso encuentra el óptimo.
+3. El greedy es más rápido, pero puede equivocarse.
+4. El programa compara ambos, mide tiempos y deja el resultado listo para defenderlo.
