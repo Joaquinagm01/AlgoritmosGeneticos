@@ -5,3 +5,8 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+
+# Large local datasets are not stored in the GitHub repository.
+TPI/dataset/Monday-WorkingHours.pcap_ISCX.csv
+TPI/dataset/Tuesday-WorkingHours.pcap_ISCX.csv
+TPI/dataset/Wednesday-workingHours.pcap_ISCX.csv
