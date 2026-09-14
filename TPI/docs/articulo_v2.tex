@@ -5,6 +5,7 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
 \usepackage{mathptmx}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath}
@@ -32,6 +33,9 @@
   \begin{center}
     % Título (Times New Roman, 16, negrita)
     {\fontsize{16}{19}\selectfont\bfseries Optimización mediante Algoritmos Genéticos de la asignación y el balance de carga de alertas de seguridad en Centros de Operaciones de Seguridad (SOC)\par}
+    \ifdefined\anonymousversion
+    \vspace{1.5em}
+    \else
     \vspace{1em}
     % Autores (Times New Roman, 14, negrita)
     {\fontsize{14}{17}\selectfont\bfseries Chacón, A.; Gomez Manna, J.; Tabini, A.; Carloni, N.I.; Mierez, J.\par}
@@ -39,6 +43,7 @@
     % Institución (Times New Roman, 12, negrita, cursiva)
     {\fontsize{12}{14}\selectfont\bfseries\itshape Universidad Tecnológica Nacional, Facultad Regional Rosario\par}
     \vspace{1.5em}
+    \fi
   \end{center}
 ]
 
@@ -203,6 +208,8 @@ A la cátedra de Algoritmos Genéticos por el marco metodológico, orientación 
 
 \vspace{1.5em}
 
+\ifdefined\anonymousversion
+\else
 % =========================================================
 % Datos de Contacto
 % =========================================================
@@ -210,5 +217,6 @@ A la cátedra de Algoritmos Genéticos por el marco metodológico, orientación 
 {\fontsize{10}{12}\selectfont\itshape 
 Chacón, A.; Gomez Manna, J.; Tabini, A.; Carloni, N.I.; Mierez, J. Universidad Tecnológica Nacional, Facultad Regional Rosario. Zeballos 1341, Rosario, Santa Fe. E-mail: alumnos@utn.edu.ar.
 \par}
+\fi
 
 \end{document}
