@@ -29,6 +29,7 @@ from mochila import (
 
 
 def imprimir_espacio_busqueda(items: Sequence[Item], capacidad: int, unidad: str) -> None:
+    # Antes de resolver, mostramos los datos que forman la instancia.
     print("Espacio de búsqueda")
     print(f"  Capacidad máxima de la mochila: {capacidad} {unidad}")
     print(f"  Objetos disponibles ({len(items)}):")
@@ -38,6 +39,7 @@ def imprimir_espacio_busqueda(items: Sequence[Item], capacidad: int, unidad: str
 
 
 def imprimir_reporte_metodo(reporte_metodo: dict) -> None:
+    # Ambos algoritmos devuelven el mismo tipo de información, por eso se imprimen igual.
     unidad = reporte_metodo["unidad"]
     nombres = ", ".join(reporte_metodo["seleccion"]) if reporte_metodo["seleccion"] else "ninguno"
 
@@ -78,6 +80,7 @@ def imprimir_comparacion(items: Sequence[Item], capacidad: int, titulo: str, uni
     imprimir_espacio_busqueda(items, capacidad, unidad)
     print()
 
+    # Se ejecutan sobre la misma instancia para que la comparación sea justa.
     reporte = calcular_reporte(items, capacidad, unidad)
     imprimir_reporte_metodo(reporte["exhaustivo"])
     imprimir_reporte_metodo(reporte["greedy"])
@@ -119,6 +122,7 @@ def pedir_entero(mensaje: str, minimo: int) -> int:
 
 
 def pedir_instancia_por_teclado() -> Tuple[List[Item], int, str]:
+    # La carga de una instancia propia es una opción extra para hacer pruebas.
     print()
     print("Vas a cargar una instancia propia. Te vamos a pedir cada dato uno por uno.")
     unidad = leer_entrada("  Unidad de peso/volumen a usar (ej: grs., cm3, kg) [u.]: ") or "u."
@@ -126,6 +130,7 @@ def pedir_instancia_por_teclado() -> Tuple[List[Item], int, str]:
     cantidad = pedir_entero("  ¿Cuántos objetos vas a cargar? (número entero >= 1): ", minimo=1)
 
     items: List[Item] = []
+    # La lista se arma de a un objeto y luego se procesa igual que las instancias fijas.
     for i in range(1, cantidad + 1):
         print(f"\n  Objeto {i} de {cantidad}:")
         nombre = leer_entrada(f"    Nombre del objeto {i} [Objeto {i}]: ") or f"Objeto {i}"
@@ -138,12 +143,14 @@ def pedir_instancia_por_teclado() -> Tuple[List[Item], int, str]:
 
 def menu_interactivo() -> None:
     while True:
+        # El menú vuelve a aparecer para permitir probar más de una opción.
         print()
         print("=" * 72)
         print("TP2 - Problema de la mochila: exhaustivo vs. greedy")
         print("=" * 72)
         print("  1) Puntos 1 y 2 del enunciado (10 objetos, mochila de 4200 cm3)")
         print("  2) Punto 3 del enunciado (3 elementos, mochila de 3000 grs.)")
+        # La opción 3 no pertenece a los ejercicios; permite probar otros datos.
         print("  3) Cargar una instancia propia (ingresar objetos por teclado)")
         print("  4) Salir")
         opcion = leer_entrada("Elegí una opción escribiendo 1, 2, 3 o 4: ")
@@ -163,6 +170,7 @@ def menu_interactivo() -> None:
 
 
 def main() -> None:
+    # Pasar un JSON por argumento también es una facilidad extra para automatizar pruebas.
     parser = argparse.ArgumentParser(description="Resolver el problema de la mochila.")
     parser.add_argument(
         "archivo",

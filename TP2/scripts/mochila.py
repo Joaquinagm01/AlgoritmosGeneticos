@@ -18,12 +18,14 @@ from typing import Dict, List, Sequence, Tuple
 
 @dataclass(frozen=True)
 class Item:
+    # Cada objeto conserva los datos que necesitamos para decidir si entra.
     nombre: str
     peso: int
     valor: int
 
     @property
     def ratio(self) -> float:
+        # El greedy compara cuánto valor aporta cada unidad de peso.
         return self.valor / self.peso
 
 
@@ -50,6 +52,7 @@ def resolver_exhaustivo(items: Sequence[Item], capacidad: int) -> ResultadoMetod
     mejor_peso = 0
     combinaciones_evaluadas = 0
 
+    # Se recorren todos los tamaños y combinaciones posibles de objetos.
     for cantidad in range(len(items) + 1):
         for subconjunto in combinations(items, cantidad):
             combinaciones_evaluadas += 1
@@ -58,6 +61,7 @@ def resolver_exhaustivo(items: Sequence[Item], capacidad: int) -> ResultadoMetod
                 continue
 
             valor = valor_total(subconjunto)
+            # En caso de empate conviene conservar la opción que deja menos espacio libre.
             if valor > mejor_valor or (valor == mejor_valor and peso < mejor_peso):
                 mejor_subconjunto = list(subconjunto)
                 mejor_valor = valor
@@ -74,6 +78,7 @@ def resolver_greedy(items: Sequence[Item], capacidad: int) -> ResultadoMetodo:
     peso_acumulado = 0
     combinaciones_evaluadas = 0
 
+    # Una vez ordenados, se toma cada objeto si todavía entra en la mochila.
     for item in sorted(items, key=lambda item: item.ratio, reverse=True):
         combinaciones_evaluadas += 1
         if peso_acumulado + item.peso <= capacidad:
@@ -85,6 +90,8 @@ def resolver_greedy(items: Sequence[Item], capacidad: int) -> ResultadoMetodo:
 
 def medir(func, items: Sequence[Item], capacidad: int):
     """Ejecuta `func` y devuelve el resultado junto con el tiempo exacto (s)."""
+    # Esto es una métrica extra para comparar el rendimiento; no cambia la solución.
+    # perf_counter tiene buena resolución para medir ejecuciones cortas.
     inicio = time.perf_counter()
     resultado = func(items, capacidad)
     fin = time.perf_counter()
@@ -94,6 +101,7 @@ def medir(func, items: Sequence[Item], capacidad: int):
 def _reporte_metodo(nombre: str, func, items: Sequence[Item], capacidad: int, unidad: str) -> Dict:
     resultado, tiempo_s = medir(func, items, capacidad)
     seleccion, peso, valor, combinaciones = resultado
+    # El reporte y sus métricas son parte de la presentación, no del algoritmo.
     return {
         "metodo": nombre,
         "seleccion": [item.nombre for item in seleccion],
@@ -110,6 +118,7 @@ def _reporte_metodo(nombre: str, func, items: Sequence[Item], capacidad: int, un
 
 
 def _auditoria(exhaustivo: Dict, greedy: Dict) -> Dict:
+    # Esta comparación en texto es un agregado para analizar los resultados.
     texto_tiempo = None
     if greedy["tiempo_s"] > 0:
         texto_tiempo = (
@@ -146,9 +155,11 @@ def _auditoria(exhaustivo: Dict, greedy: Dict) -> Dict:
 
 
 def calcular_reporte(items: Sequence[Item], capacidad: int, unidad: str = "u.") -> Dict:
-    """Corre ambos métodos sobre la misma instancia y arma un reporte único
-    (espacio de búsqueda + resultado de cada método + auditoría crítica)
-    que consumen por igual la consola y la interfaz web."""
+    """Corre ambos métodos y arma un reporte único para mostrar los resultados.
+
+    El enunciado pide resolver la mochila; este reporte, la auditoría y la
+    información adicional se agregaron para facilitar la comparación.
+    """
     exhaustivo = _reporte_metodo("exhaustivo", resolver_exhaustivo, items, capacidad, unidad)
     greedy = _reporte_metodo("greedy", resolver_greedy, items, capacidad, unidad)
     return {
@@ -181,6 +192,7 @@ def cargar_instancia_desde_json(ruta: Path) -> Tuple[List[Item], int]:
 
 
 def instancia_ejercicios_1_y_2() -> Tuple[List[Item], int, str]:
+    # mochila.py está en scripts: subimos a TP2 y buscamos el JSON en Enunciado.
     ruta = Path(__file__).resolve().parent.parent / "Enunciado" / "instancia_enunciado.json"
     items, capacidad = cargar_instancia_desde_json(ruta)
     return items, capacidad, "cm3"

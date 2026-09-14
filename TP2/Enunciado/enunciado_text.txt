@@ -23,7 +23,6 @@ y cuyos valores son: 
 $72,
  $36 
 y $60 respectivamente, y con una mochila que puede soportar hasta 3000 grs. se pide:
-A) Hallar una solución utilizando un algor itmo goloso y exhaustiv o.
+A) Hallar una solución utilizando un algoritmo goloso y exhaustivo.
 B) Analizar dicha solución respecto a su grado de optimización y elaborar las conclusiones que considere
 adecuadas.
-?
