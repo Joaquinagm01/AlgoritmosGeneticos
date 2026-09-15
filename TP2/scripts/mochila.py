@@ -197,6 +197,7 @@ def instancia_ejercicios_1_y_2() -> Tuple[List[Item], int, str]:
     items, capacidad = cargar_instancia_desde_json(ruta)
     return items, capacidad, "cm3"
 
+# aca se cargan los 3 datos del tercer ejercicio 
 
 def instancia_ejercicio_3() -> Tuple[List[Item], int, str]:
     items = [
