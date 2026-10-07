@@ -21,7 +21,7 @@
 
     <div class="caratula-ficha">
       <div class="caratula-meta">
-        <p><span class="label">Materia:</span> Algoritmo Genético</p>
+        <p><span class="label">Materia:</span> Algoritmos Genéticos</p>
         <p><span class="label">Docentes:</span> Daniela Díaz y Víctor Lombardo</p>
         <p><span class="label">Ciclo lectivo:</span> 2026</p>
       </div>
@@ -31,10 +31,6 @@
           <div class="caratula-persona">
             <strong>Chacón, Agustina</strong>
             <span>Legajo 50980</span>
-          </div>
-          <div class="caratula-persona">
-            <strong>Gomez Manna, Joaquina</strong>
-            <span>Legajo 47791</span>
           </div>
           <div class="caratula-persona">
             <strong>Tabini, Azul</strong>
@@ -65,6 +61,7 @@
         <li><a href="#justificacion">Justificación</a></li>
         <li><a href="#marco-teorico">Marco teórico y antecedentes</a></li>
         <li><a href="#metodologia">Metodología</a></li>
+        <li><a href="#concrecion">Concreción del modelo</a></li>
         <li><a href="#cronograma">Cronograma tentativo</a></li>
         <li><a href="#bibliografia">Bibliografía</a></li>
       </ol>
@@ -232,29 +229,95 @@
           responsable de resolverla.
         </p>
         <div class="formula">
-          fitness(cromosoma) = 1 / (1 + tiempo_total_estimado + penalización)
+          J = 0.10 T + 0.10 W + 0.20 Wc + 0.25 Rc + 0.10 Bp + 0.05 Bm + 0.15 D + 0.05 O<br />
+          fitness(cromosoma) = 1 / (1 + J)
         </div>
         <p>
-          donde la penalización combina, de forma ponderada, el tiempo de espera promedio, el tiempo de espera de
-          alertas críticas, el incumplimiento de SLA, el <em>backlog</em> acumulado y el desbalance de carga entre
-          analistas — favoreciendo así asignaciones que minimicen el impacto temporal y maximicen la equidad en la
-          distribución del trabajo.
+          Las letras representan magnitudes normalizadas: tiempo de finalización, espera promedio, espera crítica,
+          retraso crítico respecto del SLA, backlog ponderado por prioridad, minutos de backlog, desbalance relativo y
+          sobrecarga relativa. Los pesos expresan la prioridad operativa de cada criterio.
         </p>
         <h3>Operadores genéticos</h3>
         <p>
-          El algoritmo evoluciona la población generación tras generación mediante selección por ruleta
-          proporcional al <em>fitness</em>, cruzamiento de un punto para recombinar asignaciones exitosas entre dos
-          padres, y mutación por reasignación aleatoria de un gen, con el objetivo de introducir diversidad y
-          evitar la convergencia prematura a óptimos locales.
+          La configuración oficial evoluciona la población mediante selección por ranking, cruzamiento de un punto,
+          mutación por gen y elitismo. La implementación también permite seleccionar por torneo o ruleta como
+          alternativas experimentales, pero los resultados oficiales utilizan ranking.
         </p>
         <h3>Validación empírica</h3>
         <p>
           Para validar el modelo se utiliza una muestra de eventos derivada del dataset CICIDS2017, sobre la cual
           se inyectan sintéticamente los atributos operativos de cada alerta. El desempeño del Algoritmo Genético se
           contrasta contra una estrategia de asignación tradicional de tipo <em>Round-Robin</em>, tomada como línea
-          de base (<span class="mono">baseline</span>), y se ajustan los hiperparámetros del algoritmo (tamaño de
-          población, tasa de mutación y tasa de cruzamiento) mediante una búsqueda en grilla (<em>Grid
-            Search</em>).
+          de base (<span class="mono">baseline</span>). También se comparan las reglas de menor carga y urgencia
+          balanceada, y se exploran los hiperparámetros mediante una búsqueda en grilla (<em>Grid Search</em>).
+        </p>
+      </section>
+
+      <section id="concrecion">
+        <h2>Concreción del modelo</h2>
+        <p>
+          La solución se implementó como un prototipo reproducible en Python. Cada cromosoma contiene 500 genes, uno
+          por alerta, y cada alelo identifica a uno de los 10 analistas disponibles. La instancia se construye a
+          partir de una muestra del dataset CICIDS2017 y agrega sintéticamente prioridad, severidad, SLA y tiempo
+          estimado de resolución; por lo tanto, esos atributos operativos no forman parte del dataset original.
+        </p>
+        <p>
+          La configuración oficial utiliza una población de 50 individuos durante 200 generaciones, cruzamiento de
+          probabilidad 0.75, mutación por gen de probabilidad 0.05 y preservación de los tres mejores individuos. La
+          semilla base es 42 y el horizonte operativo modelado es de 480 minutos. El prototipo genera métricas
+          generacionales, distribución final de carga, comparación de baselines y gráficos para analizar la solución.
+        </p>
+
+        <h3>Verificación experimental</h3>
+        <p>
+          En la evaluación sobre 20 semillas, el Algoritmo Genético obtuvo una espera crítica media de 136.1 minutos,
+          frente a 179.0 minutos para Round-Robin, y un desbalance relativo medio de 0.027 frente a 0.045. El backlog
+          total fue similar entre ambos métodos debido a que la demanda estimada supera la capacidad del turno: 500
+          alertas con un tiempo medio de 41.2 minutos representan aproximadamente 20.600 minutos-analista, mientras
+          que 10 analistas durante 480 minutos ofrecen 4.800 minutos-analista. Por eso, el resultado se interpreta
+          principalmente por la prioridad de las alertas que permanecen pendientes, no solo por el backlog total.
+        </p>
+        <p>
+          La comparación con una ablación sin el término de makespan mostró una reducción pareada de aproximadamente
+          1.9% en el makespan con la configuración oficial. La evidencia permite verificar mejoras en espera crítica,
+          balance y tiempo de finalización, aunque no una reducción estructural del backlog mientras la capacidad siga
+          siendo inferior a la demanda.
+        </p>
+
+        <h3>Especificación técnica e infraestructura</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Componente</th>
+                <th>Especificación utilizada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Hardware</td>
+                <td>Intel Core i7-10700K, 8 núcleos y 16 hilos, 15.8 GB de RAM; placa ECS H510H6-M2.</td>
+              </tr>
+              <tr>
+                <td>Sistema operativo</td>
+                <td>Microsoft Windows 11 Pro.</td>
+              </tr>
+              <tr>
+                <td>Software</td>
+                <td>Python 3, NumPy, pandas, SciPy, Matplotlib, Streamlit, FastAPI y Uvicorn.</td>
+              </tr>
+              <tr>
+                <td>Infraestructura</td>
+                <td>Ejecución local y reproducible; dataset, código, resultados CSV y figuras almacenados en el proyecto.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          El código principal se encuentra en <a href="../main.py">main.py</a>. La instalación de dependencias está
+          documentada en <a href="../requirements.txt">requirements.txt</a>; el dashboard permite inspeccionar los
+          resultados sin ejecutar el algoritmo en vivo. Los resultados y gráficos se almacenan en
+          <span class="mono">outputs/</span>.
         </p>
       </section>
 
@@ -319,12 +382,20 @@
         <p>
           [2] Holland, J. H. (1992). <em>Adaptation in Natural and Artificial Systems</em>. MIT Press.
         </p>
+        <p>
+          [3] Jalalvand, F., Chhetri, M. B., Nepal, S., y Paris, C. (2024). <em>Alert Prioritisation in Security
+            Operations Centres: A Systematic Survey on Criteria and Methods</em>. ACM Computing Surveys, 57(2).
+        </p>
+        <p>
+          [4] Boukedroun, M., Duvivier, D., Ait-el-Cadi, A., Poirriez, V., y Abbas, M. (2023). <em>A hybrid genetic
+            algorithm for stochastic job-shop scheduling problems</em>. RAIRO--Operations Research, 57(4), 1617--1645.
+        </p>
       </section>
   </main>
 
   <p class="footer">Universidad Tecnológica Nacional — Facultad Regional Rosario · Cátedra Algoritmos Genéticos · Ciclo
-      lectivo 2026 · El artículo científico (segundo documento exigido por la cátedra) está en <span
-        class="mono">docs/articulo_v2.tex</span> / <span class="mono">docs/articulo_v2.pdf</span></p>
+      lectivo 2026 · El artículo científico está disponible en <a href="articulo_v2.pdf">articulo_v2.pdf</a> y su
+      fuente en <a href="articulo_v2.tex">articulo_v2.tex</a>.</p>
 </body>
 
 </html>
