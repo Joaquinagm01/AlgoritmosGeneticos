@@ -1,0 +1,775 @@
+{
+  "validacion_matriz": {
+    "simetrica": true,
+    "diagonal_nula": true,
+    "dif_relativa_media_haversine": 0.003618185181394953,
+    "dif_relativa_maxima_haversine": 0.16267795012026956,
+    "par_mayor_diferencia": "Resistencia - Corrientes"
+  },
+  "semilla": 42,
+  "exhaustivo": {
+    "n": 23,
+    "rutas": {
+      "ciclos_n_factorial": 25852016738884976640000,
+      "inicio_fijo": 1124000727777607680000,
+      "inicio_fijo_sin_espejos": 562000363888803840000
+    },
+    "anios_catedra_1us": 819762073.1508429,
+    "anios_sin_espejos_1e6": 17820914.63371397,
+    "anios_sin_espejos_1e9": 17820.914633713972,
+    "anios_sin_espejos_medida": 28778410.04769196,
+    "rutas_por_segundo_medida": 619245.9765560682,
+    "mediciones": [
+      {
+        "n": 5,
+        "rutas": 24,
+        "segundos": 3.440000000409782e-05,
+        "rutas_por_segundo": 697674.4185215423,
+        "mejor_km": 4310.0
+      },
+      {
+        "n": 6,
+        "rutas": 120,
+        "segundos": 0.0001260999997612089,
+        "rutas_por_segundo": 951625.695695795,
+        "mejor_km": 4320.0
+      },
+      {
+        "n": 7,
+        "rutas": 720,
+        "segundos": 0.0008764000012888573,
+        "rutas_por_segundo": 821542.6733696357,
+        "mejor_km": 4417.0
+      },
+      {
+        "n": 8,
+        "rutas": 5040,
+        "segundos": 0.006364799999573734,
+        "rutas_por_segundo": 791855.203672942,
+        "mejor_km": 4687.0
+      },
+      {
+        "n": 9,
+        "rutas": 40320,
+        "segundos": 0.05783230000088224,
+        "rutas_por_segundo": 697188.2494624096,
+        "mejor_km": 5121.0
+      },
+      {
+        "n": 10,
+        "rutas": 362880,
+        "segundos": 0.5860030000003462,
+        "rutas_por_segundo": 619245.9765560682,
+        "mejor_km": 5122.0
+      }
+    ],
+    "held_karp_operaciones": 4437573632.0
+  },
+  "heuristica_inicio_elegido": {
+    "inicio": "Santa Fe",
+    "provincia": "Santa Fe",
+    "distancia_km": 9905.0,
+    "ruta": [
+      19,
+      6,
+      4,
+      17,
+      11,
+      16,
+      10,
+      1,
+      20,
+      22,
+      15,
+      8,
+      2,
+      5,
+      7,
+      12,
+      0,
+      9,
+      13,
+      14,
+      3,
+      18,
+      21
+    ]
+  },
+  "heuristica_mejor": {
+    "inicio": "Neuquén",
+    "provincia": "Neuquén",
+    "distancia_km": 9334.0,
+    "ruta": [
+      13,
+      9,
+      17,
+      11,
+      16,
+      10,
+      1,
+      20,
+      22,
+      15,
+      8,
+      2,
+      5,
+      7,
+      12,
+      6,
+      19,
+      4,
+      0,
+      14,
+      3,
+      18,
+      21
+    ]
+  },
+  "heuristica_estadistica": {
+    "mejor_km": 9334.0,
+    "peor_km": 10660.0,
+    "promedio_km": 10065.08695652174,
+    "peor_inicio": "San Juan"
+  },
+  "ag_corrida_semilla": {
+    "semilla": 42,
+    "distancia_km": 9260.0,
+    "ruta": [
+      13,
+      18,
+      21,
+      3,
+      14,
+      9,
+      0,
+      6,
+      19,
+      12,
+      7,
+      2,
+      5,
+      8,
+      15,
+      22,
+      20,
+      1,
+      10,
+      4,
+      17,
+      16,
+      11
+    ],
+    "segundos": 0.09681590000036522
+  },
+  "ag_corridas": {
+    "cantidad": 30,
+    "mejor_km": 9187.0,
+    "peor_km": 9959.0,
+    "promedio_km": 9481.966666666667,
+    "desvio_km": 230.64929847907382,
+    "mediana_km": 9402.5,
+    "mejor_ruta": [
+      13,
+      18,
+      21,
+      3,
+      14,
+      0,
+      19,
+      6,
+      2,
+      5,
+      12,
+      7,
+      8,
+      15,
+      22,
+      20,
+      1,
+      10,
+      4,
+      16,
+      11,
+      17,
+      9
+    ],
+    "corridas_que_igualan_o_superan_a_la_heuristica": 8,
+    "segundos_promedio": 0.0951895666665223
+  },
+  "optimo_exacto": {
+    "distancia_km": 9156.0,
+    "ruta": [
+      13,
+      9,
+      4,
+      17,
+      11,
+      16,
+      10,
+      1,
+      20,
+      22,
+      15,
+      8,
+      7,
+      12,
+      5,
+      2,
+      19,
+      6,
+      0,
+      14,
+      3,
+      21,
+      18
+    ],
+    "segundos": 8.137265400000615
+  },
+  "ag_aptitudes": [
+    {
+      "aptitud": "escalada",
+      "media_km": 9481.966666666667,
+      "mejor_km": 9187.0,
+      "peor_km": 9959.0,
+      "desvio_km": 230.64929847907382
+    },
+    {
+      "aptitud": "inversa",
+      "media_km": 9650.166666666666,
+      "mejor_km": 9223.0,
+      "peor_km": 10551.0,
+      "desvio_km": 294.30064937444877
+    },
+    {
+      "aptitud": "complemento",
+      "media_km": 11053.833333333334,
+      "mejor_km": 9737.0,
+      "peor_km": 12090.0,
+      "desvio_km": 557.554546409786
+    }
+  ],
+  "ag_ciclos": [
+    {
+      "ciclos": 50,
+      "media_km": 12041.566666666668,
+      "mejor_km": 10985.0,
+      "peor_km": 12997.0,
+      "desvio_km": 500.35392029597966
+    },
+    {
+      "ciclos": 100,
+      "media_km": 10260.266666666666,
+      "mejor_km": 9460.0,
+      "peor_km": 11226.0,
+      "desvio_km": 428.82008141203255
+    },
+    {
+      "ciclos": 200,
+      "media_km": 9481.966666666667,
+      "mejor_km": 9187.0,
+      "peor_km": 9959.0,
+      "desvio_km": 230.64929847907382
+    },
+    {
+      "ciclos": 500,
+      "media_km": 9280.733333333334,
+      "mejor_km": 9156.0,
+      "peor_km": 9700.0,
+      "desvio_km": 113.36428988981594
+    },
+    {
+      "ciclos": 1000,
+      "media_km": 9234.266666666666,
+      "mejor_km": 9156.0,
+      "peor_km": 9373.0,
+      "desvio_km": 60.036618455369016
+    }
+  ],
+  "calibracion_ag": [
+    {
+      "operador": "swap",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.05,
+      "media_km": 11732.066666666668,
+      "mejor_km": 10089.0,
+      "peor_km": 13523.0,
+      "desvio_km": 796.0169149514908
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.1,
+      "media_km": 11438.7,
+      "mejor_km": 9442.0,
+      "peor_km": 13298.0,
+      "desvio_km": 939.1519277163484
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.2,
+      "media_km": 10668.766666666666,
+      "mejor_km": 9167.0,
+      "peor_km": 13349.0,
+      "desvio_km": 797.9963526789386
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.35,
+      "media_km": 10523.966666666667,
+      "mejor_km": 9382.0,
+      "peor_km": 12493.0,
+      "desvio_km": 774.4468771681861
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.5,
+      "media_km": 10430.0,
+      "mejor_km": 9626.0,
+      "peor_km": 12381.0,
+      "desvio_km": 632.4918971812999
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.05,
+      "media_km": 11985.166666666666,
+      "mejor_km": 9876.0,
+      "peor_km": 13633.0,
+      "desvio_km": 913.2455706009322
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.1,
+      "media_km": 11157.933333333332,
+      "mejor_km": 10294.0,
+      "peor_km": 13607.0,
+      "desvio_km": 675.2498763832212
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.2,
+      "media_km": 10647.133333333333,
+      "mejor_km": 9649.0,
+      "peor_km": 12125.0,
+      "desvio_km": 653.5597770841028
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.35,
+      "media_km": 10665.8,
+      "mejor_km": 9588.0,
+      "peor_km": 12397.0,
+      "desvio_km": 678.640621635143
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.5,
+      "media_km": 10661.0,
+      "mejor_km": 9406.0,
+      "peor_km": 12502.0,
+      "desvio_km": 789.0335438581387
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.05,
+      "media_km": 11906.233333333334,
+      "mejor_km": 10063.0,
+      "peor_km": 14176.0,
+      "desvio_km": 1145.3171812015898
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.1,
+      "media_km": 11384.033333333333,
+      "mejor_km": 9938.0,
+      "peor_km": 13065.0,
+      "desvio_km": 851.4372352414214
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.2,
+      "media_km": 10871.0,
+      "mejor_km": 9523.0,
+      "peor_km": 12169.0,
+      "desvio_km": 669.4682466953406
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.35,
+      "media_km": 10760.933333333332,
+      "mejor_km": 9904.0,
+      "peor_km": 12754.0,
+      "desvio_km": 791.9212474875404
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.5,
+      "media_km": 10281.066666666668,
+      "mejor_km": 9589.0,
+      "peor_km": 11605.0,
+      "desvio_km": 476.27043671520164
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.05,
+      "media_km": 11712.466666666667,
+      "mejor_km": 9985.0,
+      "peor_km": 14934.0,
+      "desvio_km": 1103.4340558255194
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.1,
+      "media_km": 10967.3,
+      "mejor_km": 9742.0,
+      "peor_km": 12767.0,
+      "desvio_km": 720.2227502654995
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.2,
+      "media_km": 10676.866666666667,
+      "mejor_km": 9570.0,
+      "peor_km": 12188.0,
+      "desvio_km": 704.0548621299969
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.35,
+      "media_km": 10396.766666666666,
+      "mejor_km": 9458.0,
+      "peor_km": 11537.0,
+      "desvio_km": 495.85701456053727
+    },
+    {
+      "operador": "swap",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.5,
+      "media_km": 10374.233333333334,
+      "mejor_km": 9156.0,
+      "peor_km": 11685.0,
+      "desvio_km": 592.5925909837963
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.05,
+      "media_km": 10248.966666666667,
+      "mejor_km": 9398.0,
+      "peor_km": 11394.0,
+      "desvio_km": 476.2147613093161
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.1,
+      "media_km": 9898.833333333334,
+      "mejor_km": 9181.0,
+      "peor_km": 10486.0,
+      "desvio_km": 341.51115973306383
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.2,
+      "media_km": 9544.9,
+      "mejor_km": 9181.0,
+      "peor_km": 10067.0,
+      "desvio_km": 205.6046935261936
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.35,
+      "media_km": 9478.7,
+      "mejor_km": 9183.0,
+      "peor_km": 9897.0,
+      "desvio_km": 193.39513092802173
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.6,
+      "p_mutacion": 0.5,
+      "media_km": 9474.466666666667,
+      "mejor_km": 9156.0,
+      "peor_km": 10236.0,
+      "desvio_km": 203.15359268844404
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.05,
+      "media_km": 10137.933333333332,
+      "mejor_km": 9388.0,
+      "peor_km": 11292.0,
+      "desvio_km": 474.88938595096954
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.1,
+      "media_km": 9753.233333333334,
+      "mejor_km": 9198.0,
+      "peor_km": 10630.0,
+      "desvio_km": 305.5361062496906
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.2,
+      "media_km": 9497.233333333334,
+      "mejor_km": 9184.0,
+      "peor_km": 9968.0,
+      "desvio_km": 229.92269473793917
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.35,
+      "media_km": 9421.233333333334,
+      "mejor_km": 9223.0,
+      "peor_km": 9787.0,
+      "desvio_km": 146.26498403772365
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.75,
+      "p_mutacion": 0.5,
+      "media_km": 9458.533333333333,
+      "mejor_km": 9167.0,
+      "peor_km": 10057.0,
+      "desvio_km": 222.0100197939023
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.05,
+      "media_km": 10344.233333333334,
+      "mejor_km": 9408.0,
+      "peor_km": 11797.0,
+      "desvio_km": 510.45369906475247
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.1,
+      "media_km": 9844.566666666668,
+      "mejor_km": 9223.0,
+      "peor_km": 10600.0,
+      "desvio_km": 331.8054332821504
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.2,
+      "media_km": 9561.466666666667,
+      "mejor_km": 9251.0,
+      "peor_km": 10436.0,
+      "desvio_km": 273.45112096233134
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.35,
+      "media_km": 9539.366666666667,
+      "mejor_km": 9242.0,
+      "peor_km": 10170.0,
+      "desvio_km": 205.40439517097866
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 0.9,
+      "p_mutacion": 0.5,
+      "media_km": 9465.433333333332,
+      "mejor_km": 9202.0,
+      "peor_km": 9888.0,
+      "desvio_km": 173.84028749273153
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.05,
+      "media_km": 10214.666666666666,
+      "mejor_km": 9457.0,
+      "peor_km": 11439.0,
+      "desvio_km": 392.195812771574
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.1,
+      "media_km": 9722.1,
+      "mejor_km": 9352.0,
+      "peor_km": 10244.0,
+      "desvio_km": 271.4638527195349
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.2,
+      "media_km": 9495.833333333334,
+      "mejor_km": 9170.0,
+      "peor_km": 10119.0,
+      "desvio_km": 254.60585006807855
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.35,
+      "media_km": 9414.333333333334,
+      "mejor_km": 9167.0,
+      "peor_km": 9791.0,
+      "desvio_km": 131.01153469150043
+    },
+    {
+      "operador": "inversion",
+      "p_crossover": 1.0,
+      "p_mutacion": 0.5,
+      "media_km": 9494.833333333334,
+      "mejor_km": 9229.0,
+      "peor_km": 10073.0,
+      "desvio_km": 190.68492045489305
+    }
+  ],
+  "parametros_ag": {
+    "N": 50,
+    "M": 200,
+    "p_crossover": 0.75,
+    "p_mutacion": 0.35,
+    "operador_mutacion": "inversion",
+    "elite": 2
+  },
+  "ciudades": [
+    {
+      "gen": 1,
+      "provincia": "Buenos Aires",
+      "capital": "La Plata"
+    },
+    {
+      "gen": 2,
+      "provincia": "Catamarca",
+      "capital": "San Fernando del Valle de Catamarca"
+    },
+    {
+      "gen": 3,
+      "provincia": "Chaco",
+      "capital": "Resistencia"
+    },
+    {
+      "gen": 4,
+      "provincia": "Chubut",
+      "capital": "Rawson"
+    },
+    {
+      "gen": 5,
+      "provincia": "Córdoba",
+      "capital": "Córdoba"
+    },
+    {
+      "gen": 6,
+      "provincia": "Corrientes",
+      "capital": "Corrientes"
+    },
+    {
+      "gen": 7,
+      "provincia": "Entre Ríos",
+      "capital": "Paraná"
+    },
+    {
+      "gen": 8,
+      "provincia": "Formosa",
+      "capital": "Formosa"
+    },
+    {
+      "gen": 9,
+      "provincia": "Jujuy",
+      "capital": "San Salvador de Jujuy"
+    },
+    {
+      "gen": 10,
+      "provincia": "La Pampa",
+      "capital": "Santa Rosa"
+    },
+    {
+      "gen": 11,
+      "provincia": "La Rioja",
+      "capital": "La Rioja"
+    },
+    {
+      "gen": 12,
+      "provincia": "Mendoza",
+      "capital": "Mendoza"
+    },
+    {
+      "gen": 13,
+      "provincia": "Misiones",
+      "capital": "Posadas"
+    },
+    {
+      "gen": 14,
+      "provincia": "Neuquén",
+      "capital": "Neuquén"
+    },
+    {
+      "gen": 15,
+      "provincia": "Río Negro",
+      "capital": "Viedma"
+    },
+    {
+      "gen": 16,
+      "provincia": "Salta",
+      "capital": "Salta"
+    },
+    {
+      "gen": 17,
+      "provincia": "San Juan",
+      "capital": "San Juan"
+    },
+    {
+      "gen": 18,
+      "provincia": "San Luis",
+      "capital": "San Luis"
+    },
+    {
+      "gen": 19,
+      "provincia": "Santa Cruz",
+      "capital": "Río Gallegos"
+    },
+    {
+      "gen": 20,
+      "provincia": "Santa Fe",
+      "capital": "Santa Fe"
+    },
+    {
+      "gen": 21,
+      "provincia": "Santiago del Estero",
+      "capital": "Santiago del Estero"
+    },
+    {
+      "gen": 22,
+      "provincia": "Tierra del Fuego",
+      "capital": "Ushuaia"
+    },
+    {
+      "gen": 23,
+      "provincia": "Tucumán",
+      "capital": "San Miguel de Tucumán"
+    }
+  ]
+}

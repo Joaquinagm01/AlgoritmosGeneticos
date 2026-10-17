@@ -3,175 +3,233 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Informe Académico - TP3 Problema del Viajante</title>
+  <title>Informe Académico - TP 3 El Problema del Viajante</title>
   <link rel="stylesheet" href="informe.css" />
 </head>
 <body>
+
   <section class="caratula">
-    <div class="caratula-badge">Universidad Tecnológica Nacional</div>
-    <h1>Trabajo Práctico N° 3</h1>
-    <h2>Problema del Viajante</h2>
-    <p class="subtitulo">Resolución heurística y mediante algoritmo genético sobre las capitales provinciales de la República Argentina</p>
-    <div class="ficha">
-      <p><strong>Problema:</strong> TSP aplicado a 23 capitales provinciales</p>
-      <p><strong>Métodos:</strong> análisis exhaustivo teórico, vecino más cercano y algoritmo genético</p>
-      <p><strong>Codificación genético:</strong> permutaciones de ciudades con crossover cíclico</p>
-      <p><strong>Parámetros base:</strong> población 50, ciclos 200, elite 2</p>
+    <div class="caratula-logo-wrap">
+      <img class="caratula-logo" src="../../TP1/docs/assets/utn_rosario_logo.png" alt="UTN Facultad Regional Rosario" />
     </div>
-    <p class="fecha">Rosario, mayo de 2026</p>
+    <p class="caratula-kicker">Universidad Tecnológica Nacional - Facultad Regional Rosario</p>
+    <h1 class="caratula-titulo">Trabajo Práctico N° 3<br />El Problema del Viajante</h1>
+    <p class="caratula-subtitulo">
+      Método exhaustivo, heurística del vecino más cercano y algoritmo genético con crossover cíclico sobre las capitales de provincia de la República Argentina
+    </p>
+    <div class="caratula-ficha">
+      <div class="caratula-meta">
+        <p><span class="label">Materia:</span> Algoritmos Genéticos</p>
+        <p><span class="label">Año:</span> 2026</p>
+        <p><span class="label">Docentes:</span> Daniela Díaz y Víctor Lombardo</p>
+        <p><span class="label">Problema:</span> TSP sobre las 23 capitales de provincia</p>
+        <p><span class="label">Datos:</span> tabla de distancias de la cátedra (km, en línea recta)</p>
+        <p><span class="label">Métodos:</span> análisis del método exhaustivo, vecino más cercano y algoritmo genético</p>
+      </div>
+      <div class="caratula-equipo">
+        <div class="caratula-personas"><div class="caratula-persona"><strong>Chacón Agustina</strong><span>aguscchacon@gmail.com</span></div><div class="caratula-persona"><strong>Gomez Manna Joaquina</strong><span>gomezmannajoaquina@gmail.com</span></div><div class="caratula-persona"><strong>Tabini Azul</strong><span>azultabini@gmail.com</span></div><div class="caratula-persona"><strong>Carloni Nahuel Iván</strong><span>nahuelcarloni25@gmail.com</span></div><div class="caratula-persona"><strong>Mierez Joaquin</strong><span>joakomierez1@hotmail.com</span></div></div>
+      </div>
+    </div>
+    <p class="fecha-entrega">Rosario, octubre de 2026</p>
   </section>
+
 
   <nav class="indice" aria-label="Tabla de contenidos">
     <h2>Índice de contenidos</h2>
     <ol>
-      <li><a href="#introduccion">Introducción y definición del TSP</a></li>
-      <li><a href="#exhaustivo">Análisis del método exhaustivo</a></li>
-      <li><a href="#heuristica-a">Heurística: inicio elegido por el usuario</a></li>
-      <li><a href="#heuristica-b">Heurística: mejor inicio global</a></li>
-      <li><a href="#genetico">Algoritmo genético</a></li>
-      <li><a href="#parametros">Parámetros del experimento</a></li>
-      <li><a href="#graficas">Recorridos y gráficas</a></li>
-      <li><a href="#aportes">Aportes prácticos del TSP</a></li>
-      <li><a href="#conclusiones">Conclusiones</a></li>
+      <li><a href="#introduccion">Introducción y datos del problema</a></li>
+      <li><a href="#exhaustivo">Punto 1: el método exhaustivo, ¿puede resolver el problema?</a></li>
+      <li><a href="#heuristica-a">Punto 2a: heurística desde la capital elegida por el usuario</a></li>
+      <li><a href="#heuristica-b">Punto 2b: mejor recorrido de la heurística</a></li>
+      <li><a href="#genetico">Punto 2c: algoritmo genético</a></li>
+      <li><a href="#conclusion">Comparación de resultados y conclusión</a></li>
+      <li><a href="#aportes">Aportes Prácticos del TSP</a></li>
     </ol>
   </nav>
 
   <main class="container">
+
     <section class="card" id="introduccion">
-      <h2>1. Introducción y definición del TSP</h2>
+      <h2>1. Introducción y datos del problema</h2>
       <p>
-        El problema del viajante de comercio, o TSP, consiste en encontrar una ruta mínima que visite una sola vez cada ciudad y regrese al punto de partida. Es un problema clásico de optimización combinatoria y, para instancias grandes, su resolución exacta se vuelve impracticable por el crecimiento factorial del espacio de búsqueda.
+        El problema del viajante (TSP, <em>Traveling Salesman Problem</em>) es uno de los problemas más famosos de la optimización combinatoria. Dadas N ciudades y la matriz de distancias D de N × N, donde d[x, y] es la distancia entre las ciudades X e Y, se busca una ruta que comience y termine en una ciudad concreta, pase una sola vez por cada una de las demás y minimice la distancia recorrida. Toda solución es una permutación de las ciudades, con el regreso a la ciudad de partida.
       </p>
       <p>
-        En este trabajo se modelaron las 23 capitales provinciales argentinas como nodos de un grafo completo ponderado. La distancia entre dos ciudades se estimó mediante la fórmula de Haversine, usando sus coordenadas geográficas.
+        El enunciado pide resolverlo para las capitales de las provincias argentinas: justificar de manera teórica por qué el método exhaustivo no alcanza (punto 1), resolverlo con la heurística «desde cada ciudad ir a la ciudad más cercana no visitada» desde una capital elegida y desde todas (puntos 2a y 2b) y con un algoritmo genético de N = 50 cromosomas, M = 200 ciclos y crossover cíclico (punto 2c), comparando los resultados.
+      </p>
+      <h3>Los datos: la tabla de distancias de la cátedra</h3>
+      <p>
+        Las distancias salen de la tabla que entregó la cátedra [2] (<span class="mono">Matriz/TablaCapitales.xlsx</span>): kilómetros en línea recta entre cada par de capitales. El programa la lee directamente del archivo. La tabla se contrastó con la fórmula de Haversine aplicada a las coordenadas de cada capital: es simétrica, tiene diagonal nula y la diferencia relativa media es de 0,36 %. La mayor diferencia relativa (16 %) es la de Resistencia-Corrientes, ciudades enfrentadas sobre el río Paraná (13 km en la tabla y 15,5 km con Haversine). Las coordenadas sólo se usan para dibujar los mapas, con los límites de provincias de Natural Earth [8].
+      </p>
+      <div class="callout">
+        <p><strong>23 ciudades y no 24.</strong> La tabla trae 24 filas: las 23 capitales de provincia y la Ciudad Autónoma de Buenos Aires. El enunciado pide capitales de provincia y define cromosomas de 23 genes, por lo que se excluyó la Ciudad Autónoma, que no es capital de una provincia, y la provincia de Buenos Aires queda representada por La Plata (a 53 km de la Ciudad Autónoma). Como control, con la Ciudad Autónoma como ciudad 24 el mejor inicio de la heurística daría 9.335 km (desde Neuquén), apenas 1 km más que con 23 ciudades.</p>
+      </div>
+      <h3>Codificación: qué es cada gen</h3>
+      <p>Un cromosoma es una permutación de los números 1 a 23, y cada gen es una capital según esta tabla (el orden es el alfabético por provincia):</p>
+      <div class="dos-col"><div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:12%" /><col style="width:58%" /><col style="width:30%" /></colgroup><thead><tr><th>Gen</th><th>Capital</th><th>Provincia</th></tr></thead><tbody><tr><td>1</td><td>La Plata</td><td>Buenos Aires</td></tr><tr><td>2</td><td>San Fernando del Valle de Catamarca</td><td>Catamarca</td></tr><tr><td>3</td><td>Resistencia</td><td>Chaco</td></tr><tr><td>4</td><td>Rawson</td><td>Chubut</td></tr><tr><td>5</td><td>Córdoba</td><td>Córdoba</td></tr><tr><td>6</td><td>Corrientes</td><td>Corrientes</td></tr><tr><td>7</td><td>Paraná</td><td>Entre Ríos</td></tr><tr><td>8</td><td>Formosa</td><td>Formosa</td></tr><tr><td>9</td><td>San Salvador de Jujuy</td><td>Jujuy</td></tr><tr><td>10</td><td>Santa Rosa</td><td>La Pampa</td></tr><tr><td>11</td><td>La Rioja</td><td>La Rioja</td></tr><tr><td>12</td><td>Mendoza</td><td>Mendoza</td></tr></tbody></table></div></div><div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:12%" /><col style="width:45%" /><col style="width:43%" /></colgroup><thead><tr><th>Gen</th><th>Capital</th><th>Provincia</th></tr></thead><tbody><tr><td>13</td><td>Posadas</td><td>Misiones</td></tr><tr><td>14</td><td>Neuquén</td><td>Neuquén</td></tr><tr><td>15</td><td>Viedma</td><td>Río Negro</td></tr><tr><td>16</td><td>Salta</td><td>Salta</td></tr><tr><td>17</td><td>San Juan</td><td>San Juan</td></tr><tr><td>18</td><td>San Luis</td><td>San Luis</td></tr><tr><td>19</td><td>Río Gallegos</td><td>Santa Cruz</td></tr><tr><td>20</td><td>Santa Fe</td><td>Santa Fe</td></tr><tr><td>21</td><td>Santiago del Estero</td><td>Santiago del Estero</td></tr><tr><td>22</td><td>Ushuaia</td><td>Tierra del Fuego</td></tr><tr><td>23</td><td>San Miguel de Tucumán</td><td>Tucumán</td></tr></tbody></table></div></div></div>
+      <h3>El programa entregado</h3>
+      <p>
+        Todo el trabajo está en <span class="mono">TP3/main.py</span> (Python 3.10 o superior, probado con 3.13, con <span class="mono">numpy</span>, <span class="mono">matplotlib</span> y <span class="mono">openpyxl</span>). Al ejecutarlo sin argumentos abre el menú del enunciado: <strong>a)</strong> heurística desde la capital que ingrese el usuario, con mapa de la República, ciudad de partida, recorrido completo y longitud; <strong>b)</strong> mejor recorrido de la heurística probando todas las capitales; <strong>c)</strong> algoritmo genético. Además tiene <strong>d)</strong> el análisis del método exhaustivo del punto 1 y <strong>e)</strong> el óptimo exacto de referencia. Con <span class="mono">--todo --optimo --calibrar</span> se regeneran sin menú todos los resultados, tablas y mapas de este informe (carpeta <span class="mono">outputs/</span>), y con <span class="mono">--verificar</span> se comprueban la tabla, el crossover cíclico y la validez de los cromosomas.
       </p>
     </section>
+
 
     <section class="card" id="exhaustivo">
-      <h2>2. Análisis del método exhaustivo</h2>
+      <h2>2. Punto 1: el método exhaustivo, ¿puede resolver el problema?</h2>
       <p>
-        Si se fija una ciudad de inicio, el número de recorridos posibles es de $22!$; si además se aprovecha la simetría del ciclo en un problema métrico simétrico, la mitad de esas rutas representan el mismo circuito recorrido en sentido inverso. La magnitud del espacio de búsqueda vuelve al enfoque exhaustivo inviable en tiempo razonable.
+        <strong>Respuesta: no.</strong> Un método exhaustivo enumera todas las rutas posibles, calcula la longitud de cada una y se queda con la menor. Garantiza el óptimo, pero la cantidad de rutas crece de forma factorial con la cantidad de ciudades, y con 23 capitales deja de ser calculable en un tiempo razonable.
+      </p>
+      <h3>Cuántas rutas hay</h3>
+      <p>
+        Con N ciudades hay N! permutaciones (los «ciclos» del criterio de la cátedra). Si se fija la ciudad de partida quedan (N−1)!, y si además se descuenta que cada circuito puede recorrerse en los dos sentidos, (N−1)!/2. Para controlar la fórmula con el video de la Fuente [4]: con 5 ciudades hay 4!/2 = 12 rutas y con 10 ciudades, 9!/2 = 181.440. Para las 23 capitales:
+      </p>
+      <p class="formula">N! = 2,59 × 10<sup>22</sup> &nbsp;|&nbsp; (N−1)! = 1,12 × 10<sup>21</sup> &nbsp;|&nbsp; (N−1)!/2 = 5,62 × 10<sup>20</sup></p>
+      <p>
+        Si cada recorrido pudiera evaluarse en un microsegundo (el supuesto de la cátedra), las 23 capitales llevarían 820 millones de años con el criterio de N! ciclos y 18 millones de años descontando la ciudad de partida y el sentido inverso. Aun a 10<sup>9</sup> recorridos por segundo, una velocidad que una implementación simple no alcanza, serían 17.820 años.
+      </p>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:14%" /><col style="width:20%" /><col style="width:24%" /><col style="width:20%" /><col style="width:22%" /></colgroup><thead><tr><th>Ciudades (N)</th><th class="num">Ciclos N!</th><th class="num">Tiempo a 1 µs por ciclo</th><th class="num">Recorridos (N−1)!/2</th><th class="num">Tiempo a 1 µs por recorrido</th></tr></thead><tbody><tr><td>5</td><td class="num">120</td><td class="num">menos de 1 ms</td><td class="num">12</td><td class="num">menos de 1 ms</td></tr><tr><td>10</td><td class="num">3,63 × 10<sup>6</sup></td><td class="num">3,6 s</td><td class="num">181.440</td><td class="num">0,18 s</td></tr><tr><td>15</td><td class="num">1,31 × 10<sup>12</sup></td><td class="num">15,1 días</td><td class="num">4,36 × 10<sup>10</sup></td><td class="num">12,1 h</td></tr><tr><td>20</td><td class="num">2,43 × 10<sup>18</sup></td><td class="num">77.146 años</td><td class="num">6,08 × 10<sup>16</sup></td><td class="num">1.928 años</td></tr><tr class="peor"><td>23</td><td class="num">2,59 × 10<sup>22</sup></td><td class="num">820 millones de años</td><td class="num">5,62 × 10<sup>20</sup></td><td class="num">18 millones de años</td></tr><tr><td>25</td><td class="num">1,55 × 10<sup>25</sup></td><td class="num">4,9 × 10<sup>11</sup> años</td><td class="num">3,10 × 10<sup>23</sup></td><td class="num">9,8 × 10<sup>9</sup> años</td></tr></tbody></table></div></div>
+      <h3>Medición propia</h3>
+      <p>
+        Para no quedarse sólo con la cuenta, se resolvió por fuerza bruta (todas las permutaciones, ciudad de partida fija) el problema con las primeras 5 a 10 ciudades de la tabla y se midió el tiempo. Cada ciudad más multiplica el tiempo por aproximadamente N−1 (de 9 a 10 ciudades, ×10,1). La velocidad medida en esta computadora, unos 6,2 × 10<sup>5</sup> recorridos por segundo, es del orden del microsegundo por recorrido que supone la cátedra, y con ella las 23 capitales llevarían 29 millones de años.
+      </p>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:16%" /><col style="width:32%" /><col style="width:26%" /><col style="width:26%" /></colgroup><thead><tr><th>Ciudades</th><th class="num">Recorridos evaluados ((N−1)!)</th><th class="num">Tiempo medido</th><th class="num">Recorridos por segundo</th></tr></thead><tbody><tr><td>5</td><td class="num">24</td><td class="num">0,03 ms</td><td class="num">6,98 × 10<sup>5</sup></td></tr><tr><td>6</td><td class="num">120</td><td class="num">0,13 ms</td><td class="num">9,52 × 10<sup>5</sup></td></tr><tr><td>7</td><td class="num">720</td><td class="num">0,88 ms</td><td class="num">8,22 × 10<sup>5</sup></td></tr><tr><td>8</td><td class="num">5.040</td><td class="num">6,36 ms</td><td class="num">7,92 × 10<sup>5</sup></td></tr><tr><td>9</td><td class="num">40.320</td><td class="num">58 ms</td><td class="num">6,97 × 10<sup>5</sup></td></tr><tr><td>10</td><td class="num">362.880</td><td class="num">586 ms</td><td class="num">6,19 × 10<sup>5</sup></td></tr></tbody></table></div></div>
+      <div class="figures"><figure class="ancha"><img src="../outputs/figures/crecimiento_exhaustivo.png" alt="Tiempo de la búsqueda exhaustiva según la cantidad de ciudades (escala logarítmica). Con 23 capitales supera los millones de años." /><figcaption>Tiempo de la búsqueda exhaustiva según la cantidad de ciudades (escala logarítmica). Con 23 capitales supera los millones de años.</figcaption></figure></div>
+      <h3>Justificación teórica: el TSP es NP-difícil</h3>
+      <p>
+        La razón de fondo no es la velocidad de la computadora sino la complejidad del problema. Según la Fuente [3], un problema es <em>NP-completo</em> si es un problema de decisión que está en NP (una respuesta se verifica en tiempo polinomial) y si todo problema de NP puede reducirse a él en tiempo polinomial; un problema <em>NP-difícil</em> es al menos tan difícil que los de NP, aunque no tiene por qué ser de decisión ni estar en NP. La versión de optimización del viajante (hallar el recorrido mínimo) es NP-difícil, y su versión de decisión («¿existe un recorrido de a lo sumo K kilómetros?»), que se obtiene poniéndole un límite como en el ejemplo de la ruta de nueve horas de la Fuente [3], es NP-completa. Por eso la cátedra lo ubica entre los problemas NP-completos.
       </p>
       <p>
-        A nivel teórico, el problema sí puede formularse y resolverse de forma exacta, pero en la práctica computacional el costo crece tan rápido que el algoritmo deja de ser útil para 23 ciudades. Por eso el trabajo compara heurísticas y un algoritmo genético como alternativas aproximadas.
+        Hoy no se conoce ningún algoritmo que resuelva un problema NP-completo en tiempo polinomial: si se encontrara uno, todos los problemas de NP quedarían resueltos en tiempo polinomial y P sería igual a NP, una de las preguntas abiertas más importantes de la matemática y de la computación (uno de los siete problemas del milenio) [5]. El viajante es justamente uno de los problemas más difíciles de NP [4][5]. En la práctica, los algoritmos exactos conocidos tienen costo exponencial en la cantidad de ciudades, y un método exhaustivo es el peor de ellos: (N−1)!/2 evaluaciones.
       </p>
-      <div class="tabla-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Aspecto</th>
-              <th>Observación</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Espacio de búsqueda</td><td>Factorial en el número de ciudades</td></tr>
-            <tr><td>Resolución exacta</td><td>Correcta en teoría, impracticable en 23 capitales</td></tr>
-            <tr><td>Salida del análisis</td><td>Justificación teórica de la inviabilidad</td></tr>
-          </tbody>
-        </table>
+      <div class="callout">
+        <p><strong>Matiz: exhaustivo no es lo mismo que exacto.</strong> Existen algoritmos exactos más inteligentes que evitan enumerar todas las rutas. El de Held y Karp [6], por programación dinámica, tiene costo O(N²·2<sup>N</sup>), y la Fuente [4] señala que los mejores algoritmos exactos bajan de (N−1)!/2 a N²·2<sup>N</sup>. Para N = 23 son unas 4,4 × 10<sup>9</sup> operaciones: alcanzan para resolver esta instancia, y se lo usó como <strong>referencia</strong>: el recorrido óptimo de las 23 capitales mide 9.156 km (se calculó en 8 segundos y se contrastó con la fuerza bruta en instancias de 6, 8 y 9 ciudades). Pero sigue siendo exponencial: con 50 ciudades serían del orden de 2,8 × 10<sup>18</sup> operaciones, y con (N−1)!/2 el problema ya era inabordable con 23. Para instancias grandes se recurre a métodos aproximados, como la heurística y el algoritmo genético de este trabajo.</p>
       </div>
+      <p>
+        <strong>Conclusión del punto 1:</strong> el método exhaustivo no puede resolver el problema de las 23 capitales: tendría que evaluar del orden de 5,6 × 10<sup>20</sup> recorridos, lo que lleva millones de años, y el TSP pertenece a una clase de problemas para los que no se conoce ningún algoritmo polinomial. De ahí que se recurra a heurísticas y a algoritmos genéticos, que no garantizan el óptimo pero dan buenas soluciones en tiempo razonable.
+      </p>
     </section>
+
 
     <section class="card" id="heuristica-a">
-      <h2>3. Heurística desde una provincia elegida por el usuario</h2>
+      <h2>3. Punto 2a: heurística desde la capital elegida por el usuario</h2>
       <p>
-        La heurística empleada fue la de vecino más cercano: desde la ciudad actual se avanza siempre a la ciudad no visitada más próxima y al final se regresa al origen. Esta estrategia es simple, rápida y fácil de explicar, aunque no garantiza el óptimo global.
+        La heurística pedida es la del vecino más cercano: se parte de la capital elegida, desde cada ciudad se va a la ciudad no visitada más cercana y, cuando ya se visitaron todas, se regresa a la ciudad de partida. Es determinista (los empates se resuelven por el menor índice), muy simple y de costo O(N²), pero decide sólo con la información local: no garantiza el óptimo.
       </p>
       <p>
-        El programa permite ingresar una provincia o su capital, construye el recorrido completo y genera un mapa del trayecto. El resultado depende fuertemente de la capital elegida al inicio.
+        En el menú del programa, la opción <strong>a)</strong> muestra la lista de capitales y permite ingresar la provincia, su capital o su número. Informa la ciudad de partida, el recorrido completo tramo a tramo con sus kilómetros y la longitud total, y presenta el mapa de la República con el recorrido, el orden de visita y la ciudad de partida marcada con una estrella. Como ejemplo se tomó Santa Fe, capital de la provincia de la facultad:
       </p>
-      <figure>
-        <img src="assets/figures/heuristica_inicio_elegido.png" alt="Recorrido heurístico desde una capital elegida" />
-        <figcaption>Mapa del recorrido heurístico desde la capital seleccionada por el usuario.</figcaption>
-      </figure>
+      <p class="ruta"><strong>Ciudad de partida:</strong> Santa Fe (provincia de Santa Fe)<br /><strong>Recorrido:</strong> Santa Fe → Paraná → Córdoba → San Luis → Mendoza → San Juan → La Rioja → Catamarca → Sgo. del Estero → Tucumán → Salta → Jujuy → Resistencia → Corrientes → Formosa → Posadas → La Plata → Santa Rosa → Neuquén → Viedma → Rawson → Río Gallegos → Ushuaia → Santa Fe<br /><strong>Longitud del trayecto:</strong> 9.905 km</p>
+      <div class="figures"><figure class="mapa"><img src="../outputs/figures/mapa_heuristica_inicio_santafe.png" alt="Recorrido de la heurística desde Santa Fe: 9.905 km." /><figcaption>Recorrido de la heurística desde Santa Fe: 9.905 km.</figcaption></figure></div>
+      <p>
+        El resultado muestra la debilidad típica de la heurística: al ir siempre a lo más cercano, va dejando de lado las ciudades extremas y termina obligada a un tramo de regreso muy largo: de Ushuaia a Santa Fe hay 2.641 km, el 27 % del recorrido total. El largo del trayecto depende de la capital elegida, lo que se analiza en el punto siguiente.
+      </p>
     </section>
+
 
     <section class="card" id="heuristica-b">
-      <h2>4. Heurística con mejor inicio global</h2>
+      <h2>4. Punto 2b: mejor recorrido de la heurística</h2>
       <p>
-        Para comparar de forma más justa el comportamiento del heurístico, se evaluó el mismo criterio desde cada capital y se eligió el mejor recorrido obtenido. Esto permite medir la sensibilidad de la heurística con respecto al punto de partida.
+        Para encontrar el recorrido mínimo que da la heurística se la aplica desde cada una de las 23 capitales y se elige la de menor longitud. La opción <strong>b)</strong> del programa lo hace (los 23 recorridos se calculan en 1,3 ms en total), imprime la tabla completa, el recorrido ganador, su longitud y el mapa.
       </p>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:6%" /><col style="width:26%" /><col style="width:22%" /><col style="width:14%" /><col style="width:18%" /><col style="width:14%" /></colgroup><thead><tr><th class="num">N°</th><th>Capital de partida</th><th>Provincia</th><th class="num">Longitud (km)</th><th class="num">Diferencia con el mejor (km)</th><th class="num">Diferencia (%)</th></tr></thead><tbody><tr class="mejor"><td class="num">1</td><td>Neuquén</td><td>Neuquén</td><td class="num">9.334</td><td class="num">-</td><td class="num">-</td></tr><tr><td class="num">2</td><td>Rawson</td><td>Chubut</td><td class="num">9.578</td><td class="num">+244</td><td class="num">2,6 %</td></tr><tr><td class="num">3</td><td>Río Gallegos</td><td>Santa Cruz</td><td class="num">9.578</td><td class="num">+244</td><td class="num">2,6 %</td></tr><tr><td class="num">4</td><td>Ushuaia</td><td>Tierra del Fuego</td><td class="num">9.605</td><td class="num">+271</td><td class="num">2,9 %</td></tr><tr><td class="num">5</td><td>Córdoba</td><td>Córdoba</td><td class="num">9.779</td><td class="num">+445</td><td class="num">4,8 %</td></tr><tr><td class="num">6</td><td>La Plata</td><td>Buenos Aires</td><td class="num">9.857</td><td class="num">+523</td><td class="num">5,6 %</td></tr><tr><td class="num">7</td><td>San Luis</td><td>San Luis</td><td class="num">9.874</td><td class="num">+540</td><td class="num">5,8 %</td></tr><tr><td class="num">8</td><td>Paraná</td><td>Entre Ríos</td><td class="num">9.881</td><td class="num">+547</td><td class="num">5,9 %</td></tr><tr><td class="num">9</td><td>Santa Fe</td><td>Santa Fe</td><td class="num">9.905</td><td class="num">+571</td><td class="num">6,1 %</td></tr><tr><td class="num">10</td><td>Mendoza</td><td>Mendoza</td><td class="num">10.001</td><td class="num">+667</td><td class="num">7,1 %</td></tr><tr><td class="num">11</td><td>Viedma</td><td>Río Negro</td><td class="num">10.020</td><td class="num">+686</td><td class="num">7,3 %</td></tr><tr><td class="num">12</td><td>Posadas</td><td>Misiones</td><td class="num">10.160</td><td class="num">+826</td><td class="num">8,8 %</td></tr><tr><td class="num">13</td><td>Santa Rosa</td><td>La Pampa</td><td class="num">10.172</td><td class="num">+838</td><td class="num">9,0 %</td></tr><tr><td class="num">14</td><td>Jujuy</td><td>Jujuy</td><td class="num">10.224</td><td class="num">+890</td><td class="num">9,5 %</td></tr><tr><td class="num">15</td><td>La Rioja</td><td>La Rioja</td><td class="num">10.236</td><td class="num">+902</td><td class="num">9,7 %</td></tr><tr><td class="num">16</td><td>Salta</td><td>Salta</td><td class="num">10.274</td><td class="num">+940</td><td class="num">10,1 %</td></tr><tr><td class="num">17</td><td>Tucumán</td><td>Tucumán</td><td class="num">10.274</td><td class="num">+940</td><td class="num">10,1 %</td></tr><tr><td class="num">18</td><td>Resistencia</td><td>Chaco</td><td class="num">10.281</td><td class="num">+947</td><td class="num">10,1 %</td></tr><tr><td class="num">19</td><td>Corrientes</td><td>Corrientes</td><td class="num">10.282</td><td class="num">+948</td><td class="num">10,2 %</td></tr><tr><td class="num">20</td><td>Sgo. del Estero</td><td>Santiago del Estero</td><td class="num">10.418</td><td class="num">+1.084</td><td class="num">11,6 %</td></tr><tr><td class="num">21</td><td>Formosa</td><td>Formosa</td><td class="num">10.458</td><td class="num">+1.124</td><td class="num">12,0 %</td></tr><tr><td class="num">22</td><td>Catamarca</td><td>Catamarca</td><td class="num">10.646</td><td class="num">+1.312</td><td class="num">14,1 %</td></tr><tr class="peor"><td class="num">23</td><td>San Juan</td><td>San Juan</td><td class="num">10.660</td><td class="num">+1.326</td><td class="num">14,2 %</td></tr></tbody></table></div></div>
       <p>
-        La conclusión esperable es que el vecino más cercano mejora rápidamente la solución inicial, pero puede quedarse atrapado en decisiones locales desfavorables. Aun así, ofrece una línea base clara para comparar con el algoritmo genético.
+        El mejor inicio es <strong>Neuquén</strong>, con <strong>9.334 km</strong>; el peor, San Juan, con 10.660 km. Según la capital de partida la longitud varía 14 % (promedio de los 23 inicios: 10.065 km; mediana: 10.160 km). Es decir que la calidad de la heurística depende mucho de por dónde se empiece.
       </p>
-      <figure>
-        <img src="assets/figures/heuristica_mejor_inicio.png" alt="Mejor recorrido heurístico global" />
-        <figcaption>Mejor recorrido heurístico encontrado al probar todos los inicios posibles.</figcaption>
-      </figure>
+      <p class="ruta"><strong>Recorrido mínimo de la heurística (desde Neuquén):</strong><br />Neuquén → Santa Rosa → San Luis → Mendoza → San Juan → La Rioja → Catamarca → Sgo. del Estero → Tucumán → Salta → Jujuy → Resistencia → Corrientes → Formosa → Posadas → Paraná → Santa Fe → Córdoba → La Plata → Viedma → Rawson → Río Gallegos → Ushuaia → Neuquén<br /><strong>Longitud del trayecto:</strong> 9.334 km</p>
+      <div class="figures"><figure class="mapa"><img src="../outputs/figures/mapa_heuristica_mejor.png" alt="Mejor recorrido de la heurística, desde Neuquén: 9.334 km." /><figcaption>Mejor recorrido de la heurística, desde Neuquén: 9.334 km.</figcaption></figure></div>
+      <div class="figures"><figure class="ancha"><img src="../outputs/figures/heuristica_por_inicio.png" alt="Longitud del recorrido de la heurística según la capital de partida (en verde el mejor inicio y en rojo el peor)." /><figcaption>Longitud del recorrido de la heurística según la capital de partida (en verde el mejor inicio y en rojo el peor).</figcaption></figure></div>
     </section>
+
 
     <section class="card" id="genetico">
-      <h2>5. Algoritmo genético</h2>
+      <h2>5. Punto 2c: algoritmo genético</h2>
+      <h3>Diseño</h3>
+      <ul>
+        <li><strong>Cromosoma.</strong> Permutación de los 23 genes (cada gen es una capital). El circuito es cíclico, así que las 23 rotaciones de un cromosoma son el mismo recorrido; para compararlos se los escribe empezando por la misma ciudad.</li>
+        <li><strong>Función objetivo.</strong> La distancia total del circuito, D = Σ d[c<sub>i</sub>, c<sub>i+1</sub>] + d[c<sub>23</sub>, c<sub>1</sub>] (en kilómetros, con la tabla de la cátedra). Se la minimiza.</li>
+        <li><strong>Aptitud.</strong> La ruleta necesita que a mejor cromosoma le corresponda mayor aptitud. Se usa la distancia del peor cromosoma de la generación menos la distancia de cada uno, más 1. Con la inversa 1/D, o con el complemento respecto de la suma, los cromosomas de longitud parecida quedan con aptitudes casi iguales y la selección apenas distingue al mejor del peor: es el problema de la «convergencia lenta» del apunte [1], que se corrige expandiendo el rango de la función objetivo. La tabla siguiente lo muestra con 30 corridas de cada variante (mismas semillas):</li>
+      </ul>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:46%" /><col style="width:13%" /><col style="width:13%" /><col style="width:13%" /><col style="width:15%" /></colgroup><thead><tr><th>Aptitud para la ruleta</th><th class="num">Promedio (km)</th><th class="num">Mejor (km)</th><th class="num">Peor (km)</th><th class="num">Promedio sobre el óptimo</th></tr></thead><tbody><tr class="mejor"><td>Escalada: distancia del peor de la generación menos la distancia, más 1 (la del programa)</td><td class="num">9.482</td><td class="num">9.187</td><td class="num">9.959</td><td class="num">3,6 %</td></tr><tr><td>Inversa: 1 / distancia</td><td class="num">9.650</td><td class="num">9.223</td><td class="num">10.551</td><td class="num">5,4 %</td></tr><tr><td>Complemento: suma de las distancias de la población menos la distancia</td><td class="num">11.054</td><td class="num">9.737</td><td class="num">12.090</td><td class="num">20,7 %</td></tr></tbody></table></div></div>
+      <ul>
+        <li><strong>Selección y elitismo.</strong> Los padres se eligen con la rueda de ruleta (con reposición) según la aptitud, y los 2 mejores cromosomas pasan intactos a la generación siguiente.</li>
+        <li><strong>Crossover cíclico</strong> (el pedido por el enunciado), tal como lo describe el apunte [1] (el operador es de Oliver, Smith y Holland [7]): se toma el primer gen del padre 1, se mira qué hay debajo en el padre 2, se busca ese valor en el padre 1 y se repite hasta volver a un valor ya usado; esas posiciones se heredan del padre 1 y las demás se completan con el padre 2 (el segundo hijo es el simétrico). Siempre produce permutaciones válidas, porque conserva cada gen en la posición que tenía en uno de los padres. Ejemplo con 6 genes: padre 1 = 3 4 1 5 6 2 y padre 2 = 5 1 4 6 2 3. El ciclo recorre las posiciones 1 (3, debajo 5), 4 (5, debajo 6), 5 (6, debajo 2) y 6 (2, debajo 3, que ya estaba): termina. Hijo 1 = 3 1 4 5 6 2 e hijo 2 = 5 4 1 6 2 3. El programa reproduce este ejemplo y el del apunte (<span class="mono">--verificar</span>) y comprueba que 500 cruces al azar de cromosomas de 23 genes dan siempre permutaciones válidas.</li>
+        <li><strong>Mutación.</strong> Con probabilidad PM por hijo, se eligen dos puntos al azar y se invierte el orden del tramo comprendido entre ellos (mutación por inversión, de las que el apunte [1] indica para codificaciones basadas en el orden, junto con Swap, AdjointSwap y Shift). La alternativa por intercambio de dos genes (Swap) se probó en la calibración.</li>
+        <li><strong>Parámetros.</strong> N = 50 cromosomas y M = 200 ciclos (enunciado), crossover cíclico, elitismo de 2 y semilla 42 para que cada corrida se pueda reproducir. Las frecuencias de crossover (PC) y de mutación (PM) quedan a criterio del grupo: se eligieron probando todas las combinaciones de PC en {60 %, 75 %, 90 %, 100 %} y PM en {5 %, 10 %, 20 %, 35 %, 50 %} con los dos operadores de mutación, 30 corridas de cada una con semillas distintas de las del resto del informe.</li>
+      </ul>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:34%" /><col style="width:13%" /><col style="width:13%" /><col style="width:13%" /><col style="width:13%" /><col style="width:14%" /></colgroup><thead><tr><th>Operador de mutación \ PM (promedio sobre los PC probados)</th><th class="num">5 %</th><th class="num">10 %</th><th class="num">20 %</th><th class="num">35 %</th><th class="num">50 %</th></tr></thead><tbody><tr><td>Inversión de un tramo</td><td class="num">10.236</td><td class="num">9.805</td><td class="num">9.525</td><td class="num">9.463</td><td class="num">9.473</td></tr><tr><td>Intercambio de dos genes</td><td class="num">11.834</td><td class="num">11.237</td><td class="num">10.716</td><td class="num">10.587</td><td class="num">10.437</td></tr></tbody></table></div></div>
       <p>
-        El algoritmo genético trabaja sobre permutaciones de ciudades. Cada cromosoma representa un orden de visita y la aptitud se define como el inverso de la distancia total del circuito. Se utilizó crossover cíclico, que es adecuado para preservar la validez de las permutaciones.
+        La mutación por inversión es claramente mejor que el intercambio y las probabilidades de mutación altas (35 % a 50 % por hijo) funcionan mejor, lo que sugiere que con este crossover buena parte de la exploración la aporta la mutación. La frecuencia de crossover casi no influye (las diferencias entre los PC probados son de alrededor del 1 % y sin una tendencia clara, comparables con la variación entre corridas):
       </p>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:60%" /><col style="width:40%" /></colgroup><thead><tr><th>PC (inversión, promedio sobre los PM probados)</th><th class="num">Distancia promedio (km)</th></tr></thead><tbody><tr><td>60 %</td><td class="num">9.729</td></tr><tr><td>75 %</td><td class="num">9.654</td></tr><tr><td>90 %</td><td class="num">9.751</td></tr><tr><td>100 %</td><td class="num">9.668</td></tr></tbody></table></div></div>
       <p>
-        La población inicial se generó aleatoriamente y en cada ciclo se aplicaron selección, crossover y mutación por intercambio. El elitismo preservó los mejores individuos para evitar perder soluciones prometedoras.
+        La mejor combinación de la tabla (inversión, PC = 100 %, PM = 35 %) promedia 9.414 km. Se adoptó <strong>PC = 75 %, PM = 35 % e inversión</strong> (9.421 km de promedio, un empate técnico), porque PC = 75 % es el valor habitual y no hay evidencia a favor de cruzar siempre.
       </p>
-      <figure>
-        <img src="assets/figures/ag_mejor_ruta.png" alt="Mejor ruta encontrada por algoritmo genetico" />
-        <figcaption>Mejor recorrido obtenido por el algoritmo genético.</figcaption>
-      </figure>
-      <figure>
-        <img src="assets/figures/ag_evolucion_distancia.png" alt="Evolucion de la distancia en el algoritmo genetico" />
-        <figcaption>Evolución de la distancia mínima y promedio durante la corrida del algoritmo genético.</figcaption>
-      </figure>
+      <h3>Resultado de la opción c)</h3>
+      <p>
+        La opción <strong>c)</strong> del programa corre el algoritmo con esos parámetros, imprime el mejor recorrido (escrito desde Neuquén, la misma ciudad que el mejor recorrido de la heurística, para poder compararlos), su longitud, el mapa y la evolución. Con la semilla 42:
+      </p>
+      <p class="ruta"><strong>Mejor recorrido del algoritmo genético (corrida con semilla 42):</strong><br />Neuquén → Río Gallegos → Ushuaia → Rawson → Viedma → Santa Rosa → La Plata → Paraná → Santa Fe → Posadas → Formosa → Resistencia → Corrientes → Jujuy → Salta → Tucumán → Sgo. del Estero → Catamarca → La Rioja → Córdoba → San Luis → San Juan → Mendoza → Neuquén<br /><strong>Longitud del trayecto:</strong> 9.260 km</p>
+      <div class="figures"><figure class="mapa"><img src="../outputs/figures/mapa_ag.png" alt="Mejor recorrido del algoritmo genético (semilla 42): 9.260 km." /><figcaption>Mejor recorrido del algoritmo genético (semilla 42): 9.260 km.</figcaption></figure></div>
+      <div class="figures"><figure class="ancha"><img src="../outputs/figures/ag_evolucion.png" alt="Evolución de la distancia en la corrida con semilla 42: mejor cromosoma, promedio y rango de la población. Con elitismo la mejor distancia nunca empeora." /><figcaption>Evolución de la distancia en la corrida con semilla 42: mejor cromosoma, promedio y rango de la población. Con elitismo la mejor distancia nunca empeora.</figcaption></figure></div>
+      <p>
+        Una sola corrida no alcanza para evaluar un algoritmo estocástico. Repetida con 30 semillas (42 a 71), el mejor recorrido de cada corrida tiene un promedio de <strong>9.482 km</strong> (mediana 9.402, desvío 231), el mejor es de 9.187 km y el peor de 9.959 km. Cada corrida de 200 ciclos tarda alrededor de 0,1 s.
+      </p>
+      <div class="figures"><figure class="ancha"><img src="../outputs/figures/ag_comparacion.png" alt="Distribución del mejor recorrido del AG en 30 corridas independientes, contra la heurística (mejor inicio) y el óptimo exacto." /><figcaption>Distribución del mejor recorrido del AG en 30 corridas independientes, contra la heurística (mejor inicio) y el óptimo exacto.</figcaption></figure></div>
     </section>
 
-    <section class="card" id="parametros">
-      <h2>6. Parámetros del experimento</h2>
-      <div class="tabla-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Parámetro</th>
-              <th>Valor</th>
-              <th>Comentario</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Población</td><td>50</td><td>Valor recomendado por el enunciado</td></tr>
-            <tr><td>Ciclos</td><td>200</td><td>Suficiente para observar convergencia</td></tr>
-            <tr><td>Crossover</td><td>Cíclico</td><td>Adecua la recombinación a permutaciones</td></tr>
-            <tr><td>Mutación</td><td>Intercambio aleatorio</td><td>Mantiene cromosomas válidos</td></tr>
-            <tr><td>Selección</td><td>Ruleta, torneo y elitismo</td><td>Configurable por menú</td></tr>
-          </tbody>
-        </table>
+
+    <section class="card" id="conclusion">
+      <h2>6. Comparación de resultados y conclusión</h2>
+      <p>
+        La tabla resume todos los resultados con la tabla de distancias de la cátedra. El óptimo exacto (9.156 km) se calculó sólo como referencia, para saber a qué distancia del mejor recorrido posible queda cada método.
+      </p>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:60%" /><col style="width:20%" /><col style="width:20%" /></colgroup><thead><tr><th>Método</th><th class="num">Longitud (km)</th><th class="num">Sobre el óptimo</th></tr></thead><tbody><tr class="ref"><td>Óptimo exacto (referencia, programación dinámica)</td><td class="num">9.156</td><td class="num">-</td></tr><tr class="mejor"><td>Heurística, mejor inicio (Neuquén)</td><td class="num">9.334</td><td class="num">1,9 %</td></tr><tr><td>Heurística, desde Santa Fe</td><td class="num">9.905</td><td class="num">8,2 %</td></tr><tr><td>Heurística, promedio de los 23 inicios</td><td class="num">10.065</td><td class="num">9,9 %</td></tr><tr class="peor"><td>Heurística, peor inicio (San Juan)</td><td class="num">10.660</td><td class="num">16,4 %</td></tr><tr><td>Algoritmo genético, corrida con semilla 42</td><td class="num">9.260</td><td class="num">1,1 %</td></tr><tr><td>Algoritmo genético, mejor de 30 corridas</td><td class="num">9.187</td><td class="num">0,3 %</td></tr><tr><td>Algoritmo genético, promedio de 30 corridas</td><td class="num">9.482</td><td class="num">3,6 %</td></tr><tr class="peor"><td>Algoritmo genético, peor de 30 corridas</td><td class="num">9.959</td><td class="num">8,8 %</td></tr></tbody></table></div></div>
+      <h3>Qué muestran los resultados</h3>
+      <ul>
+        <li><strong>La heurística es rápida y simple, pero su calidad depende de la ciudad de partida.</strong> Desde Neuquén da 9.334 km (1,9 % sobre el óptimo) y desde San Juan 10.660 km (16,4 %); el promedio de los 23 inicios queda 9,9 % por encima. Siempre da la misma respuesta para un mismo inicio y calcula los 23 recorridos en 1,3 ms, pero no puede corregir sus decisiones locales: termina con tramos finales muy largos.</li>
+        <li><strong>El algoritmo genético explora y mejora, pero es estocástico.</strong> Con N = 50 y M = 200 el promedio de 30 corridas es de 9.482 km (3,6 % sobre el óptimo): las 30 corridas superan al promedio de la heurística y 8 de 30 (27 %) igualan o superan incluso a su mejor inicio. Su mejor corrida llega a 9.187 km, a 0,34 % del óptimo; la peor, a 9.959 km. Es decir que, en promedio, con estos parámetros queda un poco por detrás del mejor inicio de la heurística (148 km más) y por delante de los otros 22 inicios; la corrida con la semilla 42 (9.260 km) cae del lado favorable.</li>
+        <li><strong>Más ciclos mejoran al algoritmo genético.</strong> Con N = 50 fijo, el promedio baja de 12.042 km (M = 50) a 9.482 km (M = 200), 9.281 km (M = 500) y 9.234 km (M = 1.000); con M ≥ 500 algunas corridas encuentran el óptimo exacto.</li>
+        <li><strong>El diseño del algoritmo pesa tanto como el método.</strong> La misma ruleta con otra aptitud (complemento respecto de la suma) pasa de 9.482 a 11.054 km, y el operador de mutación (inversión contra intercambio) cambia el promedio en unos 1.123 km con PM = 35 % (tabla de calibración).</li>
+        <li><strong>Garantías y costo.</strong> Los métodos exactos garantizan el óptimo, pero el exhaustivo es inviable (punto 1) y los más inteligentes, como la programación dinámica, siguen siendo exponenciales. La heurística y el algoritmo genético no lo garantizan y, a cambio, resuelven el problema en una fracción de segundo; el costo de ambos es despreciable para 23 ciudades y lo que cuenta es la calidad de la solución.</li>
+      </ul>
+      <div class="figures"><figure class="ancha"><img src="../outputs/figures/ag_ciclos.png" alt="Efecto de la cantidad de ciclos M en el algoritmo genético (30 corridas por valor), con la heurística y el óptimo exacto como referencia." /><figcaption>Efecto de la cantidad de ciclos M en el algoritmo genético (30 corridas por valor), con la heurística y el óptimo exacto como referencia.</figcaption></figure></div>
+      <div class="table-block"><div class="table-wrap"><table><colgroup><col style="width:14%" /><col style="width:22%" /><col style="width:20%" /><col style="width:20%" /><col style="width:24%" /></colgroup><thead><tr><th class="num">Ciclos M</th><th class="num">Promedio (km)</th><th class="num">Mejor (km)</th><th class="num">Peor (km)</th><th class="num">Promedio sobre el óptimo</th></tr></thead><tbody><tr><td class="num">50</td><td class="num">12.042</td><td class="num">10.985</td><td class="num">12.997</td><td class="num">31,5 %</td></tr><tr><td class="num">100</td><td class="num">10.260</td><td class="num">9.460</td><td class="num">11.226</td><td class="num">12,1 %</td></tr><tr class="ref"><td class="num">200</td><td class="num">9.482</td><td class="num">9.187</td><td class="num">9.959</td><td class="num">3,6 %</td></tr><tr><td class="num">500</td><td class="num">9.281</td><td class="num">9.156</td><td class="num">9.700</td><td class="num">1,4 %</td></tr><tr><td class="num">1000</td><td class="num">9.234</td><td class="num">9.156</td><td class="num">9.373</td><td class="num">0,9 %</td></tr></tbody></table></div></div>
+      <div class="callout">
+        <p><strong>Conclusión.</strong> Para las 23 capitales, el método exhaustivo no puede resolver el problema; la heurística del vecino más cercano da en un instante una solución razonable (entre 1,9 % y 16,4 % sobre el óptimo según la ciudad de partida), pero sin posibilidad de mejorarla; y el algoritmo genético, con crossover cíclico, N = 50 y M = 200, la supera en promedio salvo frente al mejor inicio de la heurística (queda 3,6 % sobre el óptimo, y su mejor corrida a 0,34 %) y sigue mejorando al aumentar los ciclos. La ventaja del algoritmo genético es que no depende de un criterio fijo ni de la ciudad de partida, que se adapta con sus parámetros y que sirve para cualquier problema de permutaciones; su costo es que cada corrida da un resultado distinto y hay que calibrarlo. Para instancias chicas como ésta existe un algoritmo exacto (programación dinámica), pero para instancias grandes las heurísticas y los algoritmos genéticos son las alternativas viables.</p>
       </div>
     </section>
 
-    <section class="card" id="graficas">
-      <h2>7. Recorridos y gráficas</h2>
-      <p>
-        El programa guarda los mapas y métricas en la carpeta de salidas y copia automáticamente las figuras al informe para su visualización local. De esta forma se mantiene una salida consistente con el estilo del TP1.
-      </p>
-      <p>
-        Los recorridos impresos por consola incluyen la provincia de inicio, el trayecto completo y la longitud total del circuito.
-      </p>
-    </section>
 
     <section class="card" id="aportes">
-      <h2>8. Aportes prácticos del TSP</h2>
+      <h2>7. Aportes Prácticos del TSP</h2>
       <p>
-        Una de las aplicaciones más conocidas del TSP es la logística de distribución. En empresas de reparto o transporte, definir el orden de visita de múltiples destinos con el menor costo posible reduce tiempo, combustible y desgaste operativo.
+        El TSP aparece, con distintas restricciones, en muchas actividades actuales. Se explican tres aplicaciones.
       </p>
+      <h3>1. Logística, distribución y ruteo de vehículos</h3>
       <p>
-        Otra aplicación importante aparece en la fabricación de circuitos impresos y en el diseño de rutas de inspección. En esos contextos, minimizar el recorrido entre puntos de trabajo mejora la productividad y reduce tiempos muertos.
+        Las empresas de reparto, de transporte y de correo, y los servicios de recolección de residuos, deben decidir en qué orden visitar muchos destinos para gastar el menor tiempo y combustible posible. Cada cliente o punto de recolección es una «ciudad», y la distancia (o el tiempo de viaje) entre ellos es el costo del tramo: la ruta de un vehículo es un TSP. La cátedra menciona la logística de transporte entre las aplicaciones [1], y el video de la Fuente [4] agrega la logística de los grandes almacenes (por ejemplo, el orden en que se recogen los productos de un pedido). Cuando hay varios vehículos, capacidades de carga o ventanas horarias, el problema se generaliza a los llamados problemas de ruteo de vehículos, que en la práctica se resuelven con heurísticas y algoritmos genéticos porque los exactos no escalan. El mismo video cita rutas calculadas con algoritmos exactos: una ruta ciclista por 57.912 monumentos de Holanda, una por lugares históricos de Estados Unidos y una por 49.687 «pubs» (bares) del Reino Unido [4].
       </p>
+      <h3>2. Fabricación de placas de circuitos impresos</h3>
       <p>
-        También aparece en robótica móvil, secuenciación de tareas, biología computacional y planificación de recorridos turísticos. Aunque cada dominio impone restricciones propias, la idea central del TSP sigue siendo la misma: recorrer puntos con el menor costo total.
+        Al producir una placa electrónica una máquina debe perforar cientos o miles de orificios. Si cada orificio es una «ciudad» y el tiempo que tarda el cabezal en pasar de uno a otro es la «distancia», el orden de perforado es un TSP: un orden malo multiplica el tiempo de máquina y baja la producción de placas, y uno bueno lo reduce sin cambiar el resultado. La cátedra señala la perforación de una plancha o un circuito impreso como una aplicación en robótica y fabricación [1]. El mismo planteo sirve para el trazado de las conexiones, donde la «distancia» es la longitud de cable necesaria. Según el video de la Fuente [4], Concorde, el más poderoso de los algoritmos exactos, resolvió una instancia de 85.900 puntos de un circuito electrónico.
       </p>
+      <h3>3. Cristalografía de rayos X y otros problemas de gran escala</h3>
+      <p>
+        El video de la Fuente [4] menciona la cristalografía de rayos X entre las aplicaciones del TSP. En esos experimentos el instrumento debe medir en muchas posiciones, y conviene ordenarlas de modo de minimizar el movimiento del instrumental entre una y otra: elegir el mejor orden es, otra vez, un TSP, y reduce el tiempo de uso de un equipo muy caro. Las instancias de este tipo y las de otras aplicaciones pueden ser enormes, y de allí surgen los algoritmos aproximados más potentes: el video cuenta una ruta por 2.079.471 estrellas de la galaxia cuya longitud se aleja de la óptima, como mucho, el equivalente a 37 metros en un recorrido de 5.000 km, y otra por más de 1.331 millones de estrellas [4]. Es la razón por la que, para problemas reales con miles o millones de puntos, se combinan métodos exactos, heurísticas y algoritmos inspirados en la naturaleza, como los genéticos y los de colonia de hormigas [4].
+      </p>
+      <h3>Fuentes consultadas</h3>
+      <ol class="referencias">
+        <li>Cátedra de Algoritmos Genéticos, UTN FRRo: diapositivas «El problema del Viajante» y apuntes «Algoritmos genéticos y la optimización. Búsquedas exhaustivas y heurísticas» e «Introducción a los algoritmos genéticos, continuación» (crossover cíclico).</li>
+        <li>Cátedra de Algoritmos Genéticos, UTN FRRo: tabla de distancias entre capitales (<span class="mono">Matriz/TablaCapitales.xlsx</span>): distancias en kilómetros en línea recta, elaboración propia.</li>
+        <li>courEZ programación, «NP completo NP hard», video. <a href="https://www.youtube.com/watch?v=6a8Lo3MSjXo">youtube.com/watch?v=6a8Lo3MSjXo</a></li>
+        <li>Derivando, «¿Es el PROBLEMA DEL VIAJANTE el más difícil del mundo?», video. <a href="https://www.youtube.com/watch?v=E3yHtJSDNNY">youtube.com/watch?v=E3yHtJSDNNY</a></li>
+        <li>Derivando, «¿Qué es eso del problema P versus NP?», video. <a href="https://www.youtube.com/watch?v=UR2oDYZ-Sao">youtube.com/watch?v=UR2oDYZ-Sao</a></li>
+        <li>Held, M. y Karp, R. M. (1962). A dynamic programming approach to sequencing problems. <em>Journal of the Society for Industrial and Applied Mathematics</em>, 10(1), 196-210.</li>
+        <li>Oliver, I. M., Smith, D. J. y Holland, J. R. C. (1987). A study of permutation crossover operators on the travelling salesman problem. <em>Proceedings of the Second International Conference on Genetic Algorithms</em>.</li>
+        <li>Natural Earth: límites de provincias a escala 1:10.000.000 (dominio público), usados para dibujar los mapas. <a href="https://www.naturalearthdata.com">naturalearthdata.com</a></li>
+      </ol>
     </section>
 
-    <section class="card" id="conclusiones">
-      <h2>9. Conclusiones</h2>
-      <p>
-        El método exhaustivo queda descartado para las 23 capitales por su costo combinatorio. La heurística de vecino más cercano ofrece una respuesta inmediata y útil como línea base, pero su calidad depende del punto inicial y no garantiza optimalidad.
-      </p>
-      <p>
-        El algoritmo genético, en cambio, incorpora exploración y explotación del espacio de soluciones y permite mejorar recorridos complejos sin enumerar todas las permutaciones. Por eso es la alternativa más flexible para instancias grandes del TSP.
-      </p>
-    </section>
   </main>
 </body>
 </html>
