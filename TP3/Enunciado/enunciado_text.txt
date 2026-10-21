@@ -41,7 +41,7 @@ Comparar los resultados obtenidos entre la resolución a través de heurísticas
 Agregar en el informe un apartado final denominado «Aportes Prácticos del TSP» donde se expliquen algunas aplicaciones en las que actualmente se use el problema del viajante. Tomar por lo menos dos y explicarlas.
 
 
-Material de apoyo indicado por la cátedra (videos, transcripciones en el informe):
+Material de apoyo indicado por la cátedra (tres videos, citados en el informe):
 - NP completo NP hard (courEZ programación)
 - ¿Es el PROBLEMA DEL VIAJANTE el más difícil del mundo? (Derivando)
 - ¿Qué es eso del problema P versus NP? (Derivando)
