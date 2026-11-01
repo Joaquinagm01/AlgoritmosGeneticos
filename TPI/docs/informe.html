@@ -256,7 +256,8 @@
       <section id="concrecion">
         <h2>Concreción del modelo</h2>
         <p>
-          La solución se implementó como un prototipo reproducible en Python. Cada cromosoma contiene 500 genes, uno
+          La solución se implementó como un prototipo reproducible en Python. El escenario oficial utiliza 100 genes,
+          uno
           por alerta, y cada alelo identifica a uno de los 10 analistas disponibles. La instancia se construye a
           partir de una muestra del dataset CICIDS2017 y agrega sintéticamente prioridad, severidad, SLA y tiempo
           estimado de resolución; por lo tanto, esos atributos operativos no forman parte del dataset original.
@@ -264,24 +265,25 @@
         <p>
           La configuración oficial utiliza una población de 50 individuos durante 200 generaciones, cruzamiento de
           probabilidad 0.75, mutación por gen de probabilidad 0.05 y preservación de los tres mejores individuos. La
-          semilla base es 42 y el horizonte operativo modelado es de 480 minutos. El prototipo genera métricas
+          semilla base es 42 y el horizonte operativo modelado es de 480 minutos. La criticidad de activos se deriva
+          por defecto de un catálogo CMDB simulado con 10% de activos críticos; el dataset no contiene inventario real.
+          Además del escenario principal de 100 alertas, se evalúan un escenario de estrés de 120 y uno de saturación de
+          500 alertas. El prototipo genera métricas
           generacionales, distribución final de carga, comparación de baselines y gráficos para analizar la solución.
         </p>
 
         <h3>Verificación experimental</h3>
         <p>
-          En la evaluación sobre 20 semillas, el Algoritmo Genético obtuvo una espera crítica media de 136.1 minutos,
-          frente a 179.0 minutos para Round-Robin, y un desbalance relativo medio de 0.027 frente a 0.045. El backlog
-          total fue similar entre ambos métodos debido a que la demanda estimada supera la capacidad del turno: 500
-          alertas con un tiempo medio de 41.2 minutos representan aproximadamente 20.600 minutos-analista, mientras
-          que 10 analistas durante 480 minutos ofrecen 4.800 minutos-analista. Por eso, el resultado se interpreta
-          principalmente por la prioridad de las alertas que permanecen pendientes, no solo por el backlog total.
+          La evaluación recomendada utiliza 20 semillas y compara el Algoritmo Genético con Round-Robin usando las
+          mismas alertas y escenarios de duración para cada par. Se reportan media, desvío estándar, intervalos de
+          confianza bootstrap y porcentaje de semillas en las que el AG mejora. El escenario de 500 alertas se
+          interpreta como saturación; los escenarios de 100 y 120 permiten evaluar con mayor claridad el efecto sobre
+          SLA, espera crítica y distribución de carga.
         </p>
         <p>
-          La comparación con una ablación sin el término de makespan mostró una reducción pareada de aproximadamente
-          1.9% en el makespan con la configuración oficial. La evidencia permite verificar mejoras en espera crítica,
-          balance y tiempo de finalización, aunque no una reducción estructural del backlog mientras la capacidad siga
-          siendo inferior a la demanda.
+          La comparación conserva los pesos de la función objetivo antes de observar los resultados. No se ajustan los
+          pesos para forzar una ventaja del AG; si aparece un compromiso entre SLA, espera, balance y backlog, se
+          reporta explícitamente.
         </p>
 
         <h3>Especificación técnica e infraestructura</h3>

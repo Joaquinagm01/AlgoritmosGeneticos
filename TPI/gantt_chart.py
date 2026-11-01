@@ -10,7 +10,8 @@ import pandas as pd # Pandas nos permite leer y manipular los datos CSV fácilme
 # Importamos variables y funciones globales de nuestro script principal main.py
 from main import (
     derivar_alertas_desde_dataset, # Función que reconstruye las alertas desde el CSV base
-    _evaluar_asignacion, # Función que calcula los tiempos de espera y finalización del genético
+    Instancia,
+    _simular,
     HORIZONTE_MINUTOS, # El límite de minutos del turno (usualmente 480 min = 8 horas)
     N_ANALISTAS, # La cantidad total de analistas en el SOC
     OUTPUTS_DIR, # La ruta a la carpeta donde guardamos todos los resultados
@@ -32,9 +33,13 @@ def generar_gantt() -> None: # Definimos la función principal que va a dibujar 
     
     # 2. Reconstruir las alertas y evaluar el cromosoma para obtener tiempos
     alertas = derivar_alertas_desde_dataset() # Llamamos a la función que vuelve a cargar las alertas del dataset
-    evaluacion = _evaluar_asignacion(mejor_cromosoma, alertas) # Simulamos la asignación ganadora para obtener a qué hora termina cada alerta
-    
-    finalizacion_por_alerta = evaluacion["finalizacion_por_alerta"] # Extraemos el array con el minuto exacto de fin de cada alerta
+    inst = Instancia(alertas, usar_activos=True)
+    _, finalizacion_por_alerta, _ = _simular(
+        mejor_cromosoma,
+        list(range(inst.n)),
+        inst,
+        inst.dur_nominal.tolist(),
+    )
     
     # 3. Preparar datos para el gráfico
     # Creamos la figura y los ejes con un tamaño de 14x8 pulgadas
@@ -97,4 +102,3 @@ def generar_gantt() -> None: # Definimos la función principal que va a dibujar 
 # Bloque estándar de ejecución: solo se llama a generar_gantt() si este script se ejecuta directamente
 if __name__ == "__main__":
     generar_gantt() # Disparamos la función
-

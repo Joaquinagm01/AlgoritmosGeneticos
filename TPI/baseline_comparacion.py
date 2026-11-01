@@ -9,7 +9,8 @@ import pandas as pd
 import main
 from main import (
     derivar_alertas_desde_dataset,
-    _evaluar_asignacion,
+    evaluar_cromosoma,
+    Instancia,
     N_ANALISTAS,
     PRIORIDAD_RANK,
     OUTPUTS_DIR,
@@ -73,18 +74,30 @@ def generar_comparativa() -> None:
         n_analistas_real = N_ANALISTAS
         print(f"Aviso: el resumen no indica n_analistas, se asume el valor por defecto ({N_ANALISTAS}).")
 
-    main.N_ANALISTAS = n_analistas_real  # Sincronizamos el global real que usa _evaluar_asignacion
-    
+    main.N_ANALISTAS = n_analistas_real
+
     alertas = derivar_alertas_desde_dataset()
-    eval_ag = _evaluar_asignacion(mejor_cromosoma, alertas)
+    inst = Instancia(alertas, usar_activos=True)
+    escenarios = [inst.dur_nominal.tolist()]
+
+    def evaluar(cromosoma):
+        return evaluar_cromosoma(
+            cromosoma,
+            list(range(inst.n)),
+            np.arange(inst.n),
+            inst,
+            escenarios,
+        )
+
+    eval_ag = evaluar(mejor_cromosoma)
     
     # 2. Generar y evaluar baselines adicionales
     cromosoma_baseline = asignar_round_robin(len(alertas), n_analistas_real)
-    eval_baseline = _evaluar_asignacion(cromosoma_baseline, alertas)
+    eval_baseline = evaluar(cromosoma_baseline)
     cromosoma_menor_carga = asignar_menor_carga(alertas, n_analistas_real)
-    eval_menor_carga = _evaluar_asignacion(cromosoma_menor_carga, alertas)
+    eval_menor_carga = evaluar(cromosoma_menor_carga)
     cromosoma_urgencia = asignar_urgencia_balanceada(alertas, n_analistas_real)
-    eval_urgencia = _evaluar_asignacion(cromosoma_urgencia, alertas)
+    eval_urgencia = evaluar(cromosoma_urgencia)
 
     evaluaciones = {
         "Round-Robin": eval_baseline,

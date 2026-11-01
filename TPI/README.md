@@ -7,12 +7,14 @@ Este proyecto aborda un problema crítico de ciberseguridad en el mundo real: el
 
 ## 📌 Resumen del Proyecto
 
-El proyecto modela la asignación de 500 alertas reales de red a un equipo de 10 analistas. A lo largo del desarrollo, hemos pasado desde un enfoque clásico hasta la integración de optimizaciones empíricas y arquitecturas modernas.
+El escenario oficial modela la asignación de 100 alertas derivadas de tráfico real a un equipo de 10 analistas. También se incluyen escenarios de estrés de 120 alertas y de saturación de 500 alertas para estudiar cómo cambia el comportamiento del algoritmo cuando la demanda supera la capacidad.
 
 **Características Principales:**
 - **Datos Reales:** Utiliza el dataset público **CICIDS2017** para las alertas (simulando ataques DDoS).
 - **Core Clásico:** Implementa un **Algoritmo Genético Canónico** con selección por ranking, crossover de 1 punto, mutación por gen y elitismo (`main.py`).
 - **Validación Empírica:** Cuenta con un Sintonizador de Hiperparámetros (Grid Search) y una comparación *Baseline* contra un asignador tradicional (Round-Robin).
+- **Evaluación reproducible:** `experimento.py` compara AG y Round-Robin sobre las mismas alertas y escenarios de duración en 20 semillas.
+- **Extensiones:** Incluye incertidumbre en los tiempos, flujo continuo y criticidad de activos mediante un catálogo CMDB simulado.
 - **Visualización:** Incluye un Dashboard Interactivo construido en **Streamlit** para presentar los resultados de forma visual y profesional.
 
 ---
@@ -24,6 +26,7 @@ El proyecto modela la asignación de 500 alertas reales de red a un equipo de 10
 | `main.py` | Motor del Algoritmo Genético Canónico (Requisito Académico). |
 | `hyper_tuner.py` | Script de Grid Search para justificar empíricamente las tasas de mutación y crossover. |
 | `baseline_comparacion.py` | Script que compara nuestro AG contra un asignador tradicional (Round-Robin). |
+| `experimento.py` | Comparación pareada multi-semilla para los escenarios principal, de estrés y de saturación. |
 | `dashboard.py` | Interfaz gráfica interactiva hecha en Streamlit para exponer resultados. |
 | `docs/` | Documentación académica: `informe.html`, `articulo_v2.tex` y guía de defensa. |
 | `outputs/` | Archivos CSV generados y gráficos (`figures/`). |
@@ -52,6 +55,38 @@ Para probar rápidamente que todo funciona:
 python main.py --tam-poblacion 5 --n-generaciones 3
 ```
 
+El escenario oficial usa 100 alertas y criticidad de activos `cmdb`. Para ejecutar
+el escenario de estrés:
+```bash
+python main.py --n-alertas 120 --criticidad-activo cmdb
+```
+
+Para reproducir el escenario de saturación:
+```bash
+python main.py --n-alertas 500 --criticidad-activo cmdb
+```
+
+### Semilla aleatoria y reproducibilidad
+
+Para sortear una semilla distinta en cada corrida:
+```bash
+python main.py --seed-aleatoria
+```
+
+El flag se puede combinar con otras opciones:
+```bash
+python main.py --seed-aleatoria --flujo-continuo
+```
+
+Al comenzar, el programa informa la semilla utilizada para repetir exactamente
+la corrida. Para repetirla, ejecutá:
+```bash
+python main.py --seed <semilla-informada>
+```
+
+El flag no lleva ningún valor. Si el comando se arma desde un dashboard o
+script, alcanza con agregar `--seed-aleatoria` a la lista de argumentos.
+
 ### 3. Comparar con los baselines
 Después de ejecutar `main.py`, generá la comparación:
 ```bash
@@ -59,7 +94,22 @@ python baseline_comparacion.py
 ```
 El script actualiza `outputs/comparativa_baselines.csv` y genera tres gráficos en `outputs/figures/`.
 
-### 4. Ver los resultados
+### 4. Ejecutar la comparación multi-semilla
+
+La comparación recomendada usa las semillas 42 a 61, las mismas alertas para
+cada par AG/Round-Robin y escenarios nuevos de validación:
+```bash
+python experimento.py
+```
+
+Genera tablas en `outputs/experimento/` con media, desvío estándar, intervalos
+de confianza bootstrap y porcentaje de semillas en las que el AG mejora.
+Para mantener fijas las alertas entre semillas:
+```bash
+python experimento.py --modo-muestra fija --seed-datos 42
+```
+
+### 5. Ver los resultados
 Los archivos más importantes son:
 - `outputs/resumen_resultados_soc.csv`: mejor solución y métricas globales.
 - `outputs/metricas_generacionales_soc.csv`: evolución por generación.
@@ -72,7 +122,7 @@ Los gráficos de comparación actuales son:
 - `backlog_comparativa.png`
 - `desbalance_comparativa.png`
 
-### 5. Abrir el dashboard
+### 6. Abrir el dashboard
 El dashboard lee los archivos de `outputs/`; no ejecuta el algoritmo en vivo. Para actualizar los datos antes de abrirlo, ejecutá primero `main.py` y, opcionalmente, `gantt_chart.py` y `baseline_comparacion.py`.
 
 Para iniciar Streamlit:
@@ -81,7 +131,7 @@ python -m streamlit run dashboard.py
 ```
 Después abrí la dirección que muestra Streamlit, normalmente `http://localhost:8501`. Para detenerlo, presioná `Ctrl+C` en la terminal.
 
-### 6. Regenerar el PDF del paper
+### 7. Regenerar el PDF del paper
 Requiere tener `pdflatex` disponible. Desde `TPI`:
 ```bash
 cd docs

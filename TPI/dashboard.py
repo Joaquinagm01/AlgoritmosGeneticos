@@ -23,12 +23,13 @@ st.sidebar.markdown("Ajusta los parámetros y presiona **Ejecutar** para correr 
 with st.sidebar.form("config_form"):
     seed_val = st.number_input("SEED", value=42, step=1)
     n_analistas = st.number_input("N_ANALISTAS", value=10, min_value=1, step=1)
-    n_alertas = st.number_input("N_ALERTAS", value=500, min_value=10, step=10)
+    n_alertas = st.number_input("N_ALERTAS", value=100, min_value=10, step=10)
     tam_pob = st.number_input("TAM_POBLACION", value=10, min_value=2, step=2)
     n_gen = st.number_input("N_GENERACIONES", value=20, min_value=1, step=1)
     p_cross = st.slider("P_CROSSOVER", min_value=0.0, max_value=1.0, value=0.75, step=0.05)
     p_mut = st.slider("P_MUTACION", min_value=0.0, max_value=1.0, value=0.05, step=0.01)
     horiz = st.number_input("HORIZONTE_MINUTOS", value=480, min_value=60, step=60)
+    criticidad_activo = st.selectbox("CRITICIDAD_ACTIVO", options=("cmdb", "puerto"), index=0)
     
     submitted = st.form_submit_button("🚀 Ejecutar Algoritmo")
 
@@ -43,7 +44,8 @@ if submitted:
             "--n-generaciones", str(n_gen),
             "--p-crossover", str(p_cross),
             "--p-mutacion", str(p_mut),
-            "--horizonte-minutos", str(horiz)
+            "--horizonte-minutos", str(horiz),
+            "--criticidad-activo", criticidad_activo,
         ]
         try:
             subprocess.run(cmd, check=True)
@@ -59,10 +61,12 @@ def load_data():
     resumen = pd.read_csv(OUTPUTS_DIR / "resumen_resultados_soc.csv")
     distribucion = pd.read_csv(OUTPUTS_DIR / "distribucion_final_alertas_soc.csv")
     grid_search = pd.read_csv(OUTPUTS_DIR / "grid_search_resultados.csv") if (OUTPUTS_DIR / "grid_search_resultados.csv").exists() else None
-    return metricas_gen, resumen, distribucion, grid_search
+    experimento = OUTPUTS_DIR / "experimento" / "experimento_resumen.csv"
+    experimento_resumen = pd.read_csv(experimento) if experimento.exists() else None
+    return metricas_gen, resumen, distribucion, grid_search, experimento_resumen
 
 try:
-    metricas_gen, resumen, distribucion, grid_search = load_data()
+    metricas_gen, resumen, distribucion, grid_search, experimento_resumen = load_data()
 except Exception as e:
     st.error(f"Error cargando los datos. Asegurate de haber corrido `main.py` y los scripts de evaluación. Detalles: {e}")
     st.stop()
@@ -129,6 +133,12 @@ with tab2:
 with tab3:
     st.header("Validación Empírica (AG vs Round-Robin)")
     st.markdown("Demostración de la mejora introducida por el Algoritmo Genético frente a una heurística de asignación secuencial clásica.")
+    if experimento_resumen is not None:
+        st.subheader("Comparación multi-semilla")
+        st.caption("Media, desvío estándar e intervalo bootstrap por escenario. Las métricas se evaluaron fuera de muestra.")
+        st.dataframe(experimento_resumen, use_container_width=True)
+    else:
+        st.info("Ejecutá `experimento.py` para cargar la comparación de 20 semillas.")
     
     nombres_comparativa = [
         "espera_critica_comparativa.png",
@@ -171,4 +181,3 @@ with col_f3:
     st.markdown("**Tiempos y Eficiencia Computacional**")
     st.markdown(f"- **Espera Promedio Global:** `{resumen.iloc[0]['espera_promedio_min']:.2f} min`")
     st.markdown(f"- **Tiempo de Ejecución (CPU):** `{resumen.iloc[0]['tiempo_ejecucion_seg']:.4f} seg`")
-
