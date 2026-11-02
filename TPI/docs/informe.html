@@ -129,7 +129,7 @@
       <h2>Problema</h2>
       <p>
         La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un Centro de Operaciones
-        de Seguridad (SOC) no logra, de manera consistente, minimizar simultáneamente el tiempo total de resolución,
+        de Seguridad (SOC) no logra optimizar de forma equilibrada el tiempo total de resolución,
         los tiempos de espera de las alertas críticas y el desbalance de carga entre analistas.
         En este contexto, surge la siguiente pregunta de investigación: 
         <strong>¿Puede un algoritmo genético optimizar la asignación de alertas en un SOC para reducir tiempos de respuesta
@@ -147,9 +147,9 @@
         <h3>Objetivo general</h3>
         <p>
           Diseñar, implementar y evaluar un modelo basado en Algoritmos Genéticos para optimizar la asignación de
-          alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad mediante la minimización conjunta del
-          tiempo total de resolución, el incumplimiento de los SLA en alertas críticas, el backlog y el desbalance de carga
-          entre analistas.
+          alertas de seguridad a los analistas de un Centro de Operaciones de Seguridad mediante una función objetivo
+          ponderada que combine el tiempo total de resolución, el incumplimiento de los SLA en alertas críticas,
+          el backlog y el desbalance de carga entre analistas.
         </p>
 
         <h3>Objetivos específicos</h3>
@@ -170,10 +170,11 @@
         <p>
           La presente investigación se justifica desde una perspectiva académica y desde una perspectiva de
           aplicabilidad práctica. Desde lo académico, el problema de asignación de alertas en un SOC constituye una
-          instancia concreta y no trivial de optimización combinatoria de tipo <em>Job Shop Scheduling</em>, lo que
-          permite aplicar y evaluar empíricamente los fundamentos de los Algoritmos Genéticos Canónicos —
+          instancia concreta y no trivial de scheduling de máquinas paralelas, relacionada con variantes de
+          <em>Job Shop Scheduling</em>, lo que
+          permite aplicar y evaluar empíricamente los fundamentos de los Algoritmos Genéticos —
           representación cromosómica, operadores de selección, cruzamiento, mutación y función de aptitud
-          multiobjetivo— sobre un caso de uso realista, en lugar de un problema de juguete.
+          escalarizada— sobre un caso de uso simulado y derivado de datos públicos, en lugar de un problema de juguete.
         </p>
         <p>
           Desde lo práctico, la literatura de ciberseguridad documenta que la fatiga de alertas y el desbalance de
@@ -225,42 +226,54 @@
         <h3>Representación del problema</h3>
         <p>
           Se diseñó una representación cromosómica donde cada individuo codifica una asignación completa de
-          alertas a analistas: cada gen representa una alerta y el alelo contenido en ese gen indica el analista
-          responsable de resolverla.
+          alertas a analistas. El primer bloque contiene un gen por alerta y el alelo indica el analista
+          responsable; el segundo bloque contiene un ajuste acotado de prioridad de despacho y el tercero,
+          activo por defecto, contiene dos pesos globales, <span class="mono">w2</span> y <span class="mono">w3</span>,
+          para activos importantes y críticos. Las variantes reducidas se ejecutan
+          combinando <span class="mono">--sin-ajuste</span> y
+          <span class="mono">--sin-criticidad</span>.
         </p>
         <div class="formula">
-          J = 0.10 T + 0.10 W + 0.20 Wc + 0.25 Rc + 0.10 Bp + 0.05 Bm + 0.15 D + 0.05 O<br />
+          J = 0.10 T + 0.10 W + 0.20 Wc + 0.25 Rc + 0.10 Bp + 0.05 Bm + 0.15 D + 0.05 O + 0.25 Sa<br />
           fitness(cromosoma) = 1 / (1 + J)
         </div>
         <p>
           Las letras representan magnitudes normalizadas: tiempo de finalización, espera promedio, espera crítica,
-          retraso crítico respecto del SLA, backlog ponderado por prioridad, minutos de backlog, desbalance relativo y
-          sobrecarga relativa. Los pesos expresan la prioridad operativa de cada criterio.
+          retraso crítico respecto del SLA efectivo, backlog ponderado por prioridad, minutos de backlog, desbalance
+          relativo, sobrecarga relativa y violación de SLA ponderada por criticidad del activo. Los pesos expresan la
+          prioridad operativa de cada criterio.
         </p>
         <h3>Operadores genéticos</h3>
         <p>
           La configuración oficial evoluciona la población mediante selección por ranking, cruzamiento de un punto,
-          mutación por gen y elitismo. La implementación también permite seleccionar por torneo o ruleta como
+          mutación por bloques y elitismo. La implementación también permite seleccionar por torneo o ruleta como
           alternativas experimentales, pero los resultados oficiales utilizan ranking.
         </p>
         <h3>Validación empírica</h3>
         <p>
           Para validar el modelo se utiliza una muestra de eventos derivada del dataset CICIDS2017, sobre la cual
           se inyectan sintéticamente los atributos operativos de cada alerta. El desempeño del Algoritmo Genético se
-          contrasta contra una estrategia de asignación tradicional de tipo <em>Round-Robin</em>, tomada como línea
-          de base (<span class="mono">baseline</span>). También se comparan las reglas de menor carga y urgencia
-          balanceada, y se exploran los hiperparámetros mediante una búsqueda en grilla (<em>Grid Search</em>).
+          contrasta contra tres reglas deterministas: <em>Round-Robin</em>, menor carga y urgencia balanceada.
+          Esta última utiliza la misma información operativa que el AG sin realizar búsqueda evolutiva, por lo que
+          permite separar parcialmente el efecto de la política de despacho del efecto de la búsqueda. También se
+          exploran los hiperparámetros mediante una búsqueda en grilla (<em>Grid Search</em>).
         </p>
       </section>
 
       <section id="concrecion">
         <h2>Concreción del modelo</h2>
         <p>
-          La solución se implementó como un prototipo reproducible en Python. El escenario oficial utiliza 100 genes,
-          uno
-          por alerta, y cada alelo identifica a uno de los 10 analistas disponibles. La instancia se construye a
+          La solución se implementó como un prototipo reproducible en Python. El escenario oficial utiliza 100 genes
+          de asignación, 100 ajustes de prioridad y dos pesos globales evolutivos de criticidad (<span class="mono">w2</span>,
+          <span class="mono">w3</span>), con cada alelo de asignación
+          identificando a uno de los 10 analistas disponibles. La instancia se construye a
           partir de una muestra del dataset CICIDS2017 y agrega sintéticamente prioridad, severidad, SLA y tiempo
-          estimado de resolución; por lo tanto, esos atributos operativos no forman parte del dataset original.
+          estimado de resolución; por lo tanto, esos atributos operativos no forman parte del dataset original. La
+          criticidad del activo se integra en el tercer bloque del cromosoma como una política global de priorización
+          aprendida, mientras que el valor observado de criticidad permanece en la instancia. El orden resta un bono
+          proporcional a <span class="mono">w2</span> o <span class="mono">w3</span> según el nivel. También interviene en la función
+          de penalización mediante el SLA efectivo y el peso de la violación. El catálogo CMDB utilizado
+          es simulado y constituye una limitación del prototipo.
         </p>
         <p>
           La configuración oficial utiliza una población de 50 individuos durante 200 generaciones, cruzamiento de
@@ -271,19 +284,44 @@
           500 alertas. El prototipo genera métricas
           generacionales, distribución final de carga, comparación de baselines y gráficos para analizar la solución.
         </p>
+        <p>
+          La incertidumbre temporal se implementa mediante duraciones lognormales con media igual al tiempo estimado
+          y coeficiente de variación configurable. El AG optimiza sobre escenarios comunes y la solución se valida
+          fuera de muestra con nuevas realizaciones. El modo <span class="mono">--flujo-continuo</span> re-planifica
+          las alertas ya llegadas en un horizonte rodante, respetando las tareas comprometidas y las duraciones reales.
+          Esta extensión está implementada, pero no se presenta como evidencia cuantitativa principal en este informe.
+        </p>
 
         <h3>Verificación experimental</h3>
         <p>
           La evaluación recomendada utiliza 20 semillas y compara el Algoritmo Genético con Round-Robin usando las
-          mismas alertas y escenarios de duración para cada par. Se reportan media, desvío estándar, intervalos de
-          confianza bootstrap y porcentaje de semillas en las que el AG mejora. El escenario de 500 alertas se
+          mismas alertas y escenarios de duración para cada par. También se conservan Menor carga y Urgencia
+          balanceada como controles deterministas. Se reportan media, desvío estándar, intervalos de confianza
+          bootstrap y porcentaje de semillas en las que el AG mejora. El escenario de 500 alertas se
           interpreta como saturación; los escenarios de 100 y 120 permiten evaluar con mayor claridad el efecto sobre
           SLA, espera crítica y distribución de carga.
+        </p>
+        <p>
+          La ablación separa cuatro variantes: A, solo asignación; B, asignación más ajustes individuales;
+          C, asignación más política global de criticidad (<span class="mono">w2,w3</span>); y D, los tres bloques.
+          Se ejecutan con <span class="mono">--sin-ajuste</span> y <span class="mono">--sin-criticidad</span>
+          según corresponda.
         </p>
         <p>
           La comparación conserva los pesos de la función objetivo antes de observar los resultados. No se ajustan los
           pesos para forzar una ventaja del AG; si aparece un compromiso entre SLA, espera, balance y backlog, se
           reporta explícitamente.
+        </p>
+        <p>
+          La comparación pareada almacenada en <span class="mono">outputs/comparacion_ablacion.csv</span> no mostró
+          diferencias concluyentes entre las variantes en el escenario principal. En el escenario de estrés, C y D
+          aumentaron significativamente el backlog frente a A, sin mejorar de forma concluyente el fitness, la espera
+          crítica o el desbalance. Bajo saturación, B, C y D redujeron la espera crítica frente a A, pero también
+          redujeron el fitness y aumentaron el backlog; D además redujo el desbalance. Estos resultados muestran un
+          compromiso: la política de criticidad puede ser útil para reducir esperas críticas bajo sobrecarga, pero no
+          mejora globalmente la función objetivo. Los valores aprendidos de <span class="mono">w2</span> y
+          <span class="mono">w3</span> son consistentes con la penalización previa de activos críticos y no
+          constituyen, por sí solos, evidencia de un descubrimiento independiente.
         </p>
 
         <h3>Especificación técnica e infraestructura</h3>

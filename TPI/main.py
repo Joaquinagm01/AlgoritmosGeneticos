@@ -1,4 +1,4 @@
-"""Algoritmo Genético Canónico aplicado a Scheduling de Alertas SOC (versión extendida).
+"""Algoritmo Genético extendido aplicado a Scheduling de Alertas SOC.
 
 Las alertas se derivan de una muestra real del dataset CICIDS2017 (flujos de red
 de un ataque DDoS, columna `Label` en {DDoS, BENIGN}). El dataset no contiene
@@ -628,7 +628,7 @@ def calcular_fitness(
 
 
 # ======================================================================
-# Operadores del algoritmo genético canónico y estrategias de selección alternativas.
+# Operadores del algoritmo genético y estrategias de selección alternativas.
 # ======================================================================
 def seleccion_ruleta(poblacion: Sequence[Sequence[int]], fitnesses: Sequence[float]) -> List[int]:
     """Selección por ruleta (mejor fitness = más porción de la ruleta)."""
@@ -1279,7 +1279,7 @@ def main() -> None:
     """Orquesta la simulacion completa: lee args, corre el algoritmo y genera salidas tabuladas y graficas."""
     global SEED, N_ANALISTAS, N_ALERTAS, TAM_POBLACION, N_GENERACIONES, P_CROSSOVER, P_MUTACION, HORIZONTE_MINUTOS, DATASET_CSV, AJUSTE_ACTIVO, CRITICIDAD_EN_CROMOSOMA
 
-    parser = argparse.ArgumentParser(description="Algoritmo Genético Canónico aplicado a Scheduling de Alertas SOC.")
+    parser = argparse.ArgumentParser(description="Algoritmo Genético extendido aplicado a Scheduling de Alertas SOC.")
     # Nota: --seed-aleatoria no lleva valor; imprime la semilla elegida para repetir la corrida con --seed.
     parser.add_argument("--seed", type=int, default=SEED,
                         help=f"Semilla del GA y de los escenarios (por defecto {SEED}, corrida repetible)")
