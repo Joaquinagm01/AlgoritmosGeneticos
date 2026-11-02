@@ -294,10 +294,9 @@
 
         <h3>Verificación experimental</h3>
         <p>
-          La evaluación recomendada utiliza 20 semillas y compara el Algoritmo Genético con Round-Robin usando las
-          mismas alertas y escenarios de duración para cada par. También se conservan Menor carga y Urgencia
-          balanceada como controles deterministas. Se reportan media, desvío estándar, intervalos de confianza
-          bootstrap y porcentaje de semillas en las que el AG mejora. El escenario de 500 alertas se
+          La evaluación recomendada utiliza 20 semillas y compara el Algoritmo Genético con los tres baselines
+          deterministas usando las mismas alertas y escenarios de duración para cada semilla. Se reportan media,
+          desvío estándar, intervalos de confianza bootstrap y porcentaje de semillas en las que el AG mejora. El escenario de 500 alertas se
           interpreta como saturación; los escenarios de 100 y 120 permiten evaluar con mayor claridad el efecto sobre
           SLA, espera crítica y distribución de carga.
         </p>
@@ -309,6 +308,12 @@
           métodos. Por lo tanto, el AG no presenta una superioridad universal frente a reglas deterministas simples;
           en saturación, la diferencia puede indicar sobreajuste a los escenarios de entrenamiento o una exploración
           insuficiente del cromosoma extendido, y no solo falta de capacidad.
+        </p>
+        <p>
+          Como trabajo futuro, se propone sembrar la población inicial con Menor carga y Urgencia balanceada para
+          evaluar si el AG puede conservar esas políticas y mejorar sus compromisos entre fitness, espera, backlog y
+          balance. La regla Urgencia balanceada sí despacha cada cola por prioridad, severidad y SLA; sus peores
+          esperas críticas en los escenarios no saturados reflejan el costo de concentrar primero las alertas urgentes.
         </p>
         <p>
           La ablación separa cuatro variantes: A, solo asignación; B, asignación más ajustes individuales;
