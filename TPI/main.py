@@ -29,12 +29,15 @@ EXTENSIONES respecto de la versión original (a partir de las sugerencias de los
    de la próxima re-planificación quedan comprometidas; el resto se re-optimiza.
    La ejecución usa tiempos "reales" que el planificador no conoce.
 
-3. CRITICIDAD DEL ACTIVO EN LA PENALIZACIÓN POR SLA.
+3. CRITICIDAD DEL ACTIVO EN LA PENALIZACIÓN POR SLA Y EN EL CROMOSOMA.
    Cada alerta lleva la criticidad del activo afectado (1 = común, 2 = importante,
    3 = crítico). Esa criticidad (a) ajusta el SLA efectivo, (b) pondera la violación de
    SLA y el backlog, y (c) interviene en la regla de despacho que decodifica el
-   cromosoma. Se agrega el término `sla_activo` (violación de SLA ponderada por
-   prioridad y criticidad del activo, sobre TODAS las alertas) a la función objetivo.
+   cromosoma. El cromosoma agrega un bloque de dos pesos globales (`w2`, `w3`)
+   que determina cuánto aprovecha la política evolucionada la criticidad observada
+   del activo al ordenar la cola. Se agrega el término `sla_activo` (violación de SLA
+   ponderada por prioridad y criticidad del activo, sobre TODAS las alertas) a la
+   función objetivo.
 
 Para reproducir la formulación original (determinista y sin activos):
     python main.py --n-alertas 500 --n-escenarios 1 --sin-activos
@@ -81,6 +84,15 @@ MAX_ESCENARIOS_REPLAN = 5 # Tope de escenarios por re-planificación (controla e
 INTERVALO_REPLAN = 15 # Cada cuántos minutos se re-planifica
 GEN_REPLAN = 30 # Generaciones del GA en cada re-planificación
 POBLACION_REPLAN = 30 # Tamaño de población del GA en cada re-planificación
+
+# --- Extensión 4: el cromosoma evoluciona la prioridad de despacho ---
+AJUSTE_ACTIVO = True # False = desactiva el bloque de ajustes individuales; se cambia con --sin-ajuste
+AJUSTE_MAX = 0.5 # El ajuste d_i vive en [-AJUSTE_MAX, AJUSTE_MAX] (fraccion de n posiciones de la cola)
+SIGMA_AJUSTE = 0.10 # Desvio de la mutacion gaussiana del ajuste
+CRITICIDAD_EN_CROMOSOMA = True # El tercer bloque aprende una política global por nivel de activo
+WMAX_CRITICIDAD = 1.0 # w2 y w3 viven en [0, WMAX_CRITICIDAD]
+SIGMA_CRITICIDAD = 0.10 # Desvío de la mutación de w2 y w3
+BONO_CRITICIDAD_MAX = 0.50 # Máximo desplazamiento relativo del orden por criticidad aprendida
 
 # --- Extensión 3: criticidad del activo ---
 # 1 = activo común, 2 = activo importante (servicio expuesto), 3 = activo crítico (administración / datos / identidad)
@@ -315,14 +327,43 @@ def generar_poblacion(
     tam_poblacion: int = TAM_POBLACION,
     n_alertas: int = N_ALERTAS,
     n_analistas: int = N_ANALISTAS,
-) -> List[List[int]]:
-    """Población inicial aleatoria. Cada gen = a qué analista va esa alerta. El individuo 0 es Round-Robin."""
-    poblacion = [
-        [random.randint(1, n_analistas) for _ in range(n_alertas)]
-        for _ in range(tam_poblacion)
-    ]
+    con_ajuste: bool = False,
+    con_criticidad: bool = False,
+) -> List[List[float]]:
+    """Población inicial por bloques.
+
+    Genes [0:m] = analista; [m:2m] (opcional) = ajuste de prioridad;
+    [2m:2m+2] (opcional) = (w2, w3), pesos globales por nivel de criticidad.
+
+    El individuo 0 es Round-Robin con ajustes neutros.
+    """
+    poblacion: List[List[float]] = []
+    for k in range(tam_poblacion):
+        asign = [random.randint(1, n_analistas) for _ in range(n_alertas)]
+        if con_ajuste:
+            if k % 2 == 0:
+                ajuste = [0.0] * n_alertas # La mitad de la poblacion parte de la regla fija
+            else:
+                ajuste = [max(-AJUSTE_MAX, min(AJUSTE_MAX, random.gauss(0.0, 0.2))) for _ in range(n_alertas)]
+        else:
+            ajuste = []
+        pesos_criticidad = (
+            [WMAX_CRITICIDAD, WMAX_CRITICIDAD]
+            if con_criticidad and k % 2 == 0
+            else (
+                [max(0.0, min(WMAX_CRITICIDAD, random.gauss(1.0, 0.2))) for _ in range(2)]
+                if con_criticidad
+                else []
+            )
+        )
+        poblacion.append(asign + ajuste + pesos_criticidad)
     if poblacion:
-        poblacion[0] = [(indice % n_analistas) + 1 for indice in range(n_alertas)]
+        rr = [(indice % n_analistas) + 1 for indice in range(n_alertas)]
+        poblacion[0] = (
+            rr
+            + ([0.0] * n_alertas if con_ajuste else [])
+            + ([WMAX_CRITICIDAD, WMAX_CRITICIDAD] if con_criticidad else [])
+        )
     return poblacion
 
 
@@ -333,6 +374,7 @@ def _despachar_analista(
     disponibilidad: float,
     t_min: float = 0.0,
     t_corte: Optional[float] = None,
+    orden: Optional[Sequence[float]] = None,
 ) -> Tuple[List[Tuple[int, float, float]], float, List[int]]:
     """Simula la bandeja de UN analista.
 
@@ -343,7 +385,7 @@ def _despachar_analista(
     Devuelve (ejecutadas[(idx, inicio, fin)], instante en que queda libre, alertas restantes).
     """
     llegada = inst.llegada_list
-    orden = inst.orden
+    orden = inst.orden if orden is None else orden # Orden base o base + ajuste evolucionado
     reloj = max(disponibilidad, t_min)
     libre = disponibilidad
     cola: List[Tuple[int, int]] = [] # Heap de alertas ya llegadas, ordenadas por urgencia
@@ -370,8 +412,39 @@ def _despachar_analista(
     return ejecutadas, libre, restantes
 
 
+def _orden_efectivo(cromosoma: Sequence[float], idx_g: Sequence[int], inst: Instancia) -> Sequence[float]:
+    """Decodifica los bloques de prioridad y criticidad del cromosoma."""
+    m = len(idx_g)
+    orden = list(inst.orden)
+    tiene_ajuste = AJUSTE_ACTIVO and len(cromosoma) >= 2 * m
+    offset_criticidad = m * (1 + int(AJUSTE_ACTIVO))
+    tiene_criticidad = CRITICIDAD_EN_CROMOSOMA and len(cromosoma) >= offset_criticidad + 2
+    for pos, idx in enumerate(idx_g):
+        ajuste = cromosoma[m + pos] if tiene_ajuste else 0.0
+        w2 = cromosoma[offset_criticidad] if tiene_criticidad else 1.0
+        w3 = cromosoma[offset_criticidad + 1] if tiene_criticidad else 1.0
+        peso_critico = (
+            w2 if inst.criticidad[idx] == 2 else w3 if inst.criticidad[idx] == 3 else 0.0
+        ) if tiene_criticidad else 0.0
+        criticidad_normalizada = 1.0 if inst.usar_activos and inst.criticidad[idx] in (2, 3) else 0.0
+        orden[idx] = (
+            inst.orden[idx]
+            + ajuste * inst.n
+            - peso_critico * criticidad_normalizada * BONO_CRITICIDAD_MAX * inst.n
+        )
+    return orden
+
+
+def _pesos_criticidad(cromosoma: Sequence[float], n_alertas: int) -> Tuple[float, float]:
+    """Obtiene los pesos globales w2 y w3 del cromosoma, o la política neutra."""
+    offset = n_alertas * (1 + int(AJUSTE_ACTIVO))
+    if not CRITICIDAD_EN_CROMOSOMA or len(cromosoma) < offset + 2:
+        return 1.0, 1.0
+    return float(cromosoma[offset]), float(cromosoma[offset + 1])
+
+
 def _simular(
-    cromosoma: Sequence[int],
+    cromosoma: Sequence[float],
     idx_g: Sequence[int],
     inst: Instancia,
     dur: Sequence[float],
@@ -379,9 +452,11 @@ def _simular(
     t_min: float = 0.0,
 ) -> Tuple[List[float], List[float], List[float]]:
     """Decodifica el cromosoma (gen i = analista de la alerta idx_g[i]) y simula las colas."""
+    m = len(idx_g)
+    orden = _orden_efectivo(cromosoma, idx_g, inst)
     colas: List[List[int]] = [[] for _ in range(N_ANALISTAS)]
-    for pos, analista in enumerate(cromosoma):
-        colas[analista - 1].append(idx_g[pos])
+    for pos in range(m): # Solo el primer bloque es asignacion de analistas
+        colas[int(cromosoma[pos]) - 1].append(idx_g[pos])
 
     inicio = [0.0] * inst.n
     fin = [0.0] * inst.n
@@ -390,7 +465,7 @@ def _simular(
         if not cola:
             continue
         disp = disp_inicial[a] if disp_inicial is not None else 0.0
-        ejecutadas, _, _ = _despachar_analista(cola, inst, dur, disp, t_min)
+        ejecutadas, _, _ = _despachar_analista(cola, inst, dur, disp, t_min, orden=orden)
         for idx, ini, f in ejecutadas:
             inicio[idx] = ini
             fin[idx] = f
@@ -418,7 +493,7 @@ def _metricas(
     espera_prom = float(esp.mean()) if esp.size else 0.0
     if crit.any():
         espera_crit = float(esp[crit].mean())
-        retraso_crit = float(np.maximum(0.0, esp[crit] - inst.sla[idx_arr][crit]).mean())
+        retraso_crit = float(np.maximum(0.0, esp[crit] - inst.sla_ef[idx_arr][crit]).mean())
     else:
         espera_crit = 0.0
         retraso_crit = 0.0
@@ -541,15 +616,19 @@ def evaluar_cromosoma(
     return _objetivo(_promediar(ms), inst, peso_tiempo_objetivo)
 
 
-def calcular_fitness(cromosoma: Sequence[int], alertas: Sequence[Alerta]) -> float:
-    """Atajo determinista (tiempos nominales, con activos) para funciones externas."""
-    inst = Instancia(alertas, usar_activos=True)
+def calcular_fitness(
+    cromosoma: Sequence[int],
+    alertas: Sequence[Alerta],
+    usar_activos: bool = True,
+) -> float:
+    """Calcula el fitness determinista respetando la configuración de activos."""
+    inst = Instancia(alertas, usar_activos=usar_activos)
     idx_g = list(range(inst.n))
     return evaluar_cromosoma(cromosoma, idx_g, np.arange(inst.n), inst, [inst.dur_nominal.tolist()])["fitness"]
 
 
 # ======================================================================
-# Operadores del algoritmo genético (sin cambios respecto de la versión original)
+# Operadores del algoritmo genético canónico y estrategias de selección alternativas.
 # ======================================================================
 def seleccion_ruleta(poblacion: Sequence[Sequence[int]], fitnesses: Sequence[float]) -> List[int]:
     """Selección por ruleta (mejor fitness = más porción de la ruleta)."""
@@ -627,6 +706,60 @@ def mutacion(cromosoma: Sequence[int], p_mutacion: float = P_MUTACION, n_analist
     return hijo
 
 
+def crossover_bloques(
+    padre1: Sequence[float], padre2: Sequence[float], m: int, n_bloques: int = 3
+) -> Tuple[List[float], List[float]]:
+    """Cruza por separado asignación, ajuste por alerta y política global (w2, w3)."""
+    if len(padre1) <= m or n_bloques <= 1:
+        return crossover(padre1, padre2)
+    bloques_1: List[List[float]] = []
+    bloques_2: List[List[float]] = []
+    for bloque in range(n_bloques):
+        inicio = bloque * m
+        es_ultimo = bloque == n_bloques - 1
+        tamano = len(padre1) - inicio if es_ultimo else m
+        fin = inicio + tamano
+        if inicio >= len(padre1):
+            break
+        a1, a2 = crossover(padre1[inicio:fin], padre2[inicio:fin])
+        bloques_1.append(a1)
+        bloques_2.append(a2)
+    return [gen for bloque in bloques_1 for gen in bloque], [gen for bloque in bloques_2 for gen in bloque]
+
+
+def mutacion_bloques(
+    cromosoma: Sequence[float],
+    m: int,
+    p_mutacion: float = P_MUTACION,
+    n_analistas: int = N_ANALISTAS,
+    n_bloques: int = 3,
+) -> List[float]:
+    """Muta asignación, ajuste por alerta y los pesos globales w2/w3 por separado."""
+    hijo: List[float] = mutacion(cromosoma[:m], p_mutacion, n_analistas)
+    tiene_ajuste = len(cromosoma) >= 2 * m
+    if tiene_ajuste:
+        for g in cromosoma[m:2 * m]:
+            valor = float(g)
+            if random.random() < p_mutacion:
+                valor = max(
+                    -AJUSTE_MAX,
+                    min(AJUSTE_MAX, valor + random.gauss(0.0, SIGMA_AJUSTE)),
+                )
+            hijo.append(valor)
+    offset_criticidad = m * (1 + int(AJUSTE_ACTIVO))
+    tiene_criticidad = CRITICIDAD_EN_CROMOSOMA and len(cromosoma) >= offset_criticidad + 2
+    if tiene_criticidad:
+        for g in cromosoma[offset_criticidad:offset_criticidad + 2]:
+            valor = float(g)
+            if random.random() < p_mutacion:
+                valor = max(
+                    0.0,
+                    min(WMAX_CRITICIDAD, valor + random.gauss(0.0, SIGMA_CRITICIDAD)),
+                )
+            hijo.append(valor)
+    return hijo
+
+
 def calcular_estadisticas(fitnesses: Sequence[float], tiempo_seg: float) -> Dict[str, float]:
     """Métricas básicas de la generación para el log de la terminal."""
     return {
@@ -695,7 +828,13 @@ def _ejecutar_ga(
     individuo_semilla: solución inicial adicional (en flujo continuo, el plan anterior).
     """
     idx_arr = np.asarray(idx_g, dtype=int)
-    poblacion = generar_poblacion(tam_poblacion=tam_poblacion, n_alertas=len(idx_g), n_analistas=N_ANALISTAS)
+    poblacion = generar_poblacion(
+        tam_poblacion=tam_poblacion,
+        n_alertas=len(idx_g),
+        n_analistas=N_ANALISTAS,
+        con_ajuste=AJUSTE_ACTIVO,
+        con_criticidad=CRITICIDAD_EN_CROMOSOMA,
+    )
     if individuo_semilla is not None and tam_poblacion > 1:
         poblacion[1] = list(individuo_semilla)
 
@@ -733,12 +872,29 @@ def _ejecutar_ga(
                 padre2 = seleccionar_padre(poblacion, fitnesses, metodo_seleccion)
 
                 if random.random() < p_crossover:
-                    hijo1, hijo2 = crossover(padre1, padre2)
+                    hijo1, hijo2 = crossover_bloques(
+                        padre1,
+                        padre2,
+                        len(idx_g),
+                        n_bloques=1 + int(AJUSTE_ACTIVO) + int(CRITICIDAD_EN_CROMOSOMA),
+                    )
                 else:
                     hijo1, hijo2 = list(padre1), list(padre2)
 
-                hijo1 = mutacion(hijo1, p_mutacion, n_analistas=N_ANALISTAS)
-                hijo2 = mutacion(hijo2, p_mutacion, n_analistas=N_ANALISTAS)
+                hijo1 = mutacion_bloques(
+                    hijo1,
+                    len(idx_g),
+                    p_mutacion,
+                    n_analistas=N_ANALISTAS,
+                    n_bloques=1 + int(AJUSTE_ACTIVO) + int(CRITICIDAD_EN_CROMOSOMA),
+                )
+                hijo2 = mutacion_bloques(
+                    hijo2,
+                    len(idx_g),
+                    p_mutacion,
+                    n_analistas=N_ANALISTAS,
+                    n_bloques=1 + int(AJUSTE_ACTIVO) + int(CRITICIDAD_EN_CROMOSOMA),
+                )
 
                 nueva_poblacion.append(hijo1)
                 if len(nueva_poblacion) < tam_poblacion:
@@ -807,6 +963,12 @@ def evolucionar(
         "n_escenarios": int(escenarios.shape[0]),
         "cv_duracion": float(cv_duracion if escenarios.shape[0] > 1 else 0.0),
         "usa_criticidad_activo": bool(inst.usar_activos),
+        "cromosoma_con_ajuste": bool(AJUSTE_ACTIVO),
+        "cromosoma_con_criticidad": bool(CRITICIDAD_EN_CROMOSOMA),
+        "n_bloques_cromosoma": 1 + int(AJUSTE_ACTIVO) + int(CRITICIDAD_EN_CROMOSOMA),
+        "w2_criticidad": _pesos_criticidad(mejor_global, inst.n)[0],
+        "w3_criticidad": _pesos_criticidad(mejor_global, inst.n)[1],
+        "n_alertas": int(inst.n), # Largo del bloque de asignacion: mejor_cromosoma[:n_alertas]
         "tiempo_total_estimado_min": float(ev["tiempo_total_estimado_min"]),
         "penalizacion_total": float(ev["penalizacion"]),
         "espera_promedio_min": float(ev["espera_promedio_min"]),
@@ -921,7 +1083,8 @@ def simular_flujo_continuo(
     analista = [0] * n
     comprometida = [False] * n
     n_comprometidas = 0
-    plan_previo: Dict[int, int] = {}
+    plan_previo: Dict[int, Tuple[int, float]] = {} # alerta -> (analista, ajuste)
+    pesos_criticidad_previos = [WMAX_CRITICIDAD, WMAX_CRITICIDAD]
     ultima_llegada = float(inst.llegada.max())
     dur_real_l = dur_real.tolist()
     esc_l = esc_plan.tolist()
@@ -934,24 +1097,47 @@ def simular_flujo_continuo(
         t_corte = None if es_ultimo else t + intervalo
 
         if conocidas:
-            semilla = [plan_previo.get(i, (pos % N_ANALISTAS) + 1) for pos, i in enumerate(conocidas)]
+            m = len(conocidas)
+            semilla = [
+                plan_previo.get(i, ((pos % N_ANALISTAS) + 1, 0.0, 1.0))[0]
+                for pos, i in enumerate(conocidas)
+            ]
+            if AJUSTE_ACTIVO:
+                semilla += [plan_previo.get(i, (0, 0.0))[1] for i in conocidas]
+            if CRITICIDAD_EN_CROMOSOMA:
+                semilla += pesos_criticidad_previos
             _, mejor, _ = _ejecutar_ga(
                 conocidas, inst, esc_l, gens_replan, tam_poblacion, p_crossover, p_mutacion,
                 metodo_seleccion, peso_tiempo_objetivo, disp_inicial=disp, t_min=t, individuo_semilla=semilla,
             )
+            orden_ef = _orden_efectivo(mejor, conocidas, inst)
             colas: List[List[int]] = [[] for _ in range(N_ANALISTAS)]
-            for pos, gen in enumerate(mejor):
-                colas[gen - 1].append(conocidas[pos])
+            for pos in range(m):
+                colas[int(mejor[pos]) - 1].append(conocidas[pos])
             for a, cola in enumerate(colas):
                 if not cola:
                     continue
-                ejecutadas, libre, _ = _despachar_analista(cola, inst, dur_real_l, disp[a], t, t_corte)
+                ejecutadas, libre, _ = _despachar_analista(
+                    cola, inst, dur_real_l, disp[a], t, t_corte, orden=orden_ef
+                )
                 for idx, ini, f in ejecutadas:
                     inicio[idx], fin[idx], analista[idx] = ini, f, a + 1
                     comprometida[idx] = True
                     n_comprometidas += 1
                 disp[a] = libre
-            plan_previo = {conocidas[pos]: gen for pos, gen in enumerate(mejor)}
+            plan_previo = {
+                conocidas[pos]: (
+                    int(mejor[pos]),
+                    float(mejor[m + pos]) if AJUSTE_ACTIVO else 0.0,
+                )
+                for pos in range(m)
+            }
+            if CRITICIDAD_EN_CROMOSOMA:
+                offset_criticidad = m * (1 + int(AJUSTE_ACTIVO))
+                pesos_criticidad_previos = [
+                    float(mejor[offset_criticidad]),
+                    float(mejor[offset_criticidad + 1]),
+                ]
 
         t += intervalo
         n_replans += 1
@@ -1083,13 +1269,15 @@ def _imprimir_resumen(resumen: Dict[str, object]) -> None:
     print(f"Backlog acumulado (min)       : {resumen['backlog_minutos']:.4f}")
     print(f"Desbalance de carga           : {resumen['desbalance_carga']:.6f}")
     print(f"Sobrecarga relativa           : {resumen['sobrecarga_relativa']:.6f}")
+    if resumen.get("cromosoma_con_criticidad", False):
+        print(f"Politica de criticidad (w2,w3): ({resumen['w2_criticidad']:.4f}, {resumen['w3_criticidad']:.4f})")
     print(f"Tiempo de ejecucion (s)       : {resumen['tiempo_ejecucion_seg']:.6f}")
-    print(f"Cromosoma ganador (compacto)  : {_formatear_cromosoma(resumen['mejor_cromosoma'])}")
+    print(f"Cromosoma ganador (compacto)  : {_formatear_cromosoma(resumen['mejor_cromosoma'][:resumen['n_alertas']])}")
 
 
 def main() -> None:
     """Orquesta la simulacion completa: lee args, corre el algoritmo y genera salidas tabuladas y graficas."""
-    global SEED, N_ANALISTAS, N_ALERTAS, TAM_POBLACION, N_GENERACIONES, P_CROSSOVER, P_MUTACION, HORIZONTE_MINUTOS, DATASET_CSV
+    global SEED, N_ANALISTAS, N_ALERTAS, TAM_POBLACION, N_GENERACIONES, P_CROSSOVER, P_MUTACION, HORIZONTE_MINUTOS, DATASET_CSV, AJUSTE_ACTIVO, CRITICIDAD_EN_CROMOSOMA
 
     parser = argparse.ArgumentParser(description="Algoritmo Genético Canónico aplicado a Scheduling de Alertas SOC.")
     # Nota: --seed-aleatoria no lleva valor; imprime la semilla elegida para repetir la corrida con --seed.
@@ -1120,6 +1308,11 @@ def main() -> None:
     # Extension 3
     parser.add_argument("--sin-activos", action="store_true", help="Ignora la criticidad del activo (formulacion original)")
     parser.add_argument("--criticidad-activo", choices=("puerto", "cmdb"), default="cmdb", help="Origen de la criticidad del activo")
+    # Extension 4
+    parser.add_argument("--sin-ajuste", action="store_true",
+                        help="Desactiva el bloque de ajuste individual d_i")
+    parser.add_argument("--sin-criticidad", action="store_true",
+                        help="Desactiva los dos genes globales de política de criticidad (w2, w3)")
     args = parser.parse_args()
 
     # Por defecto la semilla es fija (42). Con --seed-aleatoria se sortea del sistema operativo y se informa para poder reproducir la corrida
@@ -1135,6 +1328,8 @@ def main() -> None:
     P_MUTACION = args.p_mutacion
     HORIZONTE_MINUTOS = args.horizonte_minutos
     usar_activos = not args.sin_activos
+    AJUSTE_ACTIVO = not args.sin_ajuste
+    CRITICIDAD_EN_CROMOSOMA = not args.sin_criticidad
 
     if not DATASET_CSV.exists():
         raise SystemExit(f"No se encontro el dataset: {DATASET_CSV}")
@@ -1170,6 +1365,12 @@ def main() -> None:
     print(f"Horizonte de trabajo (min)    : {HORIZONTE_MINUTOS}")
     print(f"Escenarios de duracion (GA)   : {escenarios.shape[0]}  (CV = {args.cv_duracion if escenarios.shape[0] > 1 else 0.0})")
     print(f"Criticidad del activo         : {'desactivada' if not usar_activos else args.criticidad_activo}")
+    bloques = ["asignacion"]
+    if AJUSTE_ACTIVO:
+        bloques.append("ajuste de prioridad")
+    if CRITICIDAD_EN_CROMOSOMA:
+        bloques.append("peso de criticidad")
+    print(f"Cromosoma                     : {' + '.join(bloques)}")
     print("=" * 126)
 
     # 2. GA EN MODO LOTE
@@ -1195,7 +1396,7 @@ def main() -> None:
     df_historial.to_csv(METRICAS_CSV, index=False)
     pd.DataFrame([resumen]).to_csv(RESUMEN_CSV, index=False)
 
-    distribucion_final = _resumen_distribucion(resumen["mejor_cromosoma"], alertas)
+    distribucion_final = _resumen_distribucion(resumen["mejor_cromosoma"][:inst.n], alertas)
     distribucion_final.to_csv(DISTRIBUCION_FINAL_CSV, index=False)
     distribucion_final[["analista", "alertas_asignadas", "carga_total_min", "criticidad_critica", "activos_criticos"]].to_csv(
         ASIGNACION_FINAL_CSV, index=False
