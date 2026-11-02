@@ -315,11 +315,13 @@
         <p>
           La comparación pareada almacenada en <span class="mono">outputs/comparacion_ablacion.csv</span> no mostró
           diferencias concluyentes entre las variantes en el escenario principal. En el escenario de estrés, C y D
-          aumentaron significativamente el backlog frente a A, sin mejorar de forma concluyente el fitness, la espera
-          crítica o el desbalance. Bajo saturación, B, C y D redujeron la espera crítica frente a A, pero también
-          redujeron el fitness y aumentaron el backlog; D además redujo el desbalance. Estos resultados muestran un
-          compromiso: la política de criticidad puede ser útil para reducir esperas críticas bajo sobrecarga, pero no
-          mejora globalmente la función objetivo. Los valores aprendidos de <span class="mono">w2</span> y
+          aumentaron significativamente el backlog frente a A en 1,49 y 1,39 alertas, respectivamente, sin mejorar
+          de forma concluyente el fitness, la espera crítica o el desbalance. Bajo saturación, B, C y D redujeron la
+          espera crítica frente a A en 15,5, 162,2 y 119,4 minutos, pero redujeron el fitness en 0,0032, 0,0237 y
+          0,0184 y aumentaron el backlog en 0,94, 7,13 y 6,68 alertas, respectivamente. D además redujo el
+          desbalance en aproximadamente 0,006. Estos resultados muestran un compromiso: la política de criticidad
+          puede ser útil para reducir esperas críticas bajo sobrecarga, pero no mejora globalmente la función objetivo.
+          Los valores aprendidos de <span class="mono">w2</span> y
           <span class="mono">w3</span> son consistentes con la penalización previa de activos críticos y no
           constituyen, por sí solos, evidencia de un descubrimiento independiente.
         </p>
