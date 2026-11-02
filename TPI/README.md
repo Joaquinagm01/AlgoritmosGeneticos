@@ -137,6 +137,14 @@ Los resultados se guardan en `outputs/busqueda_aleatoria/`. Este control usa
 las mismas instancias, escenarios de duración y validación fuera de muestra que
 el experimento del AG.
 
+Para comparar Menor carga y Urgencia balanceada contra Round-Robin y el AG en
+las mismas 20 semillas:
+```bash
+python baselines_multisemilla.py --semillas 42-61
+```
+Los resultados y las pruebas pareadas con corrección de Holm se guardan en
+`outputs/baselines_multisemilla/`.
+
 Genera tablas en `outputs/experimento/` con media, desvío estándar, intervalos
 de confianza bootstrap y porcentaje de semillas en las que el AG mejora.
 Para mantener fijas las alertas entre semillas:

@@ -43,7 +43,7 @@
     \else
     \vspace{1em}
     % Autores (Times New Roman, 14, negrita)
-    {\fontsize{14}{17}\selectfont\bfseries Chacón, A.; Tabini, A.; Carloni, N.I.; Mierez, J.\par}
+    {\fontsize{14}{17}\selectfont\bfseries Chacón, A.; Tabini, A.; Carloni, N.I.; Mierez, J.; Gomez Manna, J.\par}
     \vspace{0.5em}
     % Institución (Times New Roman, 12, negrita, cursiva)
     {\fontsize{12}{14}\selectfont\bfseries\itshape Universidad Tecnológica Nacional, Facultad Regional Rosario\par}
@@ -121,13 +121,13 @@ La configuración oficial utiliza una población de $N=50$ individuos y evolucio
 
 Para validar empíricamente el modelo, se utilizó una base de datos representativa derivada del dataset público \textbf{CICIDS2017} [1]. A partir de una muestra aleatoria de eventos, se inyectaron sintéticamente atributos operativos (prioridad, severidad, SLA y tiempo estimado de resolución). La criticidad del activo se generó mediante un catálogo CMDB simulado, con 60\% de activos comunes, 30\% importantes y 10\% críticos. Esta decisión permite estudiar el término de criticidad aunque el dataset original no contiene inventario de activos; por lo tanto, esos valores no deben interpretarse como observaciones reales de la infraestructura.
 
-La selección de estos atributos está alineada con la taxonomía de criterios de priorización de Jalalvand et al. [3]: prioridad y severidad representan propiedades de la alerta; el tiempo de resolución aproxima el tiempo disponible y la carga del analista; y el SLA expresa la dimensión organizacional de cumplimiento y oportunidad (\textit{timeliness}). La criticidad observada del activo se integra en el cromosoma mediante el tercer bloque global $(w_2,w_3)$: no se modifica artificialmente la criticidad de la instancia, sino que se aprende cuánto debe influir cada nivel en el orden de despacho. El orden efectivo resta $n \cdot 0.5 \cdot w_2$ a los activos importantes y $n \cdot 0.5 \cdot w_3$ a los críticos. Además, la criticidad interviene en la función de penalización mediante el SLA efectivo y el peso de la violación. Esta correspondencia ofrece una justificación metodológica para la función de aptitud, aunque los atributos hayan sido generados sintéticamente.
+La selección de estos atributos está alineada con la taxonomía de criterios de priorización de Jalalvand et al. [3]: prioridad y severidad representan propiedades de la alerta; el tiempo de resolución aproxima el tiempo disponible y la carga del analista; y el SLA expresa la dimensión organizacional de cumplimiento y oportunidad (\textit{timeliness}). En lo que sigue, ``alerta crítica'' refiere a una alerta marcada por su prioridad o severidad, mientras que ``activo crítico'' refiere exclusivamente a la categoría de criticidad obtenida de la CMDB simulada. La criticidad observada del activo se integra en el cromosoma mediante el tercer bloque global $(w_2,w_3)$: no se modifica artificialmente la criticidad de la instancia, sino que se aprende cuánto debe influir cada nivel en el orden de despacho. El orden efectivo resta $n \cdot 0.5 \cdot w_2$ a los activos importantes y $n \cdot 0.5 \cdot w_3$ a los críticos. Además, la criticidad interviene en la función de penalización mediante el SLA efectivo y el peso de la violación. Esta correspondencia ofrece una justificación metodológica para la función de aptitud, aunque los atributos hayan sido generados sintéticamente.
 
 Cada escenario genera una tabla de alertas derivadas con el tamaño indicado (100, 120 o 500 registros). La distribución de prioridades, la severidad y el tiempo estimado se calculan nuevamente para cada muestra y semilla; estos valores describen las instancias experimentales y no deben interpretarse como propiedades originales del dataset CICIDS2017.
 
 Como baselines operativos se utilizaron tres reglas deterministas. Round-Robin asigna las alertas secuencialmente entre los analistas, sin considerar carga ni prioridad. Menor carga asigna cada alerta al analista con menor carga acumulada. Urgencia balanceada ordena las alertas por prioridad, severidad y SLA, y asigna cada una al analista con menor carga; por lo tanto, utiliza la misma información operativa que el AG sin realizar búsqueda evolutiva. Esta última comparación permite distinguir, aunque sea en una instancia de referencia, el efecto de una política de despacho del efecto de la búsqueda evolutiva. Estas reglas no forman parte del entrenamiento del AG.
 
-Además del esquema por lote, el prototipo implementa un flujo continuo mediante un horizonte rodante. En cada intervalo de replanificación se reoptimiza únicamente el conjunto de alertas ya llegadas y aún no iniciadas; las tareas que comienzan dentro del intervalo quedan comprometidas y se ejecutan con duraciones reales desconocidas por el planificador. Esta modalidad se compara con el AG por lote y Round-Robin bajo la misma realización de duraciones. La ejecución continua se utiliza como evaluación operativa complementaria y no reemplaza la comparación multi-semilla del escenario por lote.
+Además del esquema por lote, el prototipo implementa un flujo continuo mediante un horizonte rodante. En cada intervalo de replanificación se reoptimiza únicamente el conjunto de alertas ya llegadas y aún no iniciadas; las tareas que comienzan dentro del intervalo quedan comprometidas y se ejecutan con duraciones reales desconocidas por el planificador. Esta modalidad puede compararse con el AG por lote y Round-Robin bajo la misma realización de duraciones. La ejecución continua se utiliza como evaluación operativa complementaria y no reemplaza la comparación multi-semilla del escenario por lote.
 
 % =========================================================
 % Resultados
@@ -165,7 +165,7 @@ El escenario de 500 alertas está deliberadamente sobredimensionado respecto del
 A partir del análisis generacional se observaron además las siguientes medidas:
 
 \begin{itemize}
-    \item \textbf{Fitness y estabilidad:} el AG superó a Round-Robin en fitness en las 20 semillas de los escenarios principal y de estrés, mientras que fue inferior en saturación; las medias fueron $0.8702$, $0.8504$ y $0.4333$ para 100, 120 y 500 alertas, respectivamente. La comparación con Urgencia balanceada es necesaria para atribuir una eventual ventaja a la búsqueda evolutiva.
+    \item \textbf{Fitness y estabilidad:} el AG superó a Round-Robin en fitness en las 20 semillas de los escenarios principal y de estrés, mientras que fue inferior en saturación; las medias fueron $0.8702$, $0.8504$ y $0.4333$ para 100, 120 y 500 alertas, respectivamente. Frente a los baselines deterministas, Menor carga obtuvo mayor fitness medio en los tres escenarios ($0.8788$, $0.8586$ y $0.4506$), por lo que la ventaja del AG no puede atribuirse únicamente a la búsqueda evolutiva.
     \item \textbf{Cumplimiento de SLA:} el AG mejoró el cumplimiento de alertas críticas en los escenarios principal y de estrés, pero no en saturación; el cumplimiento global fue menor en los dos primeros y mayor en saturación. En activos críticos no hubo diferencia clara en los escenarios no saturados, mientras que el AG fue superior en saturación.
     \item \textbf{Espera y balance:} el AG redujo en promedio la espera crítica y el desbalance frente a Round-Robin en los escenarios principal y de estrés. En saturación aumentó la espera crítica y la diferencia de desbalance no fue concluyente. En la corrida de referencia, Urgencia balanceada obtuvo menor desbalance que el AG.
     \item \textbf{Capacidad:} el backlog se analiza separando los escenarios no colapsados de la saturación de 500 alertas.
@@ -195,9 +195,33 @@ AG & 17.79 & 19 & 0.0587 & 38.79\\
 \end{tabular}
 \end{table}
 
-La tabla no muestra un ganador universal: el AG obtiene la menor espera crítica, Menor carga el menor backlog y Urgencia balanceada el menor desbalance, pero con mayor espera promedio. Esta tabla corresponde a una corrida de referencia y no sustituye la comparación multi-semilla.
+La tabla no muestra un ganador universal: el AG obtiene la menor espera crítica en esta corrida de referencia, Menor carga el menor backlog y Urgencia balanceada el menor desbalance, pero con mayor espera promedio. Esta tabla corresponde a una corrida de referencia y debe leerse junto con la comparación multi-semilla.
 
-Como control adicional se ejecutó una búsqueda aleatoria con el mismo presupuesto computacional del AG: 10.000 evaluaciones por combinación de escenario y semilla. En cada caso se utilizaron la misma instancia, los mismos escenarios de duración y la misma validación fuera de muestra. El fitness medio del AG fue $0.8702$, $0.8504$ y $0.4333$ en los escenarios principal, de estrés y de saturación, frente a $0.8478$, $0.8265$ y $0.4105$ de la búsqueda aleatoria, respectivamente. La espera crítica media también fue menor para el AG en los escenarios principal y de estrés: $10.37$ frente a $18.68$ minutos y $17.02$ frente a $27.59$ minutos; en saturación fue menor para la búsqueda aleatoria ($269.82$ frente a $364.70$ minutos). Este control aporta evidencia de que el AG encuentra mejores soluciones según su función objetivo que una búsqueda aleatoria con igual presupuesto, aunque no demuestra superioridad en todas las métricas ni frente a toda heurística alternativa.
+Para evitar que una sola semilla determine la interpretación, se repitió la comparación de los tres baselines en las mismas 20 semillas y escenarios de validación:
+
+\begin{table}[t]
+\centering
+\caption{Espera crítica media en la comparación multi-semilla de baselines.}
+\label{tab:baselines-multisemilla}
+\vspace{3pt}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Método} & \textbf{Principal} & \textbf{Estrés} & \textbf{Saturación}\\
+\midrule
+Round-Robin & 13.25 & 19.82 & 182.96\\
+Menor carga & 9.24 & 17.06 & 167.44\\
+Urgencia balanceada & 19.80 & 23.67 & 157.65\\
+AG & 10.37 & 17.02 & 269.82\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Menor carga fue mejor que el AG en espera crítica en el escenario principal (9.24 frente a 10.37 minutos), aunque la diferencia no fue concluyente tras Holm ($p_\mathrm{Holm}=0.172$); en estrés los valores fueron prácticamente iguales (17.06 frente a 17.02; $p_\mathrm{Holm}=1.000$). En saturación, Menor carga redujo la espera crítica de forma concluyente (167.44 frente a 269.82; $p_\mathrm{Holm}<0.001$) y también obtuvo menor backlog y desbalance. Urgencia balanceada tuvo mayor espera crítica que el AG en los escenarios principal y de estrés, pero menor espera en saturación a costa de un backlog mayor. Los resultados completos, incluidos los intervalos bootstrap y las pruebas de Wilcoxon con Holm, se encuentran en \texttt{outputs/baselines\_multisemilla/}.
+
+Como control adicional se ejecutó una búsqueda aleatoria con el mismo presupuesto computacional del AG: 10.000 evaluaciones por combinación de escenario y semilla. En cada caso se utilizaron la misma instancia, los mismos escenarios de duración y la misma validación fuera de muestra. El fitness medio del AG fue $0.8702$, $0.8504$ y $0.4333$ en los escenarios principal, de estrés y de saturación, frente a $0.8478$, $0.8265$ y $0.4105$ de la búsqueda aleatoria, respectivamente. La espera crítica media también fue menor para el AG en los escenarios principal y de estrés: $10.37$ frente a $18.68$ minutos y $17.02$ frente a $27.59$ minutos; en saturación también fue menor para el AG ($269.82$ frente a $364.70$ minutos). Este control aporta evidencia de que el AG encuentra mejores soluciones según su función objetivo que una búsqueda aleatoria con igual presupuesto, aunque no demuestra superioridad en todas las métricas ni frente a toda heurística alternativa.
 
 Los pesos de la función objetivo se mantienen fijos antes de observar los resultados. No se modifican para forzar una ventaja del AG sobre Round-Robin; si existe un compromiso entre balance, espera crítica y SLA, se informa explícitamente.
 
@@ -262,7 +286,7 @@ A la cátedra de Algoritmos Genéticos por el marco metodológico, orientación 
 % =========================================================
 \noindent {\fontsize{10}{12}\selectfont\bfseries Datos de Contacto:}\\
 {\fontsize{10}{12}\selectfont\itshape 
-Chacón, A.; Tabini, A.; Carloni, N.I.; Mierez, J. Universidad Tecnológica Nacional, Facultad Regional Rosario. Zeballos 1341, Rosario, Santa Fe. E-mail: alumnos@utn.edu.ar.
+Chacón, A.; Tabini, A.; Carloni, N.I.; Mierez, J.; Gomez Manna, J. Universidad Tecnológica Nacional, Facultad Regional Rosario. Zeballos 1341, Rosario, Santa Fe. E-mail: alumnos@utn.edu.ar.
 \par}
 \fi
 

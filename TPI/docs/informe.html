@@ -302,6 +302,13 @@
           SLA, espera crítica y distribución de carga.
         </p>
         <p>
+          La comparación multi-semilla de baselines se guarda en
+          <span class="mono">outputs/baselines_multisemilla/</span>. Menor carga obtuvo una espera crítica media de
+          9,24 minutos frente a 10,37 del AG en el escenario principal, sin diferencia concluyente tras Holm, y
+          también fue mejor en saturación (167,44 frente a 269,82 minutos). Por lo tanto, el AG no presenta una
+          superioridad universal frente a reglas deterministas simples.
+        </p>
+        <p>
           La ablación separa cuatro variantes: A, solo asignación; B, asignación más ajustes individuales;
           C, asignación más política global de criticidad (<span class="mono">w2,w3</span>); y D, los tres bloques.
           Se ejecutan con <span class="mono">--sin-ajuste</span> y <span class="mono">--sin-criticidad</span>
