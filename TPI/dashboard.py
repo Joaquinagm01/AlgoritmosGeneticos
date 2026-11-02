@@ -13,7 +13,8 @@ st.set_page_config(
 )
 
 # Constantes
-OUTPUTS_DIR = Path("outputs")
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUTS_DIR = BASE_DIR / "outputs"
 FIGURES_DIR = OUTPUTS_DIR / "figures"
 
 # --- Sidebar para configurar parámetros ---
@@ -48,7 +49,7 @@ if submitted:
             "--criticidad-activo", criticidad_activo,
         ]
         try:
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True, cwd=BASE_DIR)
             st.cache_data.clear()
             st.success("¡Algoritmo finalizado! Los gráficos y tablas han sido actualizados.")
         except subprocess.CalledProcessError as e:
@@ -132,7 +133,7 @@ with tab2:
 
 with tab3:
     st.header("Validación Empírica (AG vs Round-Robin)")
-    st.markdown("Demostración de la mejora introducida por el Algoritmo Genético frente a una heurística de asignación secuencial clásica.")
+    st.markdown("Comparación multi-semilla y fuera de muestra del Algoritmo Genético frente a una heurística de asignación secuencial clásica.")
     if experimento_resumen is not None:
         st.subheader("Comparación multi-semilla")
         st.caption("Media, desvío estándar e intervalo bootstrap por escenario. Las métricas se evaluaron fuera de muestra.")

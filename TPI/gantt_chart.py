@@ -30,6 +30,8 @@ def generar_gantt() -> None: # Definimos la función principal que va a dibujar 
     df_resumen = pd.read_csv(RESUMEN_CSV) # Usamos Pandas para leer el archivo CSV completo en memoria
     # Extraemos el string en formato JSON y lo convertimos a una lista real de Python
     mejor_cromosoma = json.loads(df_resumen.iloc[0]["mejor_cromosoma_texto"]) 
+    n_alertas = int(df_resumen.iloc[0].get("n_alertas", len(mejor_cromosoma)))
+    asignaciones = mejor_cromosoma[:n_alertas]
     
     # 2. Reconstruir las alertas y evaluar el cromosoma para obtener tiempos
     alertas = derivar_alertas_desde_dataset() # Llamamos a la función que vuelve a cargar las alertas del dataset
@@ -54,7 +56,7 @@ def generar_gantt() -> None: # Definimos la función principal que va a dibujar 
     }
     
     # Iteramos sobre cada gen del cromosoma (cada iteración es una alerta y a qué analista fue)
-    for idx_alerta, analista in enumerate(mejor_cromosoma):
+    for idx_alerta, analista in enumerate(asignaciones):
         alerta = alertas[idx_alerta] # Obtenemos el objeto de la alerta correspondiente a este índice
         fin = finalizacion_por_alerta[idx_alerta] # Obtenemos en qué minuto exactamente se terminó de resolver
         inicio = fin - alerta.tiempo_estimado_min # Calculamos el minuto de inicio restando el tiempo de resolución al tiempo de fin

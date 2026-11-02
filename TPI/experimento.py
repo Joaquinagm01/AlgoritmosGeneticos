@@ -40,6 +40,12 @@ ESCENARIOS = {
     "principal_puerto": (100, "puerto"),
 }
 ESCENARIOS_DEFECTO = ("principal", "estres", "saturacion")
+VARIANTES = {
+    "A": (False, False),
+    "B": (True, False),
+    "C": (False, True),
+    "D": (True, True),
+}
 
 
 def cargar_modulo():
@@ -108,6 +114,7 @@ def evaluar_fuera_de_muestra(m, inst, cromosoma, escenarios, peso_tiempo=0.10):
 def ejecutar(args, m) -> pd.DataFrame:
     """Ejecuta cada escenario y semilla con comparación pareada AG/Round-Robin."""
     m.N_ANALISTAS = args.n_analistas
+    m.AJUSTE_ACTIVO, m.CRITICIDAD_EN_CROMOSOMA = VARIANTES[args.variante]
     dataset = Path(args.dataset)
     if not dataset.exists():
         raise SystemExit(f"No se encontró el dataset: {dataset}")
@@ -121,7 +128,7 @@ def ejecutar(args, m) -> pd.DataFrame:
         raise SystemExit(f"Escenario desconocido: {desconocidos[0]}. Opciones: {opciones}")
 
     semillas = parsear_semillas(args.semillas)
-    carpeta = m.OUTPUTS_DIR / "experimento"
+    carpeta = m.OUTPUTS_DIR / ("experimento" if args.variante == "D" else f"ablacion_{args.variante}")
     carpeta.mkdir(parents=True, exist_ok=True)
     ruta_detalle = carpeta / "experimento_detalle.csv"
     filas: List[Dict[str, object]] = []
@@ -147,8 +154,8 @@ def ejecutar(args, m) -> pd.DataFrame:
                 alertas,
                 n_generaciones=args.n_generaciones,
                 tam_poblacion=args.tam_poblacion,
-                p_crossover=m.P_CROSSOVER,
-                p_mutacion=m.P_MUTACION,
+                p_crossover=args.p_crossover,
+                p_mutacion=args.p_mutacion,
                 seed=semilla,
                 metodo_seleccion="ranking",
                 inst=inst,
@@ -163,15 +170,28 @@ def ejecutar(args, m) -> pd.DataFrame:
             ).tolist()
             round_robin = [(indice % args.n_analistas) + 1 for indice in range(inst.n)]
             contexto = {
+                "variante": args.variante,
                 "escenario": nombre,
                 "semilla": semilla,
                 "seed_datos": seed_datos,
                 "n_alertas": n_alertas,
+                "n_analistas": args.n_analistas,
+                "n_generaciones": args.n_generaciones,
+                "tam_poblacion": args.tam_poblacion,
+                "p_crossover": args.p_crossover,
+                "p_mutacion": args.p_mutacion,
+                "n_escenarios": args.n_escenarios,
+                "cv_duracion": args.cv_duracion,
+                "n_validacion": args.n_validacion,
                 "criticidad_activo": modo_activo,
                 "utilizacion_pct": 100.0 * float(inst.dur_nominal.sum())
                 / (args.n_analistas * m.HORIZONTE_MINUTOS),
                 "pct_activos_criticos": 100.0 * float((inst.criticidad == 3).mean()),
                 "pct_alertas_criticas": 100.0 * float(inst.es_critica.mean()),
+                "cromosoma_con_criticidad": bool(resumen.get("cromosoma_con_criticidad", False)),
+                "w2_criticidad": float(resumen.get("w2_criticidad", 1.0)),
+                "w3_criticidad": float(resumen.get("w3_criticidad", 1.0)),
+                "n_bloques_cromosoma": int(resumen.get("n_bloques_cromosoma", 1)),
             }
 
             for solucion, cromosoma in (
@@ -311,14 +331,22 @@ def main() -> None:
     parser.add_argument("--n-analistas", type=int, default=m.N_ANALISTAS)
     parser.add_argument("--n-generaciones", type=int, default=m.N_GENERACIONES)
     parser.add_argument("--tam-poblacion", type=int, default=m.TAM_POBLACION)
+    parser.add_argument("--p-crossover", type=float, default=m.P_CROSSOVER)
+    parser.add_argument("--p-mutacion", type=float, default=m.P_MUTACION)
     parser.add_argument("--n-escenarios", type=int, default=m.N_ESCENARIOS)
     parser.add_argument("--cv-duracion", type=float, default=m.CV_DURACION)
     parser.add_argument("--n-validacion", type=int, default=100)
+    parser.add_argument(
+        "--variante",
+        choices=tuple(VARIANTES),
+        default="D",
+        help="A=asignacion, B=asignacion+d_i, C=asignacion+(w2,w3), D=todos los bloques",
+    )
     args = parser.parse_args()
 
     detalle = ejecutar(args, m)
     resumen = resumir(detalle)
-    carpeta = m.OUTPUTS_DIR / "experimento"
+    carpeta = m.OUTPUTS_DIR / ("experimento" if args.variante == "D" else f"ablacion_{args.variante}")
     detalle.to_csv(carpeta / "experimento_detalle.csv", index=False)
     resumen.to_csv(carpeta / "experimento_resumen.csv", index=False)
     imprimir(detalle, resumen)

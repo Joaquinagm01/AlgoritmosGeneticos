@@ -1,0 +1,4 @@
+solucion,fitness,espera_promedio_min,espera_critica_promedio_min,sla_incumplidos_pct,sla_incumplidos_critica_pct,backlog_alertas,desbalance_carga
+Round-Robin,0.8677412306800966,0.0,0.0,0.0,0.0,2.0,0.2753000185811309
+GA lote (conoce todas las llegadas),0.8670385992404666,0.0,0.0,0.0,0.0,2.0,0.2815259976188636
+GA continuo (replan 30 min),0.7495711792816161,12.15,11.142857142857142,0.0,0.0,3.0,1.316763614038099

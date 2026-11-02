@@ -28,6 +28,9 @@ def ejecutar_experimentos(n_corridas: int = 20, semilla_inicial: int = 42):
         n_validacion=100,
         n_generaciones=modulo.N_GENERACIONES,
         tam_poblacion=modulo.TAM_POBLACION,
+        p_crossover=modulo.P_CROSSOVER,
+        p_mutacion=modulo.P_MUTACION,
+        variante="D",
     )
     detalle = experimento.ejecutar(args, modulo)
     resumen = experimento.resumir(detalle)

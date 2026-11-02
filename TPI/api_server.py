@@ -8,7 +8,7 @@ Probar con: POST http://localhost:8000/asignar enviando un JSON con alertas.
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List
-import main_avanzado
+import main
 from main import Alerta
 
 app = FastAPI(
@@ -64,26 +64,32 @@ def asignar_lote_alertas(alertas: List[AlertaIn]):
             )
         )
         
-    # Usamos el inicio reloj basado en la alerta más temprana del lote
+    # Usamos el motor principal con una configuración corta para la API.
     inicio_reloj = min(a.llegada_min for a in alertas_internas)
-    
-    # Ejecutamos la optimización NSGA-II para este lote específico (Dinámico)
-    mejor_cromosoma = main_avanzado.optimizacion_nsgaii(
-        alertas_internas, 
-        inicio_reloj=inicio_reloj, 
-        generaciones=10, 
-        pop_size=20
+    main.N_ANALISTAS = 10
+    instancia = main.Instancia(alertas_internas, usar_activos=True)
+    _, resumen = main.evolucionar(
+        alertas_internas,
+        n_generaciones=10,
+        tam_poblacion=20,
+        p_crossover=main.P_CROSSOVER,
+        p_mutacion=main.P_MUTACION,
+        seed=inicio_reloj,
+        metodo_seleccion="ranking",
+        inst=instancia,
     )
+    mejor_cromosoma = resumen["mejor_cromosoma"]
+    asignaciones = mejor_cromosoma[:len(alertas_internas)]
     
     # Formateamos la respuesta
     respuesta = []
-    for idx, analista in enumerate(mejor_cromosoma):
+    for idx, analista in enumerate(asignaciones):
         respuesta.append(
             AsignacionOut(
                 id_alerta=alertas_internas[idx].id_alerta,
                 id_analista=analista,
                 prioridad=alertas_internas[idx].prioridad,
-                tier_analista=main_avanzado.obtener_tier(analista)
+                tier_analista=1
             )
         )
         

@@ -1,7 +1,7 @@
 # 🧬 TPI - Optimización de Asignación de Alertas SOC con Algoritmos Genéticos
 
 Bienvenido al repositorio del Trabajo Práctico Integrador para la cátedra de Algoritmos Genéticos (UTN FRRo).
-Este proyecto aborda un problema crítico de ciberseguridad en el mundo real: el *Job Shop Scheduling* de alertas en un Centro de Operaciones de Seguridad (SOC), garantizando que las amenazas más severas se atiendan a tiempo sin sobrecargar a los analistas.
+Este proyecto aborda un problema de asignación y scheduling en máquinas paralelas para alertas de un Centro de Operaciones de Seguridad (SOC). El modelo sirve como caso particular relacionado con el *Job Shop Scheduling* estocástico, y busca priorizar amenazas severas sin sobrecargar a los analistas.
 
 ![Diagrama de Gantt](outputs/figures/gantt_asignacion_final.png)
 
@@ -10,9 +10,9 @@ Este proyecto aborda un problema crítico de ciberseguridad en el mundo real: el
 El escenario oficial modela la asignación de 100 alertas derivadas de tráfico real a un equipo de 10 analistas. También se incluyen escenarios de estrés de 120 alertas y de saturación de 500 alertas para estudiar cómo cambia el comportamiento del algoritmo cuando la demanda supera la capacidad.
 
 **Características Principales:**
-- **Datos Reales:** Utiliza el dataset público **CICIDS2017** para las alertas (simulando ataques DDoS).
-- **Core Clásico:** Implementa un **Algoritmo Genético Canónico** con selección por ranking, crossover de 1 punto, mutación por gen y elitismo (`main.py`).
-- **Validación Empírica:** Cuenta con un Sintonizador de Hiperparámetros (Grid Search) y una comparación *Baseline* contra un asignador tradicional (Round-Robin).
+- **Datos derivados:** Utiliza el dataset público **CICIDS2017** como fuente de eventos y complementa las alertas con atributos operativos sintéticos.
+- **Algoritmo Genético:** Implementa selección por ranking, crossover, mutación por bloques y elitismo (`main.py`).
+- **Validación Empírica:** Cuenta con un Sintonizador de Hiperparámetros y una comparación con Round-Robin, Menor carga y Urgencia balanceada.
 - **Evaluación reproducible:** `experimento.py` compara AG y Round-Robin sobre las mismas alertas y escenarios de duración en 20 semillas.
 - **Extensiones:** Incluye incertidumbre en los tiempos, flujo continuo y criticidad de activos mediante un catálogo CMDB simulado.
 - **Visualización:** Incluye un Dashboard Interactivo construido en **Streamlit** para presentar los resultados de forma visual y profesional.
@@ -23,12 +23,12 @@ El escenario oficial modela la asignación de 100 alertas derivadas de tráfico 
 
 | Archivo / Carpeta | Descripción |
 |------------------|-------------|
-| `main.py` | Motor del Algoritmo Genético Canónico (Requisito Académico). |
+| `main.py` | Motor del Algoritmo Genético y simulador de asignación. |
 | `hyper_tuner.py` | Script de Grid Search para justificar empíricamente las tasas de mutación y crossover. |
 | `baseline_comparacion.py` | Script que compara nuestro AG contra un asignador tradicional (Round-Robin). |
 | `experimento.py` | Comparación pareada multi-semilla para los escenarios principal, de estrés y de saturación. |
 | `dashboard.py` | Interfaz gráfica interactiva hecha en Streamlit para exponer resultados. |
-| `docs/` | Documentación académica: `informe.html`, `articulo_v2.tex` y guía de defensa. |
+| `docs/` | Documentación académica: `informe.html` y `articulo_v2.tex`. |
 | `outputs/` | Archivos CSV generados y gráficos (`figures/`). |
 
 ---
@@ -59,6 +59,22 @@ El escenario oficial usa 100 alertas y criticidad de activos `cmdb`. Para ejecut
 el escenario de estrés:
 ```bash
 python main.py --n-alertas 120 --criticidad-activo cmdb
+```
+
+Por defecto, el cromosoma tiene tres bloques: asignación de analista, ajuste
+evolucionado de prioridad de despacho y dos pesos globales de criticidad (`w2`,
+`w3`). Estos pesos no cambian la criticidad observada: aprenden cuánto debe
+influir cada nivel en el orden de despacho. Para ejecutar las variantes de
+ablación:
+```bash
+# A: solo asignación
+python main.py --sin-ajuste --sin-criticidad
+# B: asignación + ajuste individual
+python main.py --sin-criticidad
+# C: asignación + política global de criticidad
+python main.py --sin-ajuste
+# D: asignación + ajuste + política de criticidad (por defecto)
+python main.py
 ```
 
 Para reproducir el escenario de saturación:
@@ -102,6 +118,25 @@ cada par AG/Round-Robin y escenarios nuevos de validación:
 python experimento.py
 ```
 
+Para comparar las variantes del cromosoma usando las corridas ya guardadas,
+sin volver a ejecutar el algoritmo:
+```bash
+python comparar_ablacion.py
+```
+El resultado pareado queda en `outputs/comparacion_ablacion.csv` e incluye
+diferencias contra A, comparaciones D-B y D-C, IC bootstrap, Wilcoxon con
+corrección de Holm, victorias/empates/derrotas y estadísticas de `w2`, `w3` y
+`w3-w2`.
+
+Para ejecutar el control de búsqueda aleatoria con el mismo presupuesto del AG
+(10.000 evaluaciones por escenario y semilla):
+```bash
+python busqueda_aleatoria.py --variante D --semillas 42-61
+```
+Los resultados se guardan en `outputs/busqueda_aleatoria/`. Este control usa
+las mismas instancias, escenarios de duración y validación fuera de muestra que
+el experimento del AG.
+
 Genera tablas en `outputs/experimento/` con media, desvío estándar, intervalos
 de confianza bootstrap y porcentaje de semillas en las que el AG mejora.
 Para mantener fijas las alertas entre semillas:
@@ -144,10 +179,9 @@ El PDF actualizado queda en `docs/articulo_v2.pdf`. Los archivos `.aux`, `.log` 
 
 ## 🎓 Documentación Académica
 
-La documentación requerida por la cátedra se encuentra en la carpeta `docs/`:
+La documentación académica disponible se encuentra en la carpeta `docs/`:
 1. **Documento Guía de Investigación**: Informe principal en HTML con la situación problemática, modelo y objetivos (`docs/informe.html`).
 2. **Artículo Científico**: Formato de paper IEEE (`docs/articulo_v2.tex`).
-3. **Machete de Defensa**: Guía estructurada para estudiar de cara a la exposición oral (`docs/guia_estudio_defensa.md`).
 
 ---
 **Universidad Tecnológica Nacional — Facultad Regional Rosario**  
