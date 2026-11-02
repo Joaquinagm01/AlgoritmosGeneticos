@@ -11,6 +11,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{float}
 \usepackage{caption}
 \PassOptionsToPackage{hyphens}{url}
 \usepackage{hyperref}
@@ -58,7 +59,7 @@
 % =========================================================
 \noindent {\fontsize{10}{12}\selectfont\bfseries Abstract} \\
 {\fontsize{10}{12}\selectfont\itshape 
-El presente trabajo aborda el problema de asignación y scheduling de alertas en un Centro de Operaciones de Seguridad (SOC) mediante un Algoritmo Genético con selección por ranking, elitismo y operadores adaptados a la representación utilizada. El volumen de alertas puede exceder la capacidad humana, generando sobrecarga y riesgo de incumplimiento de los Acuerdos de Nivel de Servicio (SLA) para incidentes críticos. Se desarrolló una función objetivo ponderada que combina tiempo de resolución, espera, cumplimiento de SLA, backlog y balance de carga entre analistas. La evaluación utiliza alertas derivadas del dataset público CICIDS2017 y complementadas con atributos operativos sintéticos. El algoritmo se compara con Round-Robin, Menor carga, Urgencia balanceada y una búsqueda aleatoria con igual presupuesto. En 20 semillas, el AG mejora frente a Round-Robin y supera a la búsqueda aleatoria en fitness, pero Menor carga obtiene mayor fitness medio en los tres escenarios y supera al AG en saturación; por lo tanto, no se observa una superioridad universal.\par}
+El presente trabajo aborda el problema de asignación y scheduling de alertas en un Centro de Operaciones de Seguridad (SOC) mediante un Algoritmo Genético con selección por ranking, elitismo y operadores adaptados a la representación utilizada. El volumen de alertas puede exceder la capacidad humana, generando sobrecarga y riesgo de incumplimiento de los Acuerdos de Nivel de Servicio (SLA) para incidentes críticos. Se desarrolló una función objetivo ponderada que combina tiempo de resolución, espera, cumplimiento de SLA, backlog y balance de carga entre analistas. La evaluación utiliza alertas derivadas del dataset público CICIDS2017 y complementadas con atributos operativos sintéticos. El algoritmo se compara con Round-Robin, Menor carga, Urgencia balanceada y una búsqueda aleatoria con igual presupuesto. En 20 semillas, el AG supera a Round-Robin en fitness en los escenarios de 100 y 120 alertas y reduce en promedio la espera crítica y el desbalance en esos escenarios no saturados; en saturación, en cambio, aumenta la espera crítica. Además, obtiene mayor fitness medio que una búsqueda aleatoria con igual presupuesto. Sin embargo, Menor carga lo supera en fitness en los tres escenarios y Urgencia balanceada obtiene el mayor fitness en saturación; por lo tanto, no se observa una superioridad del AG frente a heurísticas deterministas simples.\par}
 \vspace{0.8em}
 
 % =========================================================
@@ -87,11 +88,11 @@ Este planteo se relaciona con la priorización de alertas estudiada por Jalalvan
 % Elementos del Trabajo y metodología
 % =========================================================
 \section{Elementos del Trabajo y metodología}
-La metodología propuesta se enmarca en la resolución de un problema de asignación y scheduling en máquinas paralelas mediante un Algoritmo Genético. La instancia puede interpretarse como un caso particular relacionado con el \textit{Job Shop Scheduling} estocástico, ya que cada alerta se modela como una tarea asignada a un analista y no posee una ruta de múltiples operaciones.
+La metodología propuesta se enmarca en la resolución de un problema de asignación y scheduling en máquinas paralelas mediante un Algoritmo Genético. Cada alerta se modela como una tarea asignada a un analista y no posee una ruta de múltiples operaciones.
 
-La asignación de tareas con tiempos de procesamiento y recursos limitados pertenece al scheduling de máquinas paralelas y se relaciona con variantes estocásticas del \textit{Job Shop Scheduling} (SJSP) [4]. En este trabajo cada alerta es una tarea de una sola operación y los analistas actúan como máquinas paralelas; por eso el JSP se utiliza como marco de referencia y no como clasificación estricta. Los tiempos nominales se complementan con duraciones lognormales de media igual al tiempo estimado y coeficiente de variación configurable. El AG optimiza el valor esperado sobre escenarios comunes y la solución se valida con escenarios nuevos fuera de muestra.
+La asignación de tareas con tiempos de procesamiento y recursos limitados se formula directamente como \textit{parallel machine scheduling} con tiempos estocásticos. Cada alerta es una tarea de una sola operación y los analistas actúan como máquinas paralelas. Los tiempos nominales se complementan con duraciones lognormales de media igual al tiempo estimado y coeficiente de variación configurable. El AG optimiza el valor esperado sobre escenarios comunes y la solución se valida con escenarios nuevos fuera de muestra.
 
-Se diseñó una representación cromosómica específica con tres bloques: asignación de alertas a analistas, ajuste de prioridad de despacho y una política global de criticidad. El primer bloque contiene un gen por alerta y su alelo indica el analista responsable; el segundo bloque contiene un ajuste acotado que modifica el orden base; el tercero contiene dos genes globales $(w_2,w_3)$, acotados, que determinan cuánto utiliza la política evolucionada la criticidad de activos importantes y críticos. Las variantes reducidas desactivan el bloque de ajuste o el de criticidad, respectivamente.
+Se diseñó una representación cromosómica específica con tres bloques: asignación de alertas a analistas, ajuste de prioridad de despacho y una política global de criticidad. El primer bloque contiene un gen por alerta y su alelo indica el analista responsable; el segundo bloque contiene un ajuste acotado $d_i$ para la alerta $i$, que modifica el orden base; el tercero contiene dos genes globales $(w_2,w_3)$, acotados, que determinan cuánto utiliza la política evolucionada la criticidad de activos importantes y críticos. Las variantes reducidas desactivan el bloque de ajuste o el de criticidad, respectivamente.
 
 Esta codificación directa resulta adecuada para representar la decisión principal del problema ---qué analista recibe cada alerta--- y evita introducir una capa de codificación indirecta. El segundo bloque permite evolucionar una política de despacho específica por alerta y los dos genes globales permiten interpretar directamente la sensibilidad aprendida para cada nivel de criticidad, sin duplicar genes por alerta ni alterar los datos observados de la instancia. Boukedroun et al. [4] reportan que las codificaciones directas pueden representar el cronograma en la estructura de datos y reducir la necesidad de mecanismos complejos de reparación, criterio que se adopta aquí mediante alelos acotados al conjunto de analistas disponibles y ajustes limitados.
 
@@ -113,19 +114,19 @@ J ={}& 0.10\,\widehat{T} + 0.10\,\widehat{W}
 f ={}& \frac{1}{1 + J}.
 \end{aligned}
 \end{equation}
-Aquí, las variables con sombrero representan magnitudes normalizadas: $\widehat{T}$ es el makespan relativo al horizonte, $\widehat{W}$ la espera promedio, $\widehat{W}_c$ la espera crítica, $\widehat{R}_c$ el retraso crítico respecto del SLA efectivo, $\widehat{B}_p$ el backlog ponderado por prioridad, $\widehat{B}_m$ los minutos de backlog, $D$ el desbalance relativo de carga, $O$ la sobrecarga relativa y $\widehat{S}_a$ la violación de SLA ponderada por prioridad y criticidad del activo. La configuración oficial utiliza $w_T=0.10$ y el término de activo tiene peso $0.25$.
+Aquí, las variables con sombrero representan magnitudes normalizadas: $\widehat{T}$ es el makespan relativo al horizonte, $\widehat{W}$ la espera promedio, $\widehat{W}_c$ la espera crítica, $\widehat{R}_c$ el retraso crítico respecto del SLA efectivo, $\widehat{B}_p$ el backlog ponderado por prioridad, $\widehat{B}_m$ los minutos de backlog, $D$ el desbalance relativo de carga, $O$ la sobrecarga relativa y $\widehat{S}_a$ la violación de SLA ponderada por prioridad y criticidad del activo. Los coeficientes suman $1.25$ deliberadamente: el modelo prioriza el cumplimiento de SLA y la espera crítica por encima de makespan y balance, sin interpretar los coeficientes como probabilidades. La configuración oficial utiliza $w_T=0.10$ y el término de activo tiene peso $0.25$. Los pesos se fijaron antes de observar los resultados y no se modificaron para favorecer al AG; si existe un compromiso entre balance, espera crítica y SLA, se informa explícitamente.
 
 El algoritmo evoluciona la población generación tras generación aplicando selección por ranking, cruzamiento y mutación por bloques para recombinar asignaciones y ajustes de prioridad, además de elitismo. La población inicial incluye una solución Round-Robin con ajuste nulo como referencia y la política de atención dinámica prioriza las alertas disponibles según prioridad, severidad, ajuste evolucionado y política global de criticidad. La selección por torneo y por ruleta se conservan como alternativas reproducibles. Estos operadores forman parte del marco clásico de planes reproductivos y operadores genéticos desarrollado por Holland, que también analiza la robustez de los planes evolutivos y el papel de las codificaciones en sistemas adaptativos [2].
 
-La configuración oficial utiliza una población de $N=50$ individuos y evoluciona durante $G=200$ generaciones, es decir, hasta 10.000 evaluaciones de individuos por corrida. La probabilidad de cruzamiento de un punto es $P_c=0.75$ y la probabilidad de mutación por gen es $P_m=0.05$. Se preservan los tres mejores individuos por generación y se utiliza selección por ranking. El escenario principal contiene 100 alertas, diez analistas, un horizonte de 480 minutos y criticidad de activos derivada de un catálogo CMDB simulado. Se agregan un escenario de estrés con 120 alertas y un escenario de saturación con 500 alertas. Cada escenario se evalúa sobre 20 semillas ($42$--$61$), comparando el AG y los baselines con las mismas alertas y los mismos escenarios de duración para cada semilla. La ablación propuesta separa cuatro variantes: A (solo asignación), B (asignación y $d_i$), C (asignación y $(w_2,w_3)$) y D (todos los bloques). El grid search de 18 combinaciones se utilizó únicamente como exploración de hiperparámetros, con 15 generaciones por combinación; su mejor configuración ($N=20$, $P_m=0.05$, $P_c=0.60$) no reemplaza la configuración oficial $N=50$, $G=200$.
+La configuración oficial utiliza una población de $N=50$ individuos y evoluciona durante $G=200$ generaciones, es decir, hasta 10.000 evaluaciones de individuos por corrida. La probabilidad de cruzamiento de un punto es $P_c=0.75$ y la probabilidad de mutación por gen es $P_m=0.05$. Se preservan los tres mejores individuos por generación y se utiliza selección por ranking. El escenario principal contiene 100 alertas, diez analistas, un horizonte de 480 minutos y criticidad de activos derivada de un catálogo CMDB simulado. Se agregan un escenario de estrés con 120 alertas y un escenario de saturación con 500 alertas. Cada escenario se evalúa sobre 20 semillas ($42$--$61$), comparando el AG y los baselines con las mismas alertas y los mismos escenarios de duración para cada semilla. La configuración reportada como ``AG'' en las tablas principales es la variante D, que contiene los tres bloques. La ablación separa cuatro variantes: A (solo asignación), B (asignación y $d_i$), C (asignación y $(w_2,w_3)$) y D (todos los bloques). El grid search de 18 combinaciones se utilizó únicamente como exploración preliminar de hiperparámetros, con 15 generaciones por combinación; la configuración oficial ($N=50$, $G=200$) se conserva porque permite evaluar el efecto de los operadores y la representación extendida con un presupuesto diez veces mayor de evaluaciones y coincide con la configuración usada en la campaña multi-semilla. La configuración de exploración ($N=20$, $P_m=0.05$, $P_c=0.60$), que obtuvo la mejor aptitud en el grid search, no se presenta como resultado final porque no fue validada con la campaña completa.
 
-Para validar empíricamente el modelo, se utilizó una base de datos representativa derivada del dataset público \textbf{CICIDS2017} [1]. A partir de una muestra aleatoria de eventos, se inyectaron sintéticamente atributos operativos (prioridad, severidad, SLA y tiempo estimado de resolución). La criticidad del activo se generó mediante un catálogo CMDB simulado, con 60\% de activos comunes, 30\% importantes y 10\% críticos. Esta decisión permite estudiar el término de criticidad aunque el dataset original no contiene inventario de activos; por lo tanto, esos valores no deben interpretarse como observaciones reales de la infraestructura.
+Para validar empíricamente el modelo, se utilizó una base de eventos de red derivada del dataset público \textbf{CICIDS2017} [1]. El dataset aporta tráfico y etiquetas de actividad, que sirven como fuente reproducible de eventos y permiten variar la demanda entre escenarios; no aporta, sin embargo, inventario SOC ni tiempos de atención. Por eso se generaron sintéticamente prioridad, severidad, SLA y tiempo estimado de resolución, y la criticidad del activo mediante un catálogo CMDB simulado, con 60\% de activos comunes, 30\% importantes y 10\% críticos. Esta separación permite estudiar la política de asignación sin presentar los atributos operativos como observaciones reales de la infraestructura.
 
-La selección de estos atributos está alineada con la taxonomía de criterios de priorización de Jalalvand et al. [3]: prioridad y severidad representan propiedades de la alerta; el tiempo de resolución aproxima el tiempo disponible y la carga del analista; y el SLA expresa la dimensión organizacional de cumplimiento y oportunidad (\textit{timeliness}). En lo que sigue, ``alerta crítica'' refiere a una alerta marcada por su prioridad o severidad, mientras que ``activo crítico'' refiere exclusivamente a la categoría de criticidad obtenida de la CMDB simulada. La criticidad observada del activo se integra en el cromosoma mediante el tercer bloque global $(w_2,w_3)$: no se modifica artificialmente la criticidad de la instancia, sino que se aprende cuánto debe influir cada nivel en el orden de despacho. El orden efectivo resta $n \cdot 0.5 \cdot w_2$ a los activos importantes y $n \cdot 0.5 \cdot w_3$ a los críticos. Además, la criticidad interviene en la función de penalización mediante el SLA efectivo y el peso de la violación. Esta correspondencia ofrece una justificación metodológica para la función de aptitud, aunque los atributos hayan sido generados sintéticamente.
+La selección de estos atributos está alineada con la taxonomía de criterios de priorización de Jalalvand et al. [3]: prioridad y severidad representan propiedades de la alerta; el tiempo de resolución aproxima el tiempo disponible y la carga del analista; y el SLA expresa la dimensión organizacional de cumplimiento y oportunidad (\textit{timeliness}). En lo que sigue, ``alerta crítica'' refiere a una alerta marcada por su prioridad o severidad, mientras que ``activo crítico'' refiere exclusivamente a la categoría de criticidad obtenida de la CMDB simulada. La criticidad observada del activo se integra en el cromosoma mediante el tercer bloque global $(w_2,w_3)$: no se modifica artificialmente la criticidad de la instancia, sino que se aprende cuánto debe influir cada nivel en el orden de despacho. El orden efectivo resta $n \cdot 0.5 \cdot w_2$ a los activos importantes y $n \cdot 0.5 \cdot w_3$ a los críticos, donde $n$ es el número de analistas. Además, la criticidad interviene en la función de penalización mediante el SLA efectivo y el peso de la violación. Esta correspondencia ofrece una justificación metodológica para la función de aptitud, aunque los atributos hayan sido generados sintéticamente.
 
 Cada escenario genera una tabla de alertas derivadas con el tamaño indicado (100, 120 o 500 registros). La distribución de prioridades, la severidad y el tiempo estimado se calculan nuevamente para cada muestra y semilla; estos valores describen las instancias experimentales y no deben interpretarse como propiedades originales del dataset CICIDS2017.
 
-Como baselines operativos se utilizaron tres reglas deterministas. Round-Robin asigna las alertas secuencialmente entre los analistas, sin considerar carga ni prioridad. Menor carga asigna cada alerta al analista con menor carga acumulada. Urgencia balanceada ordena las alertas por prioridad, severidad y SLA, y asigna cada una al analista con menor carga; por lo tanto, utiliza la misma información operativa que el AG sin realizar búsqueda evolutiva. Esta última comparación permite distinguir, aunque sea en una instancia de referencia, el efecto de una política de despacho del efecto de la búsqueda evolutiva. Estas reglas no forman parte del entrenamiento del AG.
+Como baselines operativos se utilizaron tres reglas deterministas. Round-Robin asigna las alertas secuencialmente entre los analistas, sin considerar carga ni prioridad. Menor carga asigna cada alerta al analista con menor carga acumulada. Urgencia balanceada ordena las alertas por prioridad, severidad y SLA, y asigna cada una al analista con menor carga; por lo tanto, utiliza la misma información operativa que el AG sin realizar búsqueda evolutiva. Estas reglas no forman parte del entrenamiento del AG.
 
 Además del esquema por lote, el prototipo implementa un flujo continuo mediante un horizonte rodante. En cada intervalo de replanificación se reoptimiza únicamente el conjunto de alertas ya llegadas y aún no iniciadas; las tareas que comienzan dentro del intervalo quedan comprometidas y se ejecutan con duraciones reales desconocidas por el planificador. Esta modalidad puede compararse con el AG por lote y los baselines bajo la misma realización de duraciones. La ejecución continua se utiliza como evaluación operativa complementaria y no reemplaza la comparación multi-semilla del escenario por lote.
 
@@ -135,91 +136,160 @@ Además del esquema por lote, el prototipo implementa un flujo continuo mediante
 \section{Resultados}
 Las ejecuciones del algoritmo se evaluaron mediante métricas operativas y se compararon con los tres baselines deterministas. La comparación multi-semilla utiliza medias, desvíos estándar, intervalos de confianza bootstrap y porcentaje de semillas en las que el AG mejora. La validación fuera de muestra usa escenarios de duración nuevos y compartidos por todas las soluciones, de modo que la comparación no favorece al método que optimiza.
 
-Las conclusiones cuantitativas se extraen de \path{outputs/experimento/experimento_resumen.csv} y \path{outputs/baselines_multisemilla/baselines_detalle.csv}, que separan los escenarios principal, de estrés y de saturación. La Tabla~\ref{tab:resultados-multisemilla} resume las cuatro métricas principales para los cuatro métodos y evita basar la interpretación en una sola semilla.
+Las Tablas~\ref{tab:resultados-principal}--\ref{tab:resultados-saturacion} resumen seis métricas sobre 20 semillas en los escenarios principal, de estrés y de saturación, y evitan basar la interpretación en una sola corrida. La Tabla~\ref{tab:ablacion} reporta por separado las variantes de la ablación.
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
-\caption{Resultados medios sobre 20 semillas y escenarios de validación compartidos.}
-\label{tab:resultados-multisemilla}
+\caption{Resultados medios sobre 20 semillas: escenario principal. AG = D. Fitness: mayor es mejor; el resto: menor es mejor.}
+\label{tab:resultados-principal}
 \scriptsize
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{@{}llrrrr@{}}
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
 \toprule
-\textbf{Escenario} & \textbf{Método} & \textbf{Fitness} & \textbf{Espera crítica} & \textbf{Backlog} & \textbf{Desbalance}\\
+\textbf{Método} & \textbf{Fitness} & \textbf{Espera cr.} & \textbf{Backlog} & \textbf{Desbalance} & \textbf{SLA (\%)} & \textbf{SLA cr. (\%)}\\
 \midrule
-Principal & Round-Robin & 0.8599 & 13.25 & 15.36 & 0.1485\\
-Principal & Menor carga & 0.8788 & 9.24 & 12.87 & 0.0820\\
-Principal & Urgencia balanceada & 0.8505 & 19.80 & 22.19 & 0.0798\\
-Principal & AG & 0.8702 & 10.37 & 15.90 & 0.0948\\
-\midrule
-Estrés & Round-Robin & 0.8414 & 19.82 & 29.54 & 0.1260\\
-Estrés & Menor carga & 0.8586 & 17.06 & 28.92 & 0.0751\\
-Estrés & Urgencia balanceada & 0.8340 & 23.67 & 38.36 & 0.0735\\
-Estrés & AG & 0.8504 & 17.02 & 30.54 & 0.0884\\
-\midrule
-Saturación & Round-Robin & 0.4442 & 182.96 & 421.57 & 0.0552\\
-Saturación & Menor carga & 0.4506 & 167.44 & 422.83 & 0.0363\\
-Saturación & Urgencia balanceada & 0.4511 & 157.65 & 423.78 & 0.0361\\
-Saturación & AG & 0.4333 & 269.82 & 416.81 & 0.0521\\
+Round-Robin & 0.8599 & 13.25 & 15.36 & 0.1485 & 89.94 & 79.82\\
+Menor carga & 0.8788 & 9.24 & 12.87 & 0.0820 & 94.94 & 87.70\\
+Urgencia balanceada & 0.8505 & 19.80 & 22.19 & 0.0798 & 75.53 & 68.86\\
+AG (D) & 0.8702 & 10.37 & 15.90 & 0.0948 & 89.78 & 84.47\\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}
 
-En el escenario principal, el AG obtuvo un fitness medio de $0.8702$ frente a $0.8599$ de Round-Robin, pero Menor carga alcanzó $0.8788$ y menor espera crítica ($9.24$ frente a $10.37$ minutos). El backlog del AG fue $15.90$ frente a $15.36$ de Round-Robin y $12.87$ de Menor carga.
+\begin{table}[H]
+\centering
+\caption{Resultados medios sobre 20 semillas: escenario de estrés. AG = D. Fitness: mayor es mejor; el resto: menor es mejor.}
+\label{tab:resultados-estres}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+\textbf{Método} & \textbf{Fitness} & \textbf{Espera cr.} & \textbf{Backlog} & \textbf{Desbalance} & \textbf{SLA (\%)} & \textbf{SLA cr. (\%)}\\
+\midrule
+Round-Robin & 0.8414 & 19.82 & 29.54 & 0.1260 & 79.34 & 69.57\\
+Menor carga & 0.8586 & 17.06 & 28.92 & 0.0751 & 83.38 & 73.74\\
+Urgencia balanceada & 0.8340 & 23.67 & 38.36 & 0.0735 & 65.68 & 62.93\\
+AG (D) & 0.8504 & 17.02 & 30.54 & 0.0884 & 78.07 & 74.43\\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
 
-En el escenario de estrés, con 120 alertas, el AG mantuvo ventajas en fitness ($0.8504$ frente a $0.8414$), espera crítica ($17.02$ frente a $19.82$ minutos) y desbalance ($0.0884$ frente a $0.1260$), pero presentó menor cumplimiento global de SLA ($78.07\%$ frente a $79.34\%$) y mayor backlog ($30.54$ frente a $29.54$ alertas). El cumplimiento de SLA de alertas críticas fue superior para el AG en ambos escenarios no saturados: $84.47\%$ frente a $79.82\%$ en el escenario principal y $74.43\%$ frente a $69.57\%$ en el de estrés.
+\begin{table}[H]
+\centering
+\caption{Resultados medios sobre 20 semillas: escenario de saturación. AG = D. Fitness: mayor es mejor; el resto: menor es mejor.}
+\label{tab:resultados-saturacion}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+\textbf{Método} & \textbf{Fitness} & \textbf{Espera cr.} & \textbf{Backlog} & \textbf{Desbalance} & \textbf{SLA (\%)} & \textbf{SLA cr. (\%)}\\
+\midrule
+Round-Robin & 0.4442 & 182.96 & 421.57 & 0.0552 & 9.04 & 19.17\\
+Menor carga & 0.4506 & 167.44 & 422.83 & 0.0363 & 8.70 & 19.50\\
+Urgencia balanceada & 0.4511 & 157.65 & 423.78 & 0.0361 & 8.55 & 18.96\\
+AG (D) & 0.4333 & 269.82 & 416.81 & 0.0521 & 9.72 & 17.38\\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
 
-El escenario de 500 alertas está deliberadamente sobredimensionado respecto del horizonte y se interpreta como saturación. Allí el AG obtuvo un fitness menor ($0.4333$ frente a $0.4442$) y una espera crítica mayor ($269.82$ frente a $182.96$ minutos) que Round-Robin. Menor carga y Urgencia balanceada también lograron menores esperas críticas ($167.44$ y $157.65$ minutos), por lo que el AG quedó último entre los cuatro métodos. Este resultado no puede explicarse solo por la insuficiencia de capacidad: sugiere que la representación extendida y la búsqueda con 10.000 evaluaciones no encontraron una política robusta fuera de muestra, posiblemente por sobreajuste a los escenarios de entrenamiento o por la dificultad de explorar un cromosoma de más de 1.000 genes. El AG redujo el backlog ($416.81$ frente a $421.57$ de Round-Robin), pero obtuvo peor fitness global.
+En el escenario principal, el AG obtuvo un fitness medio de $0.8702$ frente a $0.8599$ de Round-Robin, pero Menor carga alcanzó $0.8788$ y menor espera crítica ($9.24$ frente a $10.37$ minutos). El backlog del AG fue $15.90$ frente a $15.36$ de Round-Robin, $12.87$ de Menor carga y $22.19$ de Urgencia balanceada, que presentó el peor backlog.
 
-A partir del análisis generacional se observaron además las siguientes medidas:
+En el escenario de estrés, con 120 alertas, el AG mejoró frente a Round-Robin en fitness ($0.8504$ frente a $0.8414$), espera crítica ($17.02$ frente a $19.82$ minutos) y desbalance ($0.0884$ frente a $0.1260$), pero presentó menor cumplimiento global de SLA ($78.07\%$ frente a $79.34\%$) y mayor backlog ($30.54$ frente a $29.54$ alertas). Menor carga superó al AG en fitness ($0.8586$), backlog ($28.92$) y desbalance ($0.0751$). El cumplimiento de SLA de alertas críticas fue superior para el AG frente a Round-Robin en ambos escenarios no saturados: $84.47\%$ frente a $79.82\%$ en el escenario principal y $74.43\%$ frente a $69.57\%$ en el de estrés.
+
+El escenario de 500 alertas está deliberadamente sobredimensionado respecto del horizonte y se interpreta como saturación. Allí Urgencia balanceada obtuvo el mayor fitness ($0.4511$) y la menor espera crítica ($157.65$), seguida por Menor carga ($0.4506$ y $167.44$), Round-Robin ($0.4442$ y $182.96$) y el AG ($0.4333$ y $269.82$). El AG quedó último entre los cuatro métodos, aunque redujo el backlog ($416.81$ frente a $421.57$ de Round-Robin). Este resultado no puede explicarse solo por la insuficiencia de capacidad: sugiere que la representación extendida y la búsqueda con 10.000 evaluaciones no encontraron una política robusta fuera de muestra. El sobreajuste a los escenarios de entrenamiento es una hipótesis pendiente de verificar con un diagnóstico explícito de fitness dentro de muestra.
+
+Menor carga fue mejor que el AG en espera crítica en el escenario principal (9.24 frente a 10.37 minutos), aunque la diferencia no fue concluyente tras Holm ($p_\mathrm{Holm}=0.172$); en estrés los valores fueron prácticamente iguales y la diferencia no fue concluyente (17.06 frente a 17.02; $p_\mathrm{Holm}=1.000$). En saturación, Menor carga redujo la espera crítica de forma concluyente (167.44 frente a 269.82; $p_\mathrm{Holm}<0.001$) y Urgencia balanceada obtuvo un valor todavía menor (157.65). Los intervalos bootstrap y las pruebas de Wilcoxon con Holm se calcularon sobre las comparaciones pareadas de las 20 semillas.
+
+Se observaron además las siguientes diferencias entre métodos:
 
 \begin{itemize}
-    \item \textbf{Fitness y estabilidad:} el AG superó a Round-Robin en fitness en las 20 semillas de los escenarios principal y de estrés, mientras que fue inferior en saturación; las medias fueron $0.8702$, $0.8504$ y $0.4333$ para 100, 120 y 500 alertas, respectivamente. Menor carga obtuvo mayor fitness medio en los tres escenarios ($0.8788$, $0.8586$ y $0.4506$), por lo que el AG no mostró ventaja en el propio objetivo escalarizado frente a esa heurística determinista.
+    \item \textbf{Fitness y estabilidad:} el AG superó a Round-Robin en fitness en las 20 semillas de los escenarios principal y de estrés, con diferencias pareadas concluyentes tras Holm ($p_\mathrm{Holm}=0.00012$ en ambos escenarios); en saturación fue inferior ($p_\mathrm{Holm}=0.00012$). Las medias fueron $0.8702$, $0.8504$ y $0.4333$ para 100, 120 y 500 alertas, respectivamente. Menor carga superó al AG en fitness en los tres escenarios ($p_\mathrm{Holm}=0.00012$), mientras que Urgencia balanceada también lo superó en saturación ($p_\mathrm{Holm}=0.00012$).
     \item \textbf{Cumplimiento de SLA:} el AG mejoró el cumplimiento de alertas críticas en los escenarios principal y de estrés, pero no en saturación; el cumplimiento global fue menor en los dos primeros y mayor en saturación. En activos críticos no hubo diferencia clara en los escenarios no saturados, mientras que el AG fue superior en saturación.
-    \item \textbf{Espera y balance:} el AG redujo en promedio la espera crítica y el desbalance frente a Round-Robin en los escenarios principal y de estrés, pero Menor carga fue mejor o prácticamente igual en espera crítica. En saturación el AG aumentó la espera crítica y quedó último entre los cuatro métodos; la diferencia de desbalance frente a Round-Robin no fue concluyente.
-    \item \textbf{Capacidad:} el backlog se analiza separando los escenarios no colapsados de la saturación de 500 alertas, sin atribuir automáticamente a la capacidad toda diferencia de espera entre métodos.
+    \item \textbf{Espera y balance:} el AG redujo en promedio la espera crítica y el desbalance frente a Round-Robin en los escenarios principal y de estrés, pero la diferencia de Menor carga frente al AG fue no concluyente en espera crítica. En saturación el AG aumentó la espera crítica y quedó último entre los cuatro métodos; la diferencia de desbalance frente a Round-Robin no fue concluyente.
 \end{itemize}
 
-El archivo de distribución final muestra las cargas asignadas de la corrida oficial. En el grid search de 18 configuraciones, la mejor aptitud fue obtenida con población 20, mutación 0.05 y cruzamiento 0.60. La configuración oficial utiliza una población mayor y más generaciones para realizar una búsqueda más estable y profunda que la exploración preliminar. Los resultados completos de la comparación multi-semilla, incluidos los intervalos bootstrap y las pruebas de Wilcoxon con Holm, se encuentran en \texttt{outputs/baselines\_multisemilla/}.
+En el grid search de 18 configuraciones, la mejor aptitud fue obtenida con población 20, mutación 0.05 y cruzamiento 0.60. La configuración oficial utiliza una población mayor y más generaciones para realizar una búsqueda más estable y profunda que la exploración preliminar.
 
-Menor carga fue mejor que el AG en espera crítica en el escenario principal (9.24 frente a 10.37 minutos), aunque la diferencia no fue concluyente tras Holm ($p_\mathrm{Holm}=0.172$); en estrés los valores fueron prácticamente iguales (17.06 frente a 17.02; $p_\mathrm{Holm}=1.000$). En saturación, Menor carga redujo la espera crítica de forma concluyente (167.44 frente a 269.82; $p_\mathrm{Holm}<0.001$) y también obtuvo menor backlog y desbalance. Urgencia balanceada tuvo mayor espera crítica que el AG en los escenarios principal y de estrés, pero menor espera en saturación a costa de un backlog mayor.
+Como control adicional se ejecutó una búsqueda aleatoria con el mismo presupuesto computacional del AG: 10.000 evaluaciones por combinación de escenario y semilla. En cada caso se utilizaron la misma instancia, los mismos escenarios de duración y la misma validación fuera de muestra. El fitness medio del AG fue $0.8702$, $0.8504$ y $0.4333$ en los escenarios principal, de estrés y de saturación, frente a $0.8478$, $0.8265$ y $0.4105$ de la búsqueda aleatoria, respectivamente. La espera crítica media también fue menor para el AG en los escenarios principal y de estrés: $10.37$ frente a $18.68$ minutos y $17.02$ frente a $27.59$ minutos; en saturación también fue menor para el AG ($269.82$ frente a $364.70$ minutos). Este control aporta indicios de que el AG encuentra mejores soluciones según su función objetivo que una búsqueda aleatoria con igual presupuesto, aunque no demuestra superioridad en todas las métricas ni frente a toda heurística alternativa.
 
-Como control adicional se ejecutó una búsqueda aleatoria con el mismo presupuesto computacional del AG: 10.000 evaluaciones por combinación de escenario y semilla. En cada caso se utilizaron la misma instancia, los mismos escenarios de duración y la misma validación fuera de muestra. El fitness medio del AG fue $0.8702$, $0.8504$ y $0.4333$ en los escenarios principal, de estrés y de saturación, frente a $0.8478$, $0.8265$ y $0.4105$ de la búsqueda aleatoria, respectivamente. La espera crítica media también fue menor para el AG en los escenarios principal y de estrés: $10.37$ frente a $18.68$ minutos y $17.02$ frente a $27.59$ minutos; en saturación también fue menor para el AG ($269.82$ frente a $364.70$ minutos). Este control aporta evidencia de que el AG encuentra mejores soluciones según su función objetivo que una búsqueda aleatoria con igual presupuesto, aunque no demuestra superioridad en todas las métricas ni frente a toda heurística alternativa.
+\subsection*{Ablación}
+La Tabla~\ref{tab:ablacion} reporta las cuatro variantes del cromosoma. La variante D coincide con la fila AG de las Tablas~\ref{tab:resultados-principal}--\ref{tab:resultados-saturacion}.
+% TODO: verificar si A, B, C y D provienen de la misma campaña que los baselines (la fila D es idéntica a la fila AG).
+% Si lo son, A puede compararse con los baselines; si no, justificar por qué D coincide exactamente.
 
-Los pesos de la función objetivo se mantienen fijos antes de observar los resultados. No se modifican para forzar una ventaja del AG sobre Round-Robin; si existe un compromiso entre balance, espera crítica y SLA, se informa explícitamente.
+\begin{table}[H]
+\centering
+\caption{Ablación: resultados medios sobre 20 semillas por variante del cromosoma. A: solo asignación; B: asignación y $d_i$; C: asignación y $(w_2,w_3)$; D: todos los bloques. Fitness: mayor es mejor; el resto: menor es mejor.}
+\label{tab:ablacion}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+\textbf{Variante} & \textbf{Fitness} & \textbf{Espera cr.} & \textbf{Backlog} & \textbf{Desbalance} & \textbf{SLA (\%)} & \textbf{SLA cr. (\%)}\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Escenario principal}}\\
+A & 0.8701 & 9.87 & 16.42 & 0.0953 & 89.19 & 85.75\\
+B & 0.8703 & 9.91 & 16.73 & 0.0945 & 89.20 & 85.49\\
+C & 0.8693 & 11.11 & 16.18 & 0.0946 & 89.23 & 83.64\\
+D & 0.8702 & 10.37 & 15.90 & 0.0948 & 89.78 & 84.47\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Escenario de estrés}}\\
+A & 0.8512 & 16.08 & 31.93 & 0.0879 & 76.81 & 74.48\\
+B & 0.8503 & 16.53 & 32.17 & 0.0883 & 76.73 & 73.96\\
+C & 0.8503 & 17.44 & 30.44 & 0.0887 & 78.57 & 72.90\\
+D & 0.8504 & 17.02 & 30.54 & 0.0884 & 78.07 & 74.43\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Escenario de saturación}}\\
+A & 0.4517 & 150.46 & 423.48 & 0.0462 & 8.59 & 20.52\\
+B & 0.4484 & 165.99 & 422.54 & 0.0460 & 8.91 & 20.64\\
+C & 0.4280 & 312.67 & 416.35 & 0.0480 & 9.49 & 17.04\\
+D & 0.4333 & 269.82 & 416.81 & 0.0521 & 9.72 & 17.38\\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
 
-La comparación de ablación se realizó de forma pareada por escenario y semilla, con intervalos bootstrap, prueba de Wilcoxon y corrección de Holm; los resultados completos se guardan en \texttt{outputs/comparacion\_ablacion.csv}. En el escenario principal no se detectaron diferencias estadísticamente concluyentes entre las variantes en las métricas principales. En el escenario de estrés, C y D aumentaron el backlog frente a A en aproximadamente $1.49$ y $1.39$ alertas, respectivamente ($p_\mathrm{Holm}=0.040$ y $0.035$), sin una mejora concluyente de fitness, espera crítica o desbalance. Bajo saturación, B, C y D redujeron la espera crítica frente a A en aproximadamente $15.5$, $162.2$ y $119.4$ minutos, respectivamente (en todos los casos, $p_\mathrm{Holm}<0.001$), pero redujeron el fitness en $0.0032$, $0.0237$ y $0.0184$ y aumentaron el backlog en $0.94$, $7.13$ y $6.68$ alertas, respectivamente. D además redujo el desbalance frente a A en aproximadamente $0.006$ ($p_\mathrm{Holm}=0.010$). Estos resultados muestran un compromiso: la política de criticidad puede reducir esperas críticas bajo sobrecarga, pero no mejora globalmente la función objetivo.
+La comparación de ablación se realizó de forma pareada por escenario y semilla, con intervalos bootstrap, prueba de Wilcoxon y corrección de Holm. En el escenario principal no se detectaron diferencias estadísticamente concluyentes entre las variantes en las métricas principales. En el escenario de estrés, C y D redujeron el backlog frente a A en aproximadamente $1.49$ y $1.39$ alertas, respectivamente ($p_\mathrm{Holm}=0.040$ y $0.035$), sin diferencias concluyentes en fitness, espera crítica o desbalance. Bajo saturación, B, C y D aumentaron la espera crítica frente a A en aproximadamente $15.5$, $162.2$ y $119.4$ minutos, respectivamente (en todos los casos, $p_\mathrm{Holm}<0.001$), y redujeron el fitness en $0.0032$, $0.0237$ y $0.0184$. C y D también redujeron el cumplimiento de SLA de alertas críticas en $3.5$ y $3.1$ puntos porcentuales, y D aumentó el desbalance en aproximadamente $0.006$ ($p_\mathrm{Holm}=0.010$). A cambio, B, C y D redujeron el backlog en $0.94$, $7.13$ y $6.68$ alertas ($p_\mathrm{Holm}\leq 0.018$ en los tres casos), y C y D mejoraron el cumplimiento de SLA de activos críticos en $4.8$ y $10.3$ puntos porcentuales ($p_\mathrm{Holm}<0.001$). Estos resultados muestran un compromiso: bajo saturación, la política de criticidad desplaza el servicio hacia los activos críticos y reduce el backlog, a costa de la espera y el SLA de las alertas críticas por prioridad, y no mejora globalmente la función objetivo.
 
-Los pesos globales $(w_2,w_3)$ son más fáciles de interpretar en saturación, donde reducen la espera de las alertas críticas. Ese beneficio tiene un costo: las variantes que incluyen criticidad reducen el fitness global y aumentan el backlog frente a A. Como A es un subespacio de D, el peor resultado de D también es compatible con una búsqueda perjudicada por el espacio extendido y el presupuesto de 10.000 evaluaciones. En los escenarios principal y de estrés varios pesos llegaron cerca del techo de $0.98$, sin producir un efecto estadísticamente detectable. Por eso, la criticidad dentro del cromosoma debe interpretarse como una política de compromiso, no como una mejora general.
+Los pesos globales $(w_2,w_3)$ son más fáciles de interpretar en saturación, donde en la variante D el peso $w_2$ promedió $0.31$ (frente a $0.95$--$0.98$ en los otros escenarios) y $w_3$ promedió $0.83$. Los beneficios para activos críticos y backlog no implican que el AG completo supere a los baselines. Como A es un subespacio de D, el peor resultado de D en fitness también es compatible con una búsqueda perjudicada por el espacio extendido y el presupuesto de 10.000 evaluaciones. En los escenarios principal y de estrés, entre 10 y 16 de las 20 semillas llevaron $w_2$ o $w_3$ al techo de $0.98$, sin producir un efecto estadísticamente detectable. Por eso, la criticidad dentro del cromosoma debe interpretarse como una política de compromiso, no como una mejora general.
 
-Los intervalos bootstrap del resumen permiten distinguir efectos consistentes de resultados exploratorios. Aunque el AG supera a Round-Robin en varias medias de fitness, espera crítica y desbalance, esas diferencias no deben interpretarse automáticamente como concluyentes. El efecto sobre el cumplimiento global de SLA y el backlog debe informarse junto con cualquier mejora en la espera crítica.
-
-Este análisis tiene varias limitaciones estadísticas. La ablación comprende 105 comparaciones (35 por escenario) y la comparación multi-semilla de baselines agrega 63 comparaciones (21 por escenario); en ambos casos la corrección de Holm se aplicó dentro de cada familia de comparaciones por escenario. La búsqueda aleatoria se reporta de forma descriptiva, sin una prueba pareada adicional ni intervalos propios en el CSV resumido, por lo que no se presenta como evidencia inferencial. Además, 20 semillas ofrecen poca potencia para detectar efectos pequeños, por lo que una diferencia no significativa no demuestra que los métodos sean exactamente iguales.
-
-La regla Urgencia balanceada ordena las alertas de cada cola por prioridad, severidad y SLA mediante la misma cola de prioridad utilizada por el simulador; su mayor espera crítica en los escenarios principal y de estrés no se debe a ignorar la prioridad, sino al costo de concentrar primero las alertas urgentes. Como trabajo futuro, conviene sembrar explícitamente la población inicial con Menor carga y Urgencia balanceada para evaluar si el AG puede conservar sus soluciones y mejorar sus compromisos.
+\subsection*{Limitaciones estadísticas}
+La ablación comprende 105 comparaciones (35 por escenario) y la corrección de Holm se aplicó dentro de cada escenario, sobre sus 35 comparaciones. La comparación multi-semilla de baselines agrega 63 comparaciones (21 por escenario); en ese caso la corrección de Holm se aplicó sobre las 63 en conjunto, por lo que el valor mínimo ajustado $p_\mathrm{Holm}=0.00012$ corresponde al mínimo exacto de Wilcoxon repetido en una familia de ese tamaño. La búsqueda aleatoria se reporta de forma descriptiva, sin prueba pareada adicional ni intervalos de confianza propios, por lo que no se presenta como evidencia inferencial. Además, 20 semillas ofrecen poca potencia para detectar efectos pequeños, por lo que una diferencia no significativa no demuestra que los métodos sean exactamente iguales. Las mejoras del AG frente a Round-Robin en espera crítica y desbalance deben informarse junto con su efecto sobre el cumplimiento global de SLA y el backlog.
 
 % =========================================================
 % Discusión
 % =========================================================
 \section{Discusión}
-Los resultados obtenidos muestran que la función de aptitud multifactorial permite mejorar algunos objetivos operativos frente a los baselines, pero no todos simultáneamente. En los escenarios principal y de estrés, el AG mejora frente a Round-Robin en espera crítica y desbalance, aunque Menor carga obtiene mayor fitness y menor o similar espera crítica. En saturación, el AG presenta el menor fitness y la mayor espera crítica de los cuatro métodos, aunque reduce el backlog frente a Round-Robin.
+Los resultados obtenidos muestran que la función de aptitud multifactorial permite mejorar algunos objetivos operativos frente a los baselines, pero no todos simultáneamente. En los escenarios principal y de estrés, el AG mejora frente a Round-Robin en espera crítica y desbalance, aunque Menor carga obtiene mayor fitness y menor espera crítica en el escenario principal, si bien la diferencia no fue concluyente tras Holm; en estrés, la espera fue similar (17.02 frente a 17.06 minutos). En saturación, el AG presenta el menor fitness y la mayor espera crítica de los cuatro métodos, aunque reduce el backlog frente a Round-Robin.
 
-A diferencia de los enfoques estáticos manuales, el Algoritmo Genético permite expresar en una única función objetivo el tiempo de resolución, la espera crítica, el backlog y el balance de carga. Sin embargo, la comparación multi-semilla no muestra una superioridad automática frente a los baselines: Menor carga supera al AG en fitness en los tres escenarios y en espera crítica bajo saturación. Esto es consistente con la observación de Jalalvand et al. [3] de que los métodos de optimización permiten incorporar explícitamente restricciones como la disponibilidad de analistas y el tiempo de investigación, aunque permanecen menos explorados que los enfoques basados en aprendizaje automático. En consecuencia, el modelo propuesto se interpreta como una forma de Alert Prioritisation (AP) automatizada para el triaje y la asignación inicial, no como un reemplazo de la validación experta ante incidentes nuevos o ambiguos.
+A diferencia de los enfoques estáticos manuales, el Algoritmo Genético permite expresar en una única función objetivo el tiempo de resolución, la espera crítica, el backlog y el balance de carga. Sin embargo, la comparación multi-semilla no muestra una superioridad automática frente a los baselines: Menor carga supera al AG en fitness en los tres escenarios, mientras que Urgencia balanceada también lo supera en saturación y ambos baselines obtienen menor espera crítica allí. Esto es consistente con la observación de Jalalvand et al. [3] de que los métodos de optimización permiten incorporar explícitamente restricciones como la disponibilidad de analistas y el tiempo de investigación, aunque permanecen menos explorados que los enfoques basados en aprendizaje automático. En consecuencia, el modelo propuesto se interpreta como una forma de Alert Prioritisation (AP) automatizada para el triaje y la asignación inicial, no como un reemplazo de la validación experta ante incidentes nuevos o ambiguos.
 
 El backlog total no debe leerse de la misma manera en todos los escenarios. La saturación de 500 alertas supera ampliamente la capacidad del turno y limita el backlog alcanzable, pero la comparación con los baselines muestra que la política de despacho todavía modifica sustancialmente la espera crítica. Por eso, la peor espera del AG no se atribuye únicamente a la capacidad: también puede reflejar sobreajuste a los escenarios de duración usados durante la optimización o una exploración insuficiente del cromosoma extendido. En los escenarios de 100 y 120 alertas, el aumento de backlog del AG representa además un costo de la política de priorización y debe informarse junto con cualquier mejora en alertas críticas.
 
-La evaluación fuera de muestra evita que la mejora observada sea atribuida únicamente a los escenarios usados durante la optimización. La búsqueda aleatoria con igual presupuesto obtuvo menor fitness medio que el AG en los tres escenarios, lo que aporta un control frente a la posibilidad de que la diferencia se explique solamente por el número de evaluaciones. La replanificación continua está implementada como extensión del prototipo, pero no se presenta aquí como evidencia cuantitativa principal. El costo computacional detallado queda pendiente de una campaña experimental específica. La literatura de scheduling vincula la reducción y estabilización del tiempo crítico de procesamiento con una mayor robustez frente a perturbaciones [4].
+La ablación respalda esta última hipótesis: en saturación, la variante más simple (A, solo asignación) obtiene un fitness medio mayor que D ($0.4517$ frente a $0.4333$; $p_\mathrm{Holm}<0.001$) y menor espera crítica, por lo que, con la evidencia actual, el bloque extendido no se justifica en ese escenario. El valor de A es además el más alto de los reportados en saturación, aunque su diferencia con Urgencia balanceada ($0.4511$) es pequeña y no se evaluó con una prueba pareada frente a los baselines.
+
+La evaluación fuera de muestra evita que la mejora observada sea atribuida únicamente a los escenarios usados durante la optimización. La búsqueda aleatoria con igual presupuesto obtuvo menor fitness medio que el AG en los tres escenarios, lo que aporta un contraste descriptivo frente a la posibilidad de que la diferencia se explique solamente por el número de evaluaciones. La replanificación continua está implementada como extensión del prototipo, pero no se presenta aquí como evidencia cuantitativa principal. La literatura de scheduling vincula la reducción y estabilización del tiempo crítico de procesamiento con una mayor robustez frente a perturbaciones [4].
 
 % =========================================================
 % Conclusión
 % =========================================================
 \section{Conclusión}
-El presente trabajo proporciona evidencia experimental inicial sobre el uso de un Algoritmo Genético para abordar, bajo escenarios simulados, un problema de asignación de alertas en un SOC. Se modeló una representación cromosómica y una función de evaluación que integran tiempo de resolución, espera crítica, backlog, balance de carga y criticidad de activos. La evaluación sobre 20 semillas y tres niveles de demanda muestra mejoras promedio frente a Round-Robin y frente a la búsqueda aleatoria con igual presupuesto en fitness, pero Menor carga obtiene mayor fitness medio en los tres escenarios y supera al AG en espera crítica bajo saturación. Por ello, la contribución debe interpretarse como una política experimental de priorización y balance con compromisos operativos explícitos, no como una mejora general frente a heurísticas deterministas simples.
+El presente trabajo proporciona evidencia experimental inicial sobre el uso de un Algoritmo Genético para abordar, bajo escenarios simulados con atributos operativos sintéticos, un problema de asignación de alertas en un SOC. Se modeló una representación cromosómica y una función de evaluación que integran tiempo de resolución, espera crítica, backlog, balance de carga y criticidad de activos. Sobre 20 semillas, el AG supera a Round-Robin en fitness en los escenarios de 100 y 120 alertas, con diferencias pareadas concluyentes tras Holm, y reduce en promedio la espera crítica y el desbalance, a costa de un backlog levemente mayor y un menor cumplimiento global de SLA. En el escenario de saturación ocurre lo contrario: el AG queda por debajo de Round-Robin en fitness y en espera crítica, aunque reduce el backlog y mejora el cumplimiento global de SLA. Frente a la búsqueda aleatoria con igual presupuesto obtiene mayor fitness medio en los tres escenarios, aunque esa comparación es descriptiva. Sin embargo, Menor carga obtiene mayor fitness que el AG en los tres escenarios, con diferencias concluyentes tras Holm, y Urgencia balanceada obtiene el mayor fitness en saturación. En la ablación, la variante simple A supera a la variante completa D en fitness en saturación, por lo que el bloque extendido del cromosoma no mostró un beneficio global. Por ello, la contribución debe interpretarse como una política experimental de priorización y balance con compromisos operativos explícitos, no como una mejora frente a heurísticas deterministas simples.
 
 El modelo no mide directamente la fatiga de alertas: no representa habilidades diferenciadas, turnos, pausas ni una degradación del rendimiento por carga sostenida. En consecuencia, la fatiga se utiliza como motivación del problema y se aproxima mediante espera, backlog y cumplimiento de SLA, pero no se presenta como una variable validada experimentalmente.
 
-Como líneas de trabajo futuro, se propone avanzar desde la automatización hacia una colaboración Humano--IA: los analistas podrían revisar las asignaciones y ajustar dinámicamente los pesos de las penalizaciones mediante retroalimentación activa. También se evaluará la robustez del cronograma frente a distribuciones de duración más diversas, cambios de disponibilidad y llegadas de mayor frecuencia. La criticidad del activo se incorpora actualmente mediante un catálogo CMDB simulado y una política global $(w_2,w_3)$; una extensión posterior deberá conectar esos pesos con un inventario real y con atributos de vulnerabilidad y dependencia. Estas líneas responden a las brechas identificadas por Jalalvand et al. [3] y a la perspectiva de robustez del SJSP estudiada por Boukedroun et al. [4].
+Como líneas de trabajo futuro, quedan pendientes: (i) un diagnóstico de fitness dentro de muestra frente a fuera de muestra para confirmar o descartar sobreajuste en saturación; (ii) sembrar la población inicial con Menor carga y Urgencia balanceada; (iii) incorporar baselines con holgura de SLA, como EDF, y una cota por programación entera en una instancia pequeña. Cada corrida completa demanda aproximadamente una hora, por lo que estas extensiones se difieren a una segunda etapa. También se evaluará ampliar el rango superior de los pesos de criticidad, actualmente cercanos al techo de $0.98$, para determinar si ese límite condiciona la búsqueda. Se avanzará desde la automatización hacia una colaboración Humano--IA, se evaluará la robustez frente a distribuciones de duración más diversas, cambios de disponibilidad y llegadas de mayor frecuencia, y se conectará la criticidad con un inventario real. Estas líneas responden a las brechas identificadas por Jalalvand et al. [3] y a la perspectiva de robustez del SJSP estudiada por Boukedroun et al. [4].
 
 % =========================================================
 % Agradecimientos

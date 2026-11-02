@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guía de Investigación - Algoritmos Genéticos aplicados al Scheduling de Alertas SOC</title>
+  <link rel="stylesheet" href="informe.css" />
+</head>
+
+<body>
+  <section class="page caratula">
+    <div class="caratula-logo-wrap">
+      <img class="caratula-logo" src="assets/utn_rosario_logo.png" alt="UTN Facultad Regional Rosario" />
+    </div>
+
+    <p class="caratula-kicker">Universidad Tecnológica Nacional - Facultad Regional Rosario</p>
+
+    <h1 class="caratula-titulo">Trabajo Práctico Integrador<br />
+      Algoritmos Genéticos aplicados al Scheduling de Alertas en un SOC</h1>
+
+    <div class="caratula-ficha">
+      <div class="caratula-meta">
+        <p><span class="label">Materia:</span> Algoritmos Genéticos</p>
+        <p><span class="label">Docentes:</span> Daniela Díaz y Víctor Lombardo</p>
+        <p><span class="label">Ciclo lectivo:</span> 2026</p>
+      </div>
+
+      <div class="caratula-equipo">
+        <div class="caratula-personas">
+          <div class="caratula-persona">
+            <strong>Chacón, Agustina</strong>
+            <span>Legajo 50980</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Tabini, Azul</strong>
+            <span>Legajo 48038</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Carloni, Nahuel Iván</strong>
+            <span>Legajo 51095</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Mierez, Joaquín</strong>
+            <span>Legajo 49938</span>
+          </div>
+          <div class="caratula-persona">
+            <strong>Gomez Manna, J.</strong>
+            <span>Autor del artículo científico</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="page indice" aria-label="Tabla de contenidos">
+    <h2>Índice de contenidos</h2>
+    <div class="indice-container">
+      <ol>
+        <li><a href="#denominacion">Denominación del proyecto de investigación</a></li>
+        <li><a href="#situacion">Situación problemática</a></li>
+        <li><a href="#problema">Problema</a></li>
+        <li><a href="#objetivos">Objetivos de la investigación</a></li>
+        <li><a href="#justificacion">Justificación</a></li>
+        <li><a href="#marco-teorico">Marco teórico y antecedentes</a></li>
+        <li><a href="#metodologia">Metodología</a></li>
+        <li><a href="#concrecion">Concreción del modelo</a></li>
+        <li><a href="#resultados">Resultados experimentales</a></li>
+        <li><a href="#discusion">Discusión</a></li>
+        <li><a href="#conclusion">Conclusión</a></li>
+        <li><a href="#cronograma">Cronograma tentativo</a></li>
+        <li><a href="#agradecimientos">Agradecimientos</a></li>
+        <li><a href="#bibliografia">Bibliografía</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main class="page content-body" id="top">
+
+    <section id="resumen">
+      <h2>Resumen del artículo científico</h2>
+      <p>
+        El presente trabajo aborda el problema de asignación y scheduling de alertas en un Centro de Operaciones de
+        Seguridad (SOC) mediante un Algoritmo Genético con selección por ranking, elitismo y operadores adaptados a la
+        representación utilizada. El volumen de alertas puede exceder la capacidad humana, generando sobrecarga y riesgo
+        de incumplimiento de los Acuerdos de Nivel de Servicio (SLA) para incidentes críticos. Se desarrolló una función
+        objetivo ponderada que combina tiempo de resolución, espera, cumplimiento de SLA, backlog y balance de carga
+        entre analistas. La evaluación utiliza alertas derivadas del dataset público CICIDS2017 y complementadas con
+        atributos operativos sintéticos.
+      </p>
+      <p>
+        El algoritmo se compara con Round-Robin, Menor carga, Urgencia balanceada y una búsqueda aleatoria con igual
+        presupuesto. En 20 semillas, el AG supera a Round-Robin en fitness en los escenarios de 100 y 120 alertas y
+        reduce en promedio la espera crítica y el desbalance en esos escenarios no saturados; en saturación, en cambio,
+        aumenta la espera crítica. Además, obtiene mayor fitness medio que una búsqueda aleatoria con igual presupuesto.
+        Sin embargo, Menor carga lo supera en fitness en los tres escenarios y Urgencia balanceada obtiene el mayor
+        fitness en saturación; por lo tanto, no se observa una superioridad del AG frente a heurísticas deterministas
+        simples.
+      </p>
+      <p><strong>Palabras clave:</strong> Algoritmos Genéticos, Centro de Operaciones de Seguridad (SOC), Scheduling,
+        Asignación de Tareas, Balance de Carga, CICIDS2017.</p>
+    </section>
+
+    <section id="denominacion">
+      <h2>Denominación del futuro proyecto de investigación</h2>
+      <p>
+        El proyecto de investigación se denomina <strong>“Optimización mediante Algoritmos Genéticos de la asignación y
+        el balance de carga de alertas de seguridad en Centros de Operaciones de Seguridad (SOC)”</strong>.
+      </p>
+      <p>
+        La denominación delimita el alcance del trabajo en tres dimensiones. En primer lugar, define la técnica
+        fundamental: los Algoritmos Genéticos, pertenecientes a la familia de las metaheurísticas evolutivas. En
+        segundo lugar, especifica el problema de optimización: la asignación de tareas (<em>scheduling</em>) y el
+        balance de carga entre recursos humanos finitos. Finalmente, enmarca el dominio de aplicación: la operación
+        diaria de un Centro de Operaciones de Seguridad. El enfoque consiste en distribuir alertas entre analistas
+        humanos para reducir los tiempos de respuesta, prevenir la sobrecarga puntual y favorecer el cumplimiento de
+        los plazos de atención comprometidos.
+      </p>
+    </section>
+
+    <section id="situacion">
+      <h2>Situación problemática</h2>
+      <p>
+        Los Centros de Operaciones de Seguridad (SOC) reciben un volumen de alertas que crece con mayor velocidad que la
+        disponibilidad de analistas capacitados para atenderlas. La sobrecarga (<em>alert overload</em>) constituye uno
+        de los problemas estructurales de la operación de un SOC, ya que obliga a decidir con información incompleta y
+        bajo presión de tiempo qué eventos atender primero.
+      </p>
+      <p>
+        Esta sobrecarga tiene un correlato humano: la fatiga de alertas (<em>alert fatigue</em>). Un relevamiento
+        sistemático de Jalalvand et al. (2024) informa que la mayoría de las organizaciones recibe más de 10.000 alertas
+        diarias y que más del 50 % son falsos positivos. En ese contexto, los analistas pueden llegar a ignorar alertas,
+        desactivarlas o delegarlas a colegas. La fatiga degrada la calidad de las decisiones de triaje, incrementa el
+        tiempo de respuesta y favorece la rotación del personal capacitado. La demora en atender una alerta de alta
+        severidad incrementa el riesgo de que una intrusión progrese sin ser contenida.
+      </p>
+      <p>
+        A esta escasez estructural se suma un problema de coordinación: aun cuando el equipo de analistas es suficiente
+        en promedio, la forma en que las alertas se reparten rara vez es óptima. Las prácticas habituales —turnos fijos,
+        reglas estáticas por tipo de alerta o asignación manual según disponibilidad aparente— no consideran
+        simultáneamente la prioridad, el plazo de resolución comprometido (SLA), el tiempo estimado de atención y la
+        carga acumulada por cada analista. Como consecuencia, algunos analistas acumulan <em>backlog</em> mientras otros
+        permanecen subutilizados.
+      </p>
+      <p>
+        En síntesis, la problemática combina un volumen de alertas que puede exceder la capacidad de análisis manual,
+        el riesgo de incumplir los SLA de incidentes críticos y la ausencia de mecanismos sistemáticos y verificables
+        que permitan distribuir la carga entre analistas.
+      </p>
+    </section>
+
+    <section id="problema">
+      <h2>Problema</h2>
+      <p>
+        La asignación manual o basada en reglas fijas de alertas de seguridad a los analistas de un SOC no logra
+        equilibrar de forma consistente el tiempo total de resolución, los tiempos de espera de las alertas críticas y
+        el desbalance de carga. A partir de esta situación, se plantea la siguiente pregunta de investigación:
+        <strong>¿Puede un Algoritmo Genético optimizar la asignación de alertas en un SOC para reducir los tiempos de
+        respuesta y mejorar la distribución de la carga de trabajo entre analistas?</strong>
+      </p>
+      <p>
+        Para responder este interrogante se investiga una estrategia de asignación basada en Algoritmos Genéticos que
+        distribuya alertas caracterizadas por su prioridad, severidad, tiempo estimado de resolución y SLA entre un
+        número limitado de analistas. Su desempeño se evalúa mediante métricas cuantitativas generacionales y
+        operativas, y se contrasta con reglas deterministas y una búsqueda aleatoria de presupuesto equivalente.
+      </p>
+    </section>
+
+    <section id="objetivos">
+      <h2>Objetivos de la investigación</h2>
+      <h3>Objetivo general</h3>
+      <p>
+        Diseñar, implementar y evaluar un modelo basado en Algoritmos Genéticos para optimizar la asignación de alertas
+        de seguridad a los analistas de un Centro de Operaciones de Seguridad mediante una función objetivo ponderada
+        que combine tiempo de resolución, incumplimiento de SLA, backlog y desbalance de carga.
+      </p>
+      <h3>Objetivos específicos</h3>
+      <ol>
+        <li>Analizar el proceso de asignación de alertas de seguridad y los factores que intervienen en su distribución
+          dentro de un SOC.</li>
+        <li>Desarrollar un modelo basado en Algoritmos Genéticos para optimizar la asignación de alertas entre los
+          analistas disponibles.</li>
+        <li>Evaluar el desempeño del modelo mediante métricas relacionadas con la convergencia, los tiempos de
+          resolución y la distribución de la carga de trabajo.</li>
+        <li>Validar la efectividad del modelo mediante experimentación con un conjunto de datos representativo del
+          dominio de la ciberseguridad y comparaciones con métodos alternativos.</li>
+      </ol>
+    </section>
+
+    <section id="justificacion">
+      <h2>Justificación</h2>
+      <p>
+        Desde la perspectiva académica, el problema constituye una instancia de <em>parallel machine scheduling</em>
+        con tiempos estocásticos: cada alerta es una tarea de una sola operación y cada analista actúa como una máquina
+        paralela. Esto permite aplicar y evaluar empíricamente los fundamentos de los Algoritmos Genéticos
+        —representación cromosómica, selección, cruzamiento, mutación y función de aptitud— sobre un caso de uso
+        simulado derivado de datos públicos.
+      </p>
+      <p>
+        Desde la perspectiva práctica, la fatiga de alertas y el desbalance de carga afectan el tiempo de contención de
+        incidentes y la operación de los equipos SOC. Un modelo de asignación que pueda ejecutarse ante el ingreso de
+        nuevos lotes de eventos representa una alternativa experimental para asistir el triaje y la asignación inicial.
+        No obstante, el prototipo no reemplaza la validación experta ni constituye por sí mismo una solución productiva
+        integrada a un SIEM.
+      </p>
+    </section>
+
+    <section id="marco-teorico">
+      <h2>Marco teórico y antecedentes</h2>
+      <p>
+        Los Algoritmos Genéticos (AG) son metaheurísticas de búsqueda estocástica inspiradas en los mecanismos de la
+        selección natural y la genética, formalizados por Holland (1992). Mantienen una población de soluciones
+        candidatas codificadas como cromosomas que evoluciona mediante operadores de selección, cruzamiento y mutación.
+        La calidad de cada individuo se mide mediante una función de <em>fitness</em> definida para el problema.
+      </p>
+      <p>
+        En ciberseguridad, CICIDS2017 (Sharafaldin, Lashkari y Ghorbani, 2018) es un conjunto de datos de referencia
+        para la generación y caracterización de tráfico de red con fines de detección de intrusiones. En este trabajo
+        se utiliza como fuente reproducible de eventos; no se emplea para clasificar tráfico ni aporta tiempos reales
+        de atención, inventario SOC o criticidad de activos. Esos atributos operativos se derivan o generan
+        sintéticamente.
+      </p>
+      <p>
+        El problema se formula como <em>parallel machine scheduling</em> con tiempos de procesamiento estocásticos.
+        Cada alerta representa una tarea de una sola operación y los analistas representan máquinas paralelas. Esta
+        formulación no corresponde a Job Shop Scheduling, ya que las alertas no recorren múltiples operaciones ni
+        máquinas en una ruta predefinida. La incertidumbre temporal se modela mediante duraciones lognormales.
+      </p>
+      <p>
+        Jalalvand et al. (2024) organizan los criterios de priorización en dimensiones asociadas con la alerta, el
+        analista, el activo, la organización y el entorno externo. Esta clasificación fundamenta la inclusión de
+        prioridad, severidad, duración estimada, SLA y criticidad del activo. Por su parte, Boukedroun et al. (2023)
+        estudian algoritmos genéticos híbridos para problemas de scheduling estocástico y discuten alternativas de
+        representación directa.
+      </p>
+    </section>
+
+    <section id="metodologia">
+      <h2>Metodología</h2>
+      <p>
+        La investigación adopta un enfoque cuantitativo y experimental. El problema se modela como una asignación de
+        tareas a máquinas paralelas con tiempos estocásticos. Los tiempos nominales se complementan con duraciones
+        lognormales de media igual al tiempo estimado y coeficiente de variación configurable. El AG optimiza el valor
+        esperado sobre escenarios comunes y la solución se valida con nuevas realizaciones fuera de muestra.
+      </p>
+
+      <h3>Representación cromosómica</h3>
+      <p>
+        Se diseñó una representación con tres bloques. El primero contiene un gen por alerta y su alelo indica el
+        analista responsable. El segundo contiene un ajuste acotado <span class="mono">d_i</span> para cada alerta, que
+        modifica su orden base de despacho. El tercero contiene dos genes globales
+        <span class="mono">(w2, w3)</span>, acotados, que determinan cuánto influye la política evolucionada en la
+        criticidad de activos importantes y críticos. Las variantes reducidas desactivan el bloque de ajuste o el de
+        criticidad, respectivamente.
+      </p>
+      <p>
+        Esta codificación directa representa la decisión principal —qué analista recibe cada alerta— sin introducir
+        una capa de codificación indirecta. Los alelos se mantienen dentro del conjunto de analistas disponibles y los
+        ajustes están limitados. Las variantes de ablación son: A, solo asignación; B, asignación más ajustes
+        individuales <span class="mono">d_i</span>; C, asignación más política global de criticidad
+        <span class="mono">(w2, w3)</span>; y D, los tres bloques.
+      </p>
+
+      <h3>Función objetivo</h3>
+      <p>
+        La evaluación combina el tiempo total de resolución, la espera promedio, la espera crítica, el retraso crítico
+        respecto del SLA efectivo, el backlog ponderado por prioridad, los minutos de backlog, el desbalance relativo,
+        la sobrecarga relativa y la violación de SLA ponderada por prioridad y criticidad del activo.
+      </p>
+      <div class="formula">
+        J = 0.10 T̂ + 0.10 Ŵ + 0.20 Ŵc + 0.25 R̂c<br />
+        + 0.10 B̂p + 0.05 B̂m + 0.15 D + 0.05 O + 0.25 Ŝa<br />
+        fitness = 1 / (1 + J)
+      </div>
+      <p>
+        Las magnitudes con sombrero se encuentran normalizadas. Los coeficientes suman deliberadamente 1.25 y no se
+        interpretan como probabilidades: priorizan el cumplimiento de SLA y la espera crítica por encima del
+        <em>makespan</em> y el balance. Los pesos se fijaron antes de observar los resultados y no se modificaron para
+        favorecer al AG.
+      </p>
+
+      <h3>Operadores genéticos</h3>
+      <p>
+        La configuración oficial utiliza selección por ranking, cruzamiento de un punto, mutación por bloques y
+        elitismo. Se preservan los tres mejores individuos de cada generación. La selección por torneo y por ruleta
+        permanecen disponibles como alternativas experimentales. La población inicial incluye una solución
+        Round-Robin con ajuste nulo como referencia.
+      </p>
+
+      <h3>Validación empírica y baselines</h3>
+      <p>
+        Se utiliza una base de eventos derivada de CICIDS2017. El dataset aporta tráfico y etiquetas de actividad, pero
+        no inventario SOC ni tiempos de atención. Por eso se generan sintéticamente prioridad, severidad, SLA y tiempo
+        estimado de resolución. La criticidad del activo se deriva de un catálogo CMDB simulado con 60 % de activos
+        comunes, 30 % importantes y 10 % críticos.
+      </p>
+      <p>
+        Se comparan cuatro métodos: el AG y tres reglas deterministas. Round-Robin asigna las alertas secuencialmente
+        entre analistas; Menor carga asigna cada alerta al analista con menor carga acumulada; y Urgencia balanceada
+        ordena por prioridad, severidad y SLA y asigna cada alerta al analista con menor carga. Esta última regla
+        utiliza la misma información operativa que el AG, pero no realiza búsqueda evolutiva. Como control adicional
+        se incorpora una búsqueda aleatoria con igual presupuesto de evaluaciones.
+      </p>
+    </section>
+
+    <section id="concrecion">
+      <h2>Concreción del modelo</h2>
+      <h3>Configuración experimental</h3>
+      <p>
+        La configuración oficial utiliza una población de <span class="mono">N = 50</span> individuos durante
+        <span class="mono">G = 200</span> generaciones, hasta 10.000 evaluaciones por corrida. La probabilidad de
+        cruzamiento es <span class="mono">Pc = 0.75</span> y la probabilidad de mutación por gen es
+        <span class="mono">Pm = 0.05</span>. Se preservan los tres mejores individuos y se utiliza selección por
+        ranking. La semilla base es 42.
+      </p>
+      <p>
+        El escenario principal contiene 100 alertas, diez analistas y un horizonte operativo de 480 minutos. Se agregan
+        un escenario de estrés con 120 alertas y uno de saturación con 500 alertas. Cada escenario se evalúa sobre 20
+        semillas (42 a 61), comparando los métodos con las mismas alertas y los mismos escenarios de duración para
+        cada semilla. La fila identificada como AG corresponde a la variante D, que contiene los tres bloques
+        cromosómicos.
+      </p>
+      <p>
+        Se exploraron 18 combinaciones de hiperparámetros mediante Grid Search, con 15 generaciones por combinación.
+        La mejor aptitud de esa exploración se obtuvo con población 20, mutación 0.05 y cruzamiento 0.60. Sin embargo,
+        esa configuración no se presenta como resultado final porque no fue validada con la campaña completa. Se
+        conserva la configuración oficial de 50 individuos y 200 generaciones para disponer de un presupuesto diez
+        veces mayor de evaluaciones y mantener consistencia con la campaña multi-semilla.
+      </p>
+
+      <h3>Criticidad de activos y despacho</h3>
+      <p>
+        La criticidad observada del activo no se modifica artificialmente. El tercer bloque del cromosoma aprende cuánto
+        debe influir cada nivel en el orden de despacho. El orden efectivo resta
+        <span class="mono">n · 0.5 · w2</span> para activos importantes y
+        <span class="mono">n · 0.5 · w3</span> para activos críticos, donde <span class="mono">n</span> es la cantidad
+        de analistas. Además, la criticidad interviene en la penalización mediante el SLA efectivo y el peso de la
+        violación.
+      </p>
+      <p>
+        En este informe, “alerta crítica” refiere a una alerta marcada por su prioridad o severidad; “activo crítico”
+        refiere exclusivamente a la categoría de criticidad obtenida de la CMDB simulada. Esta distinción es importante
+        porque ambos conceptos intervienen de manera diferente en el modelo.
+      </p>
+
+      <h3>Flujo continuo</h3>
+      <p>
+        Además del esquema por lote, el prototipo implementa un flujo continuo mediante un horizonte rodante. En cada
+        intervalo se reoptimiza únicamente el conjunto de alertas ya llegadas y aún no iniciadas. Las tareas que
+        comienzan dentro del intervalo quedan comprometidas y se ejecutan con duraciones reales desconocidas por el
+        planificador. Esta modalidad constituye una evaluación operativa complementaria y no reemplaza la comparación
+        multi-semilla por lote presentada como evidencia principal.
+      </p>
+
+      <h3>Infraestructura técnica</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Componente</th><th>Especificación utilizada</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Hardware</td><td>Intel Core i7-10700K, 8 núcleos y 16 hilos, 15.8 GB de RAM; placa ECS H510H6-M2.</td></tr>
+            <tr><td>Sistema operativo</td><td>Microsoft Windows 11 Pro.</td></tr>
+            <tr><td>Software</td><td>Python 3, NumPy, pandas, SciPy, Matplotlib, Streamlit, FastAPI y Uvicorn.</td></tr>
+            <tr><td>Infraestructura</td><td>Ejecución local y reproducible; dataset, código, resultados CSV y figuras almacenados en el proyecto.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        El código principal se encuentra en <a href="../main.py">main.py</a>. Las dependencias están documentadas en
+        <a href="../requirements.txt">requirements.txt</a>. El dashboard permite inspeccionar los resultados sin
+        ejecutar el algoritmo en vivo y los archivos generados se almacenan en <span class="mono">outputs/</span>.
+      </p>
+    </section>
+
+    <section id="resultados">
+      <h2>Resultados experimentales</h2>
+      <p>
+        Las ejecuciones se evaluaron mediante métricas operativas y se compararon con los tres baselines deterministas.
+        La campaña multi-semilla utiliza medias, desvíos estándar, intervalos de confianza bootstrap y porcentaje de
+        semillas en las que el AG mejora. La validación fuera de muestra utiliza escenarios de duración nuevos y
+        compartidos por todas las soluciones.
+      </p>
+      <p>
+        Las tablas presentan los resultados medios sobre 20 semillas. Un fitness mayor es mejor; para las demás
+        métricas, un valor menor es mejor, salvo los porcentajes de cumplimiento de SLA, donde un valor mayor es mejor.
+      </p>
+
+      <h3>Escenario principal: 100 alertas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Método</th><th>Fitness</th><th>Espera crítica (min)</th><th>Backlog</th><th>Desbalance</th><th>SLA (%)</th><th>SLA crítico (%)</th></tr></thead>
+          <tbody>
+            <tr><td>Round-Robin</td><td>0.8599</td><td>13.25</td><td>15.36</td><td>0.1485</td><td>89.94</td><td>79.82</td></tr>
+            <tr><td>Menor carga</td><td>0.8788</td><td>9.24</td><td>12.87</td><td>0.0820</td><td>94.94</td><td>87.70</td></tr>
+            <tr><td>Urgencia balanceada</td><td>0.8505</td><td>19.80</td><td>22.19</td><td>0.0798</td><td>75.53</td><td>68.86</td></tr>
+            <tr class="row-highlight"><td>AG (D)</td><td>0.8702</td><td>10.37</td><td>15.90</td><td>0.0948</td><td>89.78</td><td>84.47</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        El AG obtuvo un fitness medio de 0.8702 frente a 0.8599 de Round-Robin, pero Menor carga alcanzó 0.8788 y una
+        espera crítica menor (9.24 frente a 10.37 minutos). El backlog del AG fue 15.90 alertas, frente a 15.36 de
+        Round-Robin y 12.87 de Menor carga.
+      </p>
+
+      <h3>Escenario de estrés: 120 alertas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Método</th><th>Fitness</th><th>Espera crítica (min)</th><th>Backlog</th><th>Desbalance</th><th>SLA (%)</th><th>SLA crítico (%)</th></tr></thead>
+          <tbody>
+            <tr><td>Round-Robin</td><td>0.8414</td><td>19.82</td><td>29.54</td><td>0.1260</td><td>79.34</td><td>69.57</td></tr>
+            <tr><td>Menor carga</td><td>0.8586</td><td>17.06</td><td>28.92</td><td>0.0751</td><td>83.38</td><td>73.74</td></tr>
+            <tr><td>Urgencia balanceada</td><td>0.8340</td><td>23.67</td><td>38.36</td><td>0.0735</td><td>65.68</td><td>62.93</td></tr>
+            <tr class="row-highlight"><td>AG (D)</td><td>0.8504</td><td>17.02</td><td>30.54</td><td>0.0884</td><td>78.07</td><td>74.43</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        En este escenario el AG mejoró frente a Round-Robin en fitness (0.8504 frente a 0.8414), espera crítica
+        (17.02 frente a 19.82 minutos) y desbalance (0.0884 frente a 0.1260). Sin embargo, presentó menor cumplimiento
+        global de SLA (78.07 % frente a 79.34 %) y mayor backlog (30.54 frente a 29.54). Menor carga obtuvo el mayor
+        fitness (0.8586), menor backlog (28.92) y menor desbalance (0.0751).
+      </p>
+
+      <h3>Escenario de saturación: 500 alertas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Método</th><th>Fitness</th><th>Espera crítica (min)</th><th>Backlog</th><th>Desbalance</th><th>SLA (%)</th><th>SLA crítico (%)</th></tr></thead>
+          <tbody>
+            <tr><td>Round-Robin</td><td>0.4442</td><td>182.96</td><td>421.57</td><td>0.0552</td><td>9.04</td><td>19.17</td></tr>
+            <tr><td>Menor carga</td><td>0.4506</td><td>167.44</td><td>422.83</td><td>0.0363</td><td>8.70</td><td>19.50</td></tr>
+            <tr><td>Urgencia balanceada</td><td>0.4511</td><td>157.65</td><td>423.78</td><td>0.0361</td><td>8.55</td><td>18.96</td></tr>
+            <tr class="row-highlight"><td>AG (D)</td><td>0.4333</td><td>269.82</td><td>416.81</td><td>0.0521</td><td>9.72</td><td>17.38</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        El escenario de 500 alertas supera deliberadamente la capacidad del horizonte y se interpreta como saturación.
+        Urgencia balanceada obtuvo el mayor fitness (0.4511) y la menor espera crítica (157.65 minutos), seguida por
+        Menor carga, Round-Robin y AG. El AG quedó último en fitness y presentó la mayor espera crítica (269.82
+        minutos), aunque redujo el backlog frente a Round-Robin (416.81 frente a 421.57) y obtuvo mayor cumplimiento
+        global de SLA (9.72 % frente a 9.04 %).
+      </p>
+
+      <h3>Comparaciones estadísticas</h3>
+      <ul>
+        <li><strong>Fitness:</strong> el AG superó a Round-Robin en las 20 semillas de los escenarios principal y de
+          estrés, con diferencias concluyentes tras Holm (p ajustado = 0.00012 en ambos). En saturación fue inferior
+          (p ajustado = 0.00012). Menor carga superó al AG en los tres escenarios (p ajustado = 0.00012); Urgencia
+          balanceada también lo superó en saturación.</li>
+        <li><strong>Espera crítica:</strong> Menor carga obtuvo 9.24 minutos frente a 10.37 del AG en el escenario
+          principal, sin diferencia concluyente tras Holm (p ajustado = 0.172). En estrés, los valores fueron
+          prácticamente iguales (17.06 frente a 17.02; p ajustado = 1.000). En saturación, Menor carga redujo la
+          espera crítica de forma concluyente (167.44 frente a 269.82; p ajustado menor que 0.001).</li>
+        <li><strong>SLA:</strong> el AG mejoró el cumplimiento de SLA de alertas críticas frente a Round-Robin en los
+          escenarios principal y de estrés, pero no en saturación. El cumplimiento global fue menor en los dos
+          primeros y mayor en saturación.</li>
+        <li><strong>Balance:</strong> el AG redujo en promedio la espera crítica y el desbalance frente a Round-Robin
+          en los escenarios principal y de estrés. En saturación aumentó la espera crítica y la diferencia de
+          desbalance frente a Round-Robin no fue concluyente.</li>
+      </ul>
+
+      <h3>Comparación con búsqueda aleatoria</h3>
+      <p>
+        Se ejecutó una búsqueda aleatoria con el mismo presupuesto computacional del AG: 10.000 evaluaciones por
+        combinación de escenario y semilla, utilizando las mismas instancias y escenarios de duración. El fitness
+        medio del AG fue 0.8702, 0.8504 y 0.4333 en los escenarios principal, de estrés y saturación, frente a
+        0.8478, 0.8265 y 0.4105 de la búsqueda aleatoria. La espera crítica también fue menor para el AG en los tres
+        escenarios: 10.37 frente a 18.68 minutos; 17.02 frente a 27.59; y 269.82 frente a 364.70. Este contraste es
+        descriptivo y no cuenta con una prueba inferencial pareada adicional.
+      </p>
+
+      <h3>Ablación de la representación cromosómica</h3>
+      <p>
+        La ablación permite analizar el aporte de cada bloque de la representación. A corresponde a solo asignación;
+        B, asignación más ajustes individuales; C, asignación más política global de criticidad; y D, los tres bloques.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Escenario</th><th>Variante</th><th>Fitness</th><th>Espera crítica</th><th>Backlog</th><th>Desbalance</th><th>SLA (%)</th><th>SLA crítico (%)</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="4">Principal</td><td>A</td><td>0.8701</td><td>9.87</td><td>16.42</td><td>0.0953</td><td>89.19</td><td>85.75</td></tr>
+            <tr><td>B</td><td>0.8703</td><td>9.91</td><td>16.73</td><td>0.0945</td><td>89.20</td><td>85.49</td></tr>
+            <tr><td>C</td><td>0.8693</td><td>11.11</td><td>16.18</td><td>0.0946</td><td>89.23</td><td>83.64</td></tr>
+            <tr><td>D</td><td>0.8702</td><td>10.37</td><td>15.90</td><td>0.0948</td><td>89.78</td><td>84.47</td></tr>
+            <tr><td rowspan="4">Estrés</td><td>A</td><td>0.8512</td><td>16.08</td><td>31.93</td><td>0.0879</td><td>76.81</td><td>74.48</td></tr>
+            <tr><td>B</td><td>0.8503</td><td>16.53</td><td>32.17</td><td>0.0883</td><td>76.73</td><td>73.96</td></tr>
+            <tr><td>C</td><td>0.8503</td><td>17.44</td><td>30.44</td><td>0.0887</td><td>78.57</td><td>72.90</td></tr>
+            <tr><td>D</td><td>0.8504</td><td>17.02</td><td>30.54</td><td>0.0884</td><td>78.07</td><td>74.43</td></tr>
+            <tr><td rowspan="4">Saturación</td><td>A</td><td>0.4517</td><td>150.46</td><td>423.48</td><td>0.0462</td><td>8.59</td><td>20.52</td></tr>
+            <tr><td>B</td><td>0.4484</td><td>165.99</td><td>422.54</td><td>0.0460</td><td>8.91</td><td>20.64</td></tr>
+            <tr><td>C</td><td>0.4280</td><td>312.67</td><td>416.35</td><td>0.0480</td><td>9.49</td><td>17.04</td></tr>
+            <tr><td>D</td><td>0.4333</td><td>269.82</td><td>416.81</td><td>0.0521</td><td>9.72</td><td>17.38</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        En el escenario principal no se detectaron diferencias estadísticamente concluyentes entre las variantes en las
+        métricas principales. En estrés, C y D redujeron el backlog frente a A en aproximadamente 1.49 y 1.39 alertas,
+        respectivamente, sin diferencias concluyentes en fitness, espera crítica o desbalance. Bajo saturación, B, C y
+        D aumentaron la espera crítica frente a A en 15.5, 162.2 y 119.4 minutos y redujeron el fitness en 0.0032,
+        0.0237 y 0.0184, respectivamente. A cambio, redujeron el backlog en 0.94, 7.13 y 6.68 alertas.
+      </p>
+      <p>
+        En saturación, C y D también mejoraron el cumplimiento de SLA de activos críticos, pero redujeron el
+        cumplimiento de SLA de alertas críticas por prioridad. D aumentó el desbalance en aproximadamente 0.006.
+        Estos resultados muestran un compromiso: la política de criticidad desplaza el servicio hacia los activos
+        críticos y reduce el backlog, a costa de la espera y el SLA de las alertas críticas por prioridad, sin mejorar
+        globalmente la función objetivo. La variante A obtuvo mejor fitness que D en saturación (0.4517 frente a
+        0.4333).
+      </p>
+
+      <h3>Limitaciones estadísticas</h3>
+      <p>
+        La ablación comprende 105 comparaciones (35 por escenario), con corrección de Holm aplicada dentro de cada
+        escenario. La comparación multi-semilla de baselines agrega 63 comparaciones (21 por escenario), con
+        corrección de Holm aplicada sobre las 63 en conjunto. Veinte semillas ofrecen potencia limitada para detectar
+        efectos pequeños; por lo tanto, una diferencia no significativa no demuestra que los métodos sean exactamente
+        iguales. La búsqueda aleatoria se presenta de forma descriptiva, sin prueba pareada adicional ni intervalos
+        de confianza propios.
+      </p>
+    </section>
+
+    <section id="discusion">
+      <h2>Discusión</h2>
+      <p>
+        Los resultados muestran que la función de aptitud multifactorial permite mejorar algunos objetivos operativos
+        frente a los baselines, pero no todos simultáneamente. En los escenarios principal y de estrés, el AG mejora
+        frente a Round-Robin en fitness, espera crítica y desbalance promedio, aunque Menor carga obtiene mayor fitness
+        en ambos escenarios. En saturación, el AG presenta el menor fitness y la mayor espera crítica de los cuatro
+        métodos, aunque reduce el backlog frente a Round-Robin.
+      </p>
+      <p>
+        La comparación multi-semilla no muestra una superioridad automática frente a las heurísticas deterministas:
+        Menor carga supera al AG en fitness en los tres escenarios, mientras que Urgencia balanceada también lo supera
+        en saturación. Esto refuerza que la priorización debe combinar criterios técnicos con restricciones de
+        disponibilidad de analistas y tiempo, y que una función objetivo más compleja no garantiza por sí sola mejores
+        resultados.
+      </p>
+      <p>
+        El backlog total no debe interpretarse de la misma manera en todos los escenarios. La saturación de 500 alertas
+        supera ampliamente la capacidad del turno, pero la comparación con los baselines muestra que la política de
+        despacho todavía modifica sustancialmente la espera crítica. Por eso, el peor resultado del AG no se atribuye
+        únicamente a la capacidad: puede reflejar sobreajuste a los escenarios de duración usados durante la
+        optimización o exploración insuficiente del cromosoma extendido. Estas explicaciones son hipótesis pendientes
+        de verificación.
+      </p>
+      <p>
+        La ablación respalda la necesidad de revisar la complejidad de la representación. En saturación, la variante
+        simple A obtiene un fitness mayor que D y una espera crítica menor. Con la evidencia actual, el bloque
+        extendido no demuestra un beneficio global en ese escenario. La búsqueda aleatoria, por su parte, obtuvo menor
+        fitness medio que el AG en los tres escenarios, lo que aporta un contraste descriptivo sobre el efecto del
+        presupuesto de evaluaciones, pero no demuestra superioridad frente a las heurísticas deterministas.
+      </p>
+      <p>
+        El modelo debe interpretarse como una política experimental de priorización automatizada para el triaje y la
+        asignación inicial, no como un reemplazo de la validación experta ante incidentes nuevos o ambiguos.
+      </p>
+    </section>
+
+    <section id="conclusion">
+      <h2>Conclusión</h2>
+      <p>
+        El trabajo proporciona evidencia experimental inicial sobre el uso de un Algoritmo Genético para abordar,
+        bajo escenarios simulados con atributos operativos sintéticos, un problema de asignación de alertas en un SOC.
+        Se modeló una representación cromosómica y una función de evaluación que integran tiempo de resolución,
+        espera crítica, backlog, balance de carga y criticidad de activos.
+      </p>
+      <p>
+        Sobre 20 semillas, el AG supera a Round-Robin en fitness en los escenarios de 100 y 120 alertas, con
+        diferencias pareadas concluyentes tras Holm, y reduce en promedio la espera crítica y el desbalance, a costa
+        de un backlog levemente mayor y un menor cumplimiento global de SLA. En saturación, el AG queda por debajo de
+        Round-Robin en fitness y espera crítica, aunque reduce el backlog y mejora el cumplimiento global de SLA.
+      </p>
+      <p>
+        Frente a la búsqueda aleatoria con igual presupuesto obtiene mayor fitness medio en los tres escenarios,
+        aunque esa comparación es descriptiva. Sin embargo, Menor carga obtiene mayor fitness que el AG en los tres
+        escenarios, y Urgencia balanceada obtiene el mayor fitness en saturación. En la ablación, la variante simple A
+        supera a la variante completa D en fitness bajo saturación. Por ello, la contribución debe interpretarse como
+        una política experimental de priorización y balance con compromisos operativos explícitos, no como una mejora
+        general frente a heurísticas deterministas simples.
+      </p>
+      <p>
+        El modelo no mide directamente la fatiga de alertas: no representa habilidades diferenciadas, turnos, pausas
+        ni degradación del rendimiento por carga sostenida. La fatiga se utiliza como motivación del problema y se
+        aproxima mediante espera, backlog y cumplimiento de SLA, pero no se presenta como una variable validada
+        experimentalmente.
+      </p>
+      <h3>Trabajo futuro</h3>
+      <p>
+        Se propone: (i) diagnosticar el fitness dentro y fuera de muestra para confirmar o descartar sobreajuste en
+        saturación; (ii) sembrar la población inicial con Menor carga y Urgencia balanceada; (iii) incorporar baselines
+        con holgura de SLA, como EDF, y una cota por programación entera en una instancia pequeña; (iv) ampliar el
+        rango superior de los pesos de criticidad, actualmente cercanos a 0.98; (v) avanzar hacia una colaboración
+        Humano–IA; (vi) evaluar robustez ante distribuciones de duración, disponibilidad y frecuencias de llegada
+        diversas; y (vii) conectar la criticidad con un inventario real. Cada corrida completa demanda aproximadamente
+        una hora, por lo que estas extensiones se difieren a una segunda etapa.
+      </p>
+    </section>
+
+    <section id="cronograma">
+      <h2>Cronograma tentativo</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Etapa</th><th>Actividad</th><th>Duración estimada</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Relevamiento bibliográfico y definición del marco teórico</td><td>2 semanas</td></tr>
+            <tr><td>2</td><td>Diseño de la representación cromosómica y de la función de fitness</td><td>1 semana</td></tr>
+            <tr><td>3</td><td>Implementación del Algoritmo Genético y de los operadores configurables</td><td>2 semanas</td></tr>
+            <tr><td>4</td><td>Derivación del dataset de alertas a partir de CICIDS2017</td><td>1 semana</td></tr>
+            <tr><td>5</td><td>Ajuste de hiperparámetros y comparación contra baselines</td><td>1 semana</td></tr>
+            <tr class="row-highlight"><td>6</td><td>Análisis de resultados, redacción del informe y del artículo científico</td><td>2 semanas</td></tr>
+            <tr><td>7</td><td>Preparación de la defensa oral y del material de exposición</td><td>1 semana</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="agradecimientos">
+      <h2>Agradecimientos</h2>
+      <p>
+        A la cátedra de Algoritmos Genéticos por el marco metodológico, la orientación técnica y el soporte brindado
+        para el desarrollo integral de la presente investigación.
+      </p>
+    </section>
+
+    <section id="bibliografia">
+      <h2>Bibliografía</h2>
+      <p>
+        [1] Sharafaldin, I., Lashkari, A. H., y Ghorbani, A. A. (2018).
+        <em>Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization</em>.
+        CICIDS2017.
+      </p>
+      <p>
+        [2] Holland, J. H. (1992).
+        <em>Adaptation in Natural and Artificial Systems</em>. MIT Press.
+      </p>
+      <p>
+        [3] Jalalvand, F., Chhetri, M. B., Nepal, S., y Paris, C. (2024).
+        <em>Alert Prioritisation in Security Operations Centres: A Systematic Survey on Criteria and Methods</em>.
+        ACM Computing Surveys, 57(2), 1–36.
+        <a href="https://doi.org/10.1145/3695462">https://doi.org/10.1145/3695462</a>.
+      </p>
+      <p>
+        [4] Boukedroun, M., Duvivier, D., Ait-el-Cadi, A., Poirriez, V., y Abbas, M. (2023).
+        <em>A hybrid genetic algorithm for stochastic job-shop scheduling problems</em>.
+        RAIRO--Operations Research, 57(4), 1617–1645.
+        <a href="https://doi.org/10.1051/ro/2023067">https://doi.org/10.1051/ro/2023067</a>.
+      </p>
+    </section>
+  </main>
+
+  <p class="footer">
+    Universidad Tecnológica Nacional — Facultad Regional Rosario · Cátedra Algoritmos Genéticos · Ciclo lectivo 2026 ·
+    El artículo científico está disponible en <a href="articulo_v2.pdf">articulo_v2.pdf</a> y su fuente en
+    <a href="articulo_v2.tex">articulo_v2.tex</a>.
+  </p>
+</body>
+</html>
